@@ -6,13 +6,13 @@ The `install_security_tools.sh` script is designed to be easily extensible. This
 
 ## Current Implementation Status
 
-### âœ… Fully Implemented (37 tools)
+### âœ… Fully Implemented (36 tools)
 - **Build Tools:** cmake
 - **Languages:** go, nodejs, rust
 - **Python Prerequisite:** python_venv
-- **Python Tools (16):** sherlock, holehe, socialscan, h8mail, photon, sublist3r, shodan, censys, theHarvester, spiderfoot, yara, wappalyzer
+- **Python Tools (12):** sherlock, holehe, socialscan, h8mail, photon, sublist3r, shodan, censys, theHarvester, spiderfoot, yara, wappalyzer
 - **Go Tools (8):** gobuster, ffuf, httprobe, waybackurls, assetfinder, subfinder, nuclei, virustotal
-- **Node.js Tools (4):** trufflehog, wappalyzer-cli, git-hound, jwt-cracker
+- **Node.js Tools (3):** trufflehog, git-hound, jwt-cracker
 - **Rust Tools (8):** feroxbuster, rustscan, ripgrep, fd, bat, sd, tokei, dog
 
 ## Adding a New Tool
@@ -45,7 +45,7 @@ PYTHON_RECON_PASSIVE=("sherlock" "holehe" "socialscan" "newtool")
 GO_RECON_ACTIVE=("gobuster" "ffuf" "newtool")
 
 # For Node.js tools
-NODE_TOOLS=("trufflehog" "wappalyzer-cli" "newtool")
+NODE_TOOLS=("trufflehog" "git-hound" "newtool")
 
 # For Rust tools
 RUST_RECON=("feroxbuster" "rustscan" "newtool")

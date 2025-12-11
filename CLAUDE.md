@@ -100,7 +100,7 @@ show_installation_summary() # Display results
 - `GO_RECON_PASSIVE`: waybackurls, assetfinder, subfinder
 - `GO_VULN_SCAN`: nuclei
 - `GO_THREAT_INTEL`: virustotal
-- `NODE_TOOLS`: trufflehog, wappalyzer-cli, git-hound, jwt-cracker
+- `NODE_TOOLS`: trufflehog, git-hound, jwt-cracker
 - `RUST_RECON`: feroxbuster, rustscan
 - `RUST_UTILS`: ripgrep, fd, bat, sd, tokei, dog
 

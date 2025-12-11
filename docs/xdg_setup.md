@@ -12,7 +12,7 @@ This script sets up the foundation for installing and managing user-space tools 
 3. Setting up tool-specific configurations (pip, npm, etc.)
 4. Providing convenience aliases
 
-**Important:** This script does NOT install any tools. Use `install_tools.sh` after running this script to install actual software.
+**Important:** This script does NOT install any tools. Use `install_security_tools.sh` after running this script to install actual software.
 
 ## What is XDG?
 
@@ -30,8 +30,8 @@ This script sets up the foundation for installing and managing user-space tools 
 ## Usage
 
 ```bash
-# Run the script (from anywhere)
-bash ~/Downloads/setup-scripts/xdg_setup.sh
+# Run the script (from the repository root)
+bash xdg_setup.sh
 
 # Reload environment to apply changes
 source ~/.bashrc
@@ -261,7 +261,7 @@ What was configured:
 
 Next steps:
   1. Run: source ~/.bashrc
-  2. Install tools: bash ~/Downloads/setup-scripts/install_tools.sh
+  2. Install tools: bash install_security_tools.sh
   3. Read documentation: cat ~/.local/share/XDG_STRUCTURE.md
 ```
 

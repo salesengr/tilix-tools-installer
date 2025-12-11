@@ -296,7 +296,6 @@ test_node_tool() {
 }
 
 test_trufflehog() { test_node_tool "trufflehog"; }
-test_wappalyzer-cli() { test_node_tool "wappalyzer-cli" "wappalyzer"; }
 test_git-hound() { test_node_tool "git-hound"; }
 test_jwt-cracker() { test_node_tool "jwt-cracker"; }
 
@@ -414,7 +413,6 @@ run_all_tests() {
     
     # Node.js tools
     command -v trufflehog &>/dev/null && test_trufflehog
-    command -v wappalyzer &>/dev/null && test_wappalyzer-cli
     command -v git-hound &>/dev/null && test_git-hound
     command -v jwt-cracker &>/dev/null && test_jwt-cracker
     
@@ -466,7 +464,6 @@ run_specific_test() {
         nuclei) test_nuclei ;;
         virustotal) test_virustotal ;;
         trufflehog) test_trufflehog ;;
-        wappalyzer-cli) test_wappalyzer-cli ;;
         git-hound) test_git-hound ;;
         jwt-cracker) test_jwt-cracker ;;
         feroxbuster) test_feroxbuster ;;

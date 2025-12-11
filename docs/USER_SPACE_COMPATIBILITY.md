@@ -38,7 +38,6 @@
 **Node.js Tools** (via npm install -g --prefix=$HOME/.local)
 ```
 âœ… trufflehog
-âœ… wappalyzer-cli
 âœ… git-hound
 âœ… jwt-cracker
 ```
@@ -191,7 +190,6 @@ go install github.com/VirusTotal/vt-cli@latest
 ```bash
 # With XDG NPM config already set
 npm install -g @trufflesecurity/trufflehog
-npm install -g wappalyzer-cli
 npm install -g git-hound
 npm install -g jwt-cracker
 ```

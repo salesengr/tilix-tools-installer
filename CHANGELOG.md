@@ -5,6 +5,11 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+- Dropped the Node.js `wappalyzer-cli` installer; the Python `wappalyzer` package now covers that functionality.
+
 ## [1.0.0] - 2025-12-11
 
 ### Initial Release
@@ -54,9 +59,8 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 - nuclei - Vulnerability scanner
 - virustotal - VirusTotal CLI
 
-**Node.js Tools (4)**
+**Node.js Tools (3)**
 - trufflehog - Secret scanning
-- wappalyzer-cli - Technology profiler
 - git-hound - GitHub reconnaissance
 - jwt-cracker - JWT token analysis
 

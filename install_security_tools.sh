@@ -128,7 +128,7 @@ GO_RECON_ACTIVE=("gobuster" "ffuf" "httprobe")
 GO_RECON_PASSIVE=("waybackurls" "assetfinder" "subfinder")
 GO_VULN_SCAN=("nuclei")
 GO_THREAT_INTEL=("virustotal")
-NODE_TOOLS=("trufflehog" "wappalyzer-cli" "git-hound" "jwt-cracker")
+NODE_TOOLS=("trufflehog" "git-hound" "jwt-cracker")
 RUST_RECON=("feroxbuster" "rustscan")
 RUST_UTILS=("ripgrep" "fd" "bat" "sd" "tokei" "dog")
 
@@ -275,11 +275,6 @@ define_tools() {
     TOOL_DEPENDENCIES[trufflehog]="nodejs"
     TOOL_INSTALL_LOCATION[trufflehog]="~/.local/bin/trufflehog"
     
-    TOOL_INFO[wappalyzer-cli]="Wappalyzer CLI|Technology profiler|OSINT"
-    TOOL_SIZES[wappalyzer-cli]="25MB"
-    TOOL_DEPENDENCIES[wappalyzer-cli]="nodejs"
-    TOOL_INSTALL_LOCATION[wappalyzer-cli]="~/.local/bin/wappalyzer"
-    
     TOOL_INFO[git-hound]="git-hound|GitHub reconnaissance|OSINT"
     TOOL_SIZES[git-hound]="10MB"
     TOOL_DEPENDENCIES[git-hound]="nodejs"
@@ -359,8 +354,6 @@ is_installed() {
         # Node tools
         trufflehog|git-hound|jwt-cracker)
             [ -f "$HOME/.local/bin/$tool" ] && return 0 ;;
-        wappalyzer-cli)
-            [ -f "$HOME/.local/bin/wappalyzer" ] && return 0 ;;
         # Rust tools
         feroxbuster|rustscan|sd|tokei|dog)
             command -v "$tool" &>/dev/null && return 0 ;;
@@ -918,7 +911,6 @@ install_node_tool() {
 }
 
 install_trufflehog() { install_node_tool "trufflehog" "@trufflesecurity/trufflehog"; }
-install_wappalyzer-cli() { install_node_tool "wappalyzer-cli" "wappalyzer-cli"; }
 install_git-hound() { install_node_tool "git-hound" "git-hound"; }
 install_jwt-cracker() { install_node_tool "jwt-cracker" "jwt-cracker"; }
 
@@ -1020,7 +1012,6 @@ install_tool() {
         nuclei) install_nuclei ;;
         virustotal) install_virustotal ;;
         trufflehog) install_trufflehog ;;
-        wappalyzer-cli) install_wappalyzer-cli ;;
         git-hound) install_git-hound ;;
         jwt-cracker) install_jwt-cracker ;;
         feroxbuster) install_feroxbuster ;;
@@ -1430,7 +1421,7 @@ main() {
         echo -e "${RED}âœ— XDG directories not found!${NC}"
         echo ""
         echo "Please run the XDG setup script first:"
-        echo "  bash ~/Downloads/setup-scripts/xdg_setup.sh"
+        echo "  bash xdg_setup.sh"
         echo "  source ~/.bashrc"
         echo ""
         exit 1

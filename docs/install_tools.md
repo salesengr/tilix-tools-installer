@@ -2,7 +2,7 @@
 
 ## Overview
 
-`install_tools.sh` installs a comprehensive suite of user-space development tools and security/OSINT applications without requiring sudo access.
+`install_security_tools.sh` installs a comprehensive suite of user-space development tools and security/OSINT applications without requiring sudo access.
 
 ## Prerequisites
 
@@ -14,11 +14,11 @@ The tools script depends on the XDG directory structure and environment variable
 
 ```bash
 # First: Set up XDG environment
-bash ~/Downloads/setup-scripts/xdg_setup.sh
+bash xdg_setup.sh
 source ~/.bashrc
 
 # Then: Install tools
-bash ~/Downloads/setup-scripts/install_tools.sh
+bash install_security_tools.sh
 source ~/.bashrc
 
 # Start using tools
@@ -561,7 +561,7 @@ rm go${GO_VERSION}.linux-amd64.tar.gz
 
 **Solution:**
 ```bash
-bash ~/Downloads/setup-scripts/xdg_setup.sh
+bash xdg_setup.sh
 source ~/.bashrc
 ```
 
@@ -597,7 +597,7 @@ deactivate
 
 # If still fails, reinstall
 rm -rf $XDG_DATA_HOME/virtualenvs/tools/
-bash ~/Downloads/setup-scripts/install_tools.sh
+bash install_security_tools.sh
 ```
 
 ### Go tools not found

@@ -5,7 +5,7 @@
 # 
 # This script creates a fully XDG Base Directory Specification compliant
 # environment with proper directory structure, environment variables, and
-# configuration files. It does NOT install tools - use install_tools.sh for that.
+# configuration files. It does NOT install tools - use install_security_tools.sh for that.
 #
 # Usage: bash xdg_setup.sh
 # Note: Run from anywhere - uses absolute paths
@@ -271,7 +271,7 @@ These are automatically set in your .bashrc:
 
 After setting up the XDG environment, use the companion script to install tools:
 ```bash
-bash ~/Downloads/setup-scripts/install_tools.sh
+bash install_security_tools.sh
 ```
 
 ## Reference
@@ -296,7 +296,7 @@ echo "  âœ“ Cache, config, and state directories created"
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo "  1. Run: source ~/.bashrc"
-echo "  2. Install tools: bash ~/Downloads/setup-scripts/install_tools.sh"
+echo "  2. Install tools: bash install_security_tools.sh"
 echo "  3. Read documentation: cat ~/.local/share/XDG_STRUCTURE.md"
 echo ""
 echo -e "${BLUE}Quick navigation aliases:${NC}"
@@ -313,4 +313,3 @@ echo "  ~/.config/          â†’ Configuration files"
 echo "  ~/.cache/           â†’ Temporary cache"
 echo "  ~/opt/              â†’ Large installations"
 echo ""
-

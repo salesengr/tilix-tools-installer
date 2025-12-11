@@ -56,9 +56,8 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 **CTI:**
 - virustotal - VirusTotal CLI
 
-### Node.js Tools (4 tools)
+### Node.js Tools (3 tools)
 - trufflehog - Secret scanning in git repositories
-- wappalyzer-cli - Technology profiler
 - git-hound - GitHub reconnaissance
 - jwt-cracker - JWT token analysis
 

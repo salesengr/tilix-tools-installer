@@ -56,6 +56,7 @@ Important behaviors:
 - Failed installs are referenced in `~/.local/state/install_tools/installation_history.log`
 - Dependencies (for example `python_venv`, `go`, `nodejs`, `rust`) are installed automatically when missing
 - Go tools land in `~/opt/gopath/bin`, Node.js tools in `~/.local/bin`, Rust tools in `~/.local/share/cargo/bin`, and Python tools inside the shared virtualenv (`~/.local/share/virtualenvs/tools`)
+- The installer/menu prints a reminder to run `source ~/.bashrc`; be sure to do that (or open a new shell) after installing anything.
 
 ## 3. Verify Installations (`test_installation.sh`)
 

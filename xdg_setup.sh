@@ -1,6 +1,6 @@
 #!/bin/bash
 # XDG Base Directory Setup Script
-# Version: 1.0
+# Version: 1.0.1
 # For Ubuntu 20.04+ container without sudo access
 # 
 # This script creates a fully XDG Base Directory Specification compliant
@@ -23,6 +23,10 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 BLUE='\033[0;36m'
 NC='\033[0m'
+
+print_shell_reload_reminder() {
+    echo -e "${YELLOW}Reminder:${NC} Run 'source ~/.bashrc' or open a new shell to load the updated environment."
+}
 
 # Create complete XDG directory structure
 echo -e "${YELLOW}Creating XDG-compliant directory structure...${NC}"
@@ -204,8 +208,12 @@ echo ""
 
 # Source the new configuration
 echo -e "${YELLOW}Loading new environment...${NC}"
-source ~/.bashrc
-echo -e "${GREEN}[OK] Environment loaded${NC}"
+if source ~/.bashrc 2>/dev/null; then
+    echo -e "${GREEN}[OK] Environment loaded${NC}"
+else
+    echo -e "${YELLOW}Could not reload shell automatically.${NC}"
+    print_shell_reload_reminder
+fi
 echo ""
 
 # Create XDG info documentation
@@ -313,3 +321,4 @@ echo "  ~/.config/          -> Configuration files"
 echo "  ~/.cache/           -> Temporary cache"
 echo "  ~/opt/              -> Large installations"
 echo ""
+print_shell_reload_reminder

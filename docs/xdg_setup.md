@@ -37,6 +37,8 @@ bash xdg_setup.sh
 source ~/.bashrc
 ```
 
+The script attempts to reload `.bashrc` for you; if that is not possible (non-interactive shell, etc.) it prints a reminder so you know to run `source ~/.bashrc` manually afterward.
+
 ## What It Does
 
 ### 1. Creates Directory Structure
@@ -396,6 +398,7 @@ For tool installation workflows, see [script_usage.md](script_usage.md)
 
 ## Version History
 
+- **v1.0.1** - ASCII-only status output and refreshed cross-references
 - **v1.0** - Initial release with complete XDG setup
   - All XDG base directories
   - Environment variables for Python, Go, npm, pip, Rust

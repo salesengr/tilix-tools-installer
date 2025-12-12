@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.0  
+**Version:** 1.0.1  
 **Release Date:** December 2025
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
@@ -115,6 +115,8 @@ bash install_security_tools.sh all
 # Dry run (preview what would be installed)
 bash install_security_tools.sh --dry-run sherlock gobuster
 ```
+
+> After installations finish, run `source ~/.bashrc` (or open a new shell) so the new binaries are immediately on your PATH. The installer now prints this reminder whenever the menu refreshes or a CLI run completes.
 
 ### 3. Verify Installation
 

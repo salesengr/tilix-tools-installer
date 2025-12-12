@@ -7,11 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No unreleased changes yet._
+
+## [1.0.1] - 2026-01-05
+
 ### Added
-- GitHub CLI installation option alongside existing build tools (installs user-space `gh` binary and docs).
+- `docs/script_usage.md` – single reference for running `xdg_setup.sh`, `install_security_tools.sh`, and `test_installation.sh`.
+- `docs/tool_installation_summary.md` – per-tool mapping of installation steps to resulting files for auditors.
+
+### Changed
+- Replaced all Unicode glyphs in shell scripts with ASCII equivalents so status output renders correctly in minimal terminals.
+- Simplified `docs/EXTENDING_THE_SCRIPT.md` to a concise checklist covering metadata, categories, installers, and tests.
+- Updated cross-references (README, `xdg_setup.md`, `CLAUDE.md`, `CHANGELOG.md`) to point to the new documentation set.
+- Bumped script version strings and README badge to `1.0.1`.
+- Added consistent “reload your shell” reminders to both `install_security_tools.sh` and `xdg_setup.sh`, with docs/README guidance telling users to `source ~/.bashrc` after installs.
 
 ### Removed
-- Dropped the Node.js `wappalyzer-cli` installer; the Python `wappalyzer` package now covers that functionality.
+- Deleted the outdated `docs/install_tools.md` documentation that duplicated README content.
 
 ## [1.0.0] - 2025-12-11
 
@@ -93,7 +105,3 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 - Developer guide (CLAUDE.md)
 
 ---
-
-## Future Releases
-
-See [GitHub Releases](https://github.com/your-repo/security-tools-installer/releases) for upcoming versions.

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer (OSINT/CTI/PenTest)
-# Version: 1.0
+# Version: 1.0.1
 # For Ubuntu 20.04+ container without sudo access
 #
 # PREREQUISITE: Run xdg_setup.sh first
@@ -26,7 +26,7 @@ NC='\033[0m'
 
 
 # ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.0"
+SCRIPT_VERSION="1.0.1"
 DRY_RUN=false
 CHECK_UPDATES=false
 SUCCESSFUL_INSTALLS=()
@@ -37,7 +37,6 @@ declare -A TOOL_DEPENDENCIES
 declare -A TOOL_INFO
 declare -A TOOL_SIZES
 declare -A TOOL_INSTALL_LOCATION
-
 # ===== LOGGING SETUP =====
 LOG_DIR="$HOME/.local/state/install_tools/logs"
 HISTORY_LOG="$HOME/.local/state/install_tools/installation_history.log"
@@ -1141,6 +1140,7 @@ install_all() {
 
 show_menu() {
     clear
+    print_shell_reload_reminder
     echo -e "${BLUE}=========================================="
     echo "Security Tools Installer v${SCRIPT_VERSION}"
     echo -e "==========================================${NC}"
@@ -1477,6 +1477,7 @@ dry_run_install() {
 # ===== MAIN ENTRY POINT =====
 
 main() {
+    trap handle_interrupt INT
     # Parse flags
     for arg in "$@"; do
         case "$arg" in
@@ -1591,7 +1592,18 @@ WGETRC_EOF
         # CLI parameter mode
         process_cli_args "${args[@]}"
         show_installation_summary
+        print_shell_reload_reminder
     fi
 }
 
 main "$@"
+print_shell_reload_reminder() {
+    echo -e "${YELLOW}Reminder:${NC} Run 'source ~/.bashrc' or open a new shell so newly installed tools are on your PATH."
+}
+
+handle_interrupt() {
+    echo ""
+    print_shell_reload_reminder
+    echo -e "${RED}Installation interrupted by user.${NC}"
+    exit 130
+}

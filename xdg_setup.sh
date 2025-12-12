@@ -46,35 +46,35 @@ mkdir -p ~/opt/go
 mkdir -p ~/opt/gopath
 mkdir -p ~/opt/src
 
-echo -e "${GREEN}âœ“ Directory structure created${NC}"
+echo -e "${GREEN}[OK] Directory structure created${NC}"
 echo ""
 
 # Show what was created
 echo -e "${BLUE}XDG Directory Structure:${NC}"
 echo "  ~/.local/"
-echo "    â”œâ”€â”€ bin/           â†’ User executables"
-echo "    â”œâ”€â”€ lib/           â†’ User libraries"
-echo "    â”‚   â””â”€â”€ pkgconfig/ â†’ Package config files"
-echo "    â”œâ”€â”€ include/       â†’ Development headers"
-echo "    â”œâ”€â”€ share/         â†’ User data"
-echo "    â”‚   â”œâ”€â”€ applications/ â†’ .desktop files"
-echo "    â”‚   â”œâ”€â”€ man/       â†’ Manual pages"
-echo "    â”‚   â””â”€â”€ virtualenvs/ â†’ Python environments"
-echo "    â””â”€â”€ state/         â†’ Application state data"
-echo "  ~/.config/           â†’ Configuration files"
-echo "  ~/.cache/            â†’ Cache/temporary data"
+echo "    |-- bin/           -> User executables"
+echo "    |-- lib/           -> User libraries"
+echo "    |   \-- pkgconfig/ -> Package config files"
+echo "    |-- include/       -> Development headers"
+echo "    |-- share/         -> User data"
+echo "    |   |-- applications/ -> .desktop files"
+echo "    |   |-- man/       -> Manual pages"
+echo "    |   \-- virtualenvs/ -> Python environments"
+echo "    \-- state/         -> Application state data"
+echo "  ~/.config/           -> Configuration files"
+echo "  ~/.cache/            -> Cache/temporary data"
 echo ""
 echo "  ~/opt/"
-echo "    â”œâ”€â”€ tools/         â†’ Standalone tools"
-echo "    â”œâ”€â”€ go/            â†’ Go installation"
-echo "    â”œâ”€â”€ gopath/        â†’ Go workspace"
-echo "    â””â”€â”€ src/           â†’ Source code"
+echo "    |-- tools/         -> Standalone tools"
+echo "    |-- go/            -> Go installation"
+echo "    |-- gopath/        -> Go workspace"
+echo "    \-- src/           -> Source code"
 echo ""
 
 # Backup existing .bashrc
 echo -e "${YELLOW}Backing up .bashrc...${NC}"
 cp ~/.bashrc ~/.bashrc.backup.$(date +%Y%m%d_%H%M%S)
-echo -e "${GREEN}âœ“ Backup created${NC}"
+echo -e "${GREEN}[OK] Backup created${NC}"
 echo ""
 
 # Add comprehensive environment configuration to .bashrc
@@ -151,7 +151,7 @@ alias cdlocal='cd $HOME/.local'
 # ===== End XDG Configuration =====
 BASHRC_EOF
 
-echo -e "${GREEN}âœ“ Environment variables configured${NC}"
+echo -e "${GREEN}[OK] Environment variables configured${NC}"
 echo ""
 
 # Create XDG-aware cache directories
@@ -160,7 +160,7 @@ mkdir -p "$HOME/.cache/pip"
 mkdir -p "$HOME/.cache/go-build"
 mkdir -p "$HOME/.cache/npm"
 mkdir -p "$HOME/.cache/python"
-echo -e "${GREEN}âœ“ Cache directories created${NC}"
+echo -e "${GREEN}[OK] Cache directories created${NC}"
 echo ""
 
 # Create state directories
@@ -168,7 +168,7 @@ echo -e "${YELLOW}Creating state directories...${NC}"
 mkdir -p "$HOME/.local/state/python"
 mkdir -p "$HOME/.local/state/less"
 mkdir -p "$HOME/.local/state/bash"
-echo -e "${GREEN}âœ“ State directories created${NC}"
+echo -e "${GREEN}[OK] State directories created${NC}"
 echo ""
 
 # Create config directories
@@ -176,7 +176,7 @@ echo -e "${YELLOW}Creating config directories...${NC}"
 mkdir -p "$HOME/.config/npm"
 mkdir -p "$HOME/.config/pip"
 mkdir -p "$HOME/.config/wget"
-echo -e "${GREEN}âœ“ Config directories created${NC}"
+echo -e "${GREEN}[OK] Config directories created${NC}"
 echo ""
 
 # Create pip config for XDG compliance
@@ -189,7 +189,7 @@ cache-dir = ~/.cache/pip
 # Note: "user = true" is NOT set here as it conflicts with virtual environments
 # When installing outside venv, use: pip install --user package_name
 PIPCONF_EOF
-echo -e "${GREEN}âœ“ Pip configured${NC}"
+echo -e "${GREEN}[OK] Pip configured${NC}"
 echo ""
 
 # Create npm config for XDG compliance
@@ -199,13 +199,13 @@ prefix=${HOME}/.local
 cache=${XDG_CACHE_HOME}/npm
 init-module=${XDG_CONFIG_HOME}/npm/npm-init.js
 NPMRC_EOF
-echo -e "${GREEN}âœ“ npm configured${NC}"
+echo -e "${GREEN}[OK] npm configured${NC}"
 echo ""
 
 # Source the new configuration
 echo -e "${YELLOW}Loading new environment...${NC}"
 source ~/.bashrc
-echo -e "${GREEN}âœ“ Environment loaded${NC}"
+echo -e "${GREEN}[OK] Environment loaded${NC}"
 echo ""
 
 # Create XDG info documentation
@@ -280,7 +280,7 @@ XDG Base Directory Specification:
 https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 XDG_DOC_EOF
 
-echo -e "${GREEN}âœ“ Documentation created${NC}"
+echo -e "${GREEN}[OK] Documentation created${NC}"
 echo ""
 
 echo "=========================================="
@@ -288,11 +288,11 @@ echo -e "${GREEN}XDG Base Directory Setup Complete!${NC}"
 echo "=========================================="
 echo ""
 echo -e "${BLUE}What was configured:${NC}"
-echo "  âœ“ XDG directory structure created"
-echo "  âœ“ Environment variables set in .bashrc"
-echo "  âœ“ pip configured for XDG compliance"
-echo "  âœ“ npm configured for XDG compliance"
-echo "  âœ“ Cache, config, and state directories created"
+echo "  [OK] XDG directory structure created"
+echo "  [OK] Environment variables set in .bashrc"
+echo "  [OK] pip configured for XDG compliance"
+echo "  [OK] npm configured for XDG compliance"
+echo "  [OK] Cache, config, and state directories created"
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo "  1. Run: source ~/.bashrc"
@@ -300,16 +300,16 @@ echo "  2. Install tools: bash install_security_tools.sh"
 echo "  3. Read documentation: cat ~/.local/share/XDG_STRUCTURE.md"
 echo ""
 echo -e "${BLUE}Quick navigation aliases:${NC}"
-echo "  cdconfig  â†’ Go to ~/.config"
-echo "  cddata    â†’ Go to ~/.local/share"
-echo "  cdcache   â†’ Go to ~/.cache"
-echo "  cdlocal   â†’ Go to ~/.local"
+echo "  cdconfig  -> Go to ~/.config"
+echo "  cddata    -> Go to ~/.local/share"
+echo "  cdcache   -> Go to ~/.cache"
+echo "  cdlocal   -> Go to ~/.local"
 echo ""
 echo -e "${BLUE}Directory structure:${NC}"
-echo "  ~/.local/bin/       â†’ User executables"
-echo "  ~/.local/lib/       â†’ User libraries"
-echo "  ~/.local/share/     â†’ User data"
-echo "  ~/.config/          â†’ Configuration files"
-echo "  ~/.cache/           â†’ Temporary cache"
-echo "  ~/opt/              â†’ Large installations"
+echo "  ~/.local/bin/       -> User executables"
+echo "  ~/.local/lib/       -> User libraries"
+echo "  ~/.local/share/     -> User data"
+echo "  ~/.config/          -> Configuration files"
+echo "  ~/.cache/           -> Temporary cache"
+echo "  ~/opt/              -> Large installations"
 echo ""

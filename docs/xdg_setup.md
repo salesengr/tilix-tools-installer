@@ -386,11 +386,11 @@ If you already have a custom .bashrc setup:
 - âŒ Configure network settings
 - âŒ Set up containerization
 
-For tool installation, see [install_tools.md](install_tools.md)
+For tool installation workflows, see [script_usage.md](script_usage.md)
 
 ## Related Documentation
 
-- [Tools Installation Guide](install_tools.md) - Install actual tools after XDG setup
+- [Script Usage Guide](script_usage.md) - Install tools after XDG setup
 - [Backup/Restore Guide](backup_restore.md) - Backup and restore your environment
 - [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) - Official specification
 

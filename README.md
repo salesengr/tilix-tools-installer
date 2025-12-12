@@ -152,10 +152,11 @@ After installation, your files will be organized as follows:
 
 Comprehensive guides are available in the `docs/` directory:
 
-- **[Installation Guide](docs/install_tools.md)** - Detailed usage and examples
+- **[Script Usage](docs/script_usage.md)** - How to run the setup, installer, and tests
 - **[XDG Setup Guide](docs/xdg_setup.md)** - Environment configuration explained
 - **[Extending the Script](docs/EXTENDING_THE_SCRIPT.md)** - Add your own tools
 - **[Compatibility Analysis](docs/USER_SPACE_COMPATIBILITY.md)** - Technical deep-dive
+- **[Tool Installation Summary](docs/tool_installation_summary.md)** - Where each tool lands on disk
 
 ## 💾 Disk Space Requirements
 

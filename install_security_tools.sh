@@ -460,13 +460,13 @@ install_cmake() {
     } > "$logfile" 2>&1
     
     if is_installed "cmake"; then
-        echo -e "${GREEN}âœ“ CMake installed successfully${NC}"
+        echo -e "${GREEN}[OK] CMake installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("cmake")
         log_installation "cmake" "success" "$logfile"
         cleanup_old_logs "cmake"
         return 0
     else
-        echo -e "${RED}âœ— CMake installation failed${NC}"
+        echo -e "${RED}[FAIL] CMake installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("cmake")
         FAILED_INSTALL_LOGS["cmake"]="$logfile"
@@ -597,7 +597,7 @@ install_go() {
     } > "$logfile" 2>&1
     
     if is_installed "go"; then
-        echo -e "${GREEN}âœ“ Go installed successfully${NC}"
+        echo -e "${GREEN}[OK] Go installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("go")
         log_installation "go" "success" "$logfile"
         cleanup_old_logs "go"
@@ -607,7 +607,7 @@ install_go() {
         export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
         return 0
     else
-        echo -e "${RED}âœ— Go installation failed${NC}"
+        echo -e "${RED}[FAIL] Go installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("go")
         FAILED_INSTALL_LOGS["go"]="$logfile"
@@ -661,14 +661,14 @@ install_nodejs() {
     } > "$logfile" 2>&1
     
     if is_installed "nodejs"; then
-        echo -e "${GREEN}âœ“ Node.js installed successfully${NC}"
+        echo -e "${GREEN}[OK] Node.js installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("nodejs")
         log_installation "nodejs" "success" "$logfile"
         cleanup_old_logs "nodejs"
         export PATH="$HOME/opt/node/bin:$PATH"
         return 0
     else
-        echo -e "${RED}âœ— Node.js installation failed${NC}"
+        echo -e "${RED}[FAIL] Node.js installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("nodejs")
         FAILED_INSTALL_LOGS["nodejs"]="$logfile"
@@ -705,7 +705,7 @@ install_rust() {
     } > "$logfile" 2>&1
     
     if is_installed "rust"; then
-        echo -e "${GREEN}âœ“ Rust installed successfully${NC}"
+        echo -e "${GREEN}[OK] Rust installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("rust")
         log_installation "rust" "success" "$logfile"
         cleanup_old_logs "rust"
@@ -714,7 +714,7 @@ install_rust() {
         export PATH="$CARGO_HOME/bin:$PATH"
         return 0
     else
-        echo -e "${RED}âœ— Rust installation failed${NC}"
+        echo -e "${RED}[FAIL] Rust installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("rust")
         FAILED_INSTALL_LOGS["rust"]="$logfile"
@@ -750,13 +750,13 @@ install_python_venv() {
     } > "$logfile" 2>&1
     
     if is_installed "python_venv"; then
-        echo -e "${GREEN}âœ“ Python virtual environment created${NC}"
+        echo -e "${GREEN}[OK] Python virtual environment created${NC}"
         SUCCESSFUL_INSTALLS+=("python_venv")
         log_installation "python_venv" "success" "$logfile"
         cleanup_old_logs "python_venv"
         return 0
     else
-        echo -e "${RED}âœ— Python venv creation failed${NC}"
+        echo -e "${RED}[FAIL] Python venv creation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("python_venv")
         FAILED_INSTALL_LOGS["python_venv"]="$logfile"
@@ -806,13 +806,13 @@ install_python_tool() {
     } > "$logfile" 2>&1
     
     if is_installed "$tool"; then
-        echo -e "${GREEN}âœ“ $tool installed successfully${NC}"
+        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}âœ— $tool installation failed${NC}"
+        echo -e "${RED}[FAIL] $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -888,13 +888,13 @@ install_yara() {
     } > "$logfile" 2>&1
     
     if is_installed "yara"; then
-        echo -e "${GREEN}âœ“ YARA installed successfully${NC}"
+        echo -e "${GREEN}[OK] YARA installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("yara")
         log_installation "yara" "success" "$logfile"
         cleanup_old_logs "yara"
         return 0
     else
-        echo -e "${RED}âœ— YARA installation failed${NC}"
+        echo -e "${RED}[FAIL] YARA installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("yara")
         FAILED_INSTALL_LOGS["yara"]="$logfile"
@@ -929,13 +929,13 @@ install_go_tool() {
     } > "$logfile" 2>&1
     
     if is_installed "$tool"; then
-        echo -e "${GREEN}âœ“ $tool installed successfully${NC}"
+        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}âœ— $tool installation failed${NC}"
+        echo -e "${RED}[FAIL] $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -977,13 +977,13 @@ install_node_tool() {
     } > "$logfile" 2>&1
     
     if is_installed "$tool"; then
-        echo -e "${GREEN}âœ“ $tool installed successfully${NC}"
+        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}âœ— $tool installation failed${NC}"
+        echo -e "${RED}[FAIL] $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -1023,13 +1023,13 @@ install_rust_tool() {
     } > "$logfile" 2>&1
     
     if is_installed "$tool"; then
-        echo -e "${GREEN}âœ“ $tool installed successfully${NC}"
+        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}âœ— $tool installation failed${NC}"
+        echo -e "${RED}[FAIL] $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -1054,13 +1054,13 @@ install_tool() {
     
     # Check if already installed
     if is_installed "$tool"; then
-        echo -e "${GREEN}âœ“ $tool already installed${NC}"
+        echo -e "${GREEN}[OK] $tool already installed${NC}"
         return 0
     fi
     
     # Check dependencies
     if ! check_dependencies "$tool"; then
-        echo -e "${RED}âœ— Failed to install dependencies for $tool${NC}"
+        echo -e "${RED}[FAIL] Failed to install dependencies for $tool${NC}"
         return 1
     fi
     
@@ -1281,9 +1281,9 @@ show_installed() {
     echo -e "${MAGENTA}BUILD TOOLS:${NC}"
     for tool in "${BUILD_TOOLS[@]}"; do
         if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}âœ“${NC} $tool"
+            echo -e "  ${GREEN}[OK]${NC} $tool"
         else
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
         fi
     done
     
@@ -1291,24 +1291,24 @@ show_installed() {
     echo -e "${MAGENTA}LANGUAGES:${NC}"
     for tool in "${LANGUAGES[@]}"; do
         if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}âœ“${NC} $tool"
+            echo -e "  ${GREEN}[OK]${NC} $tool"
         else
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
         fi
     done
     
     echo ""
     echo -e "${MAGENTA}PYTHON TOOLS:${NC}"
     if [[ "${INSTALLED_STATUS[python_venv]}" == "true" ]]; then
-        echo -e "  ${GREEN}âœ“${NC} python_venv"
+        echo -e "  ${GREEN}[OK]${NC} python_venv"
     else
-        echo -e "  ${RED}âœ—${NC} python_venv"
+        echo -e "  ${RED}[FAIL]${NC} python_venv"
     fi
     for tool in "${ALL_PYTHON_TOOLS[@]}"; do
         if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}âœ“${NC} $tool"
+            echo -e "  ${GREEN}[OK]${NC} $tool"
         else
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
         fi
     done
     
@@ -1316,9 +1316,9 @@ show_installed() {
     echo -e "${MAGENTA}GO TOOLS:${NC}"
     for tool in "${ALL_GO_TOOLS[@]}"; do
         if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}âœ“${NC} $tool"
+            echo -e "  ${GREEN}[OK]${NC} $tool"
         else
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
         fi
     done
     
@@ -1326,9 +1326,9 @@ show_installed() {
     echo -e "${MAGENTA}NODE.JS TOOLS:${NC}"
     for tool in "${NODE_TOOLS[@]}"; do
         if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}âœ“${NC} $tool"
+            echo -e "  ${GREEN}[OK]${NC} $tool"
         else
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
         fi
     done
     
@@ -1336,9 +1336,9 @@ show_installed() {
     echo -e "${MAGENTA}RUST TOOLS:${NC}"
     for tool in "${ALL_RUST_TOOLS[@]}"; do
         if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}âœ“${NC} $tool"
+            echo -e "  ${GREEN}[OK]${NC} $tool"
         else
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
         fi
     done
     
@@ -1369,7 +1369,7 @@ show_installation_summary() {
         echo ""
         echo -e "${GREEN}Successfully installed:${NC}"
         for tool in "${SUCCESSFUL_INSTALLS[@]}"; do
-            echo -e "  ${GREEN}âœ“${NC} $tool"
+            echo -e "  ${GREEN}[OK]${NC} $tool"
         done
     fi
     
@@ -1378,7 +1378,7 @@ show_installation_summary() {
         echo -e "${RED}Failed installations:${NC}"
         for tool in "${FAILED_INSTALLS[@]}"; do
             local logfile="${FAILED_INSTALL_LOGS[$tool]}"
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
             echo "    Log: $logfile"
             echo "    View: cat $logfile"
         done
@@ -1456,9 +1456,9 @@ dry_run_install() {
         echo "${indent}  Prerequisites:"
         for dep in $deps; do
             if is_installed "$dep"; then
-                echo "${indent}    âœ“ $dep (already installed)"
+                echo "${indent}    [OK] $dep (already installed)"
             else
-                echo "${indent}    â†’ $dep (would be installed)"
+                echo "${indent}    -> $dep (would be installed)"
                 dry_run_install "$dep" "${indent}      "
             fi
         done
@@ -1503,7 +1503,7 @@ main() {
     echo -e "${YELLOW}Checking prerequisites...${NC}"
     
     if [ ! -d "$HOME/.local/share" ] || [ ! -d "$HOME/.config" ] || [ ! -d "$HOME/.cache" ]; then
-        echo -e "${RED}âœ— XDG directories not found!${NC}"
+        echo -e "${RED}[FAIL] XDG directories not found!${NC}"
         echo ""
         echo "Please run the XDG setup script first:"
         echo "  bash xdg_setup.sh"
@@ -1513,7 +1513,7 @@ main() {
     fi
     
     if [ -z "$XDG_DATA_HOME" ] || [ -z "$XDG_CONFIG_HOME" ] || [ -z "$XDG_CACHE_HOME" ]; then
-        echo -e "${YELLOW}âš  XDG environment variables not set${NC}"
+        echo -e "${YELLOW}[WARN] XDG environment variables not set${NC}"
         echo "Loading from defaults..."
         export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
         export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -1523,7 +1523,7 @@ main() {
         echo ""
     fi
     
-    echo -e "${GREEN}âœ“ Prerequisites met${NC}"
+    echo -e "${GREEN}[OK] Prerequisites met${NC}"
     echo ""
     
     # Fix wget config if missing
@@ -1538,7 +1538,7 @@ tries = 3
 retry_connrefused = on
 max_redirect = 5
 WGETRC_EOF
-        echo -e "${GREEN}âœ“ wget config created${NC}"
+        echo -e "${GREEN}[OK] wget config created${NC}"
         echo ""
     fi
     

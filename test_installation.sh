@@ -30,11 +30,11 @@ test_result() {
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     
     if [ $result -eq 0 ]; then
-        echo -e "${GREEN}  âœ“${NC} $test_name"
+        echo -e "${GREEN}  [OK]${NC} $test_name"
         PASSED_TESTS=$((PASSED_TESTS + 1))
         return 0
     else
-        echo -e "${RED}  âœ—${NC} $test_name"
+        echo -e "${RED}  [FAIL]${NC} $test_name"
         FAILED_TESTS=$((FAILED_TESTS + 1))
         FAILED_TOOLS+=("$tool")
         return 1
@@ -516,12 +516,12 @@ show_summary() {
         echo -e "${RED}Failed tools:${NC}"
         # Remove duplicates
         printf '%s\n' "${FAILED_TOOLS[@]}" | sort -u | while read tool; do
-            echo -e "  ${RED}âœ—${NC} $tool"
+            echo -e "  ${RED}[FAIL]${NC} $tool"
         done
         echo ""
         exit 1
     else
-        echo -e "${GREEN}All tests passed! âœ“${NC}"
+        echo -e "${GREEN}All tests passed! [OK]${NC}"
         echo ""
         exit 0
     fi

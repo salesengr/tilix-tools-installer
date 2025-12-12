@@ -89,7 +89,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 - Comprehensive README with usage examples
 - Script extension guide (EXTENDING_THE_SCRIPT.md)
 - User-space compatibility analysis (USER_SPACE_COMPATIBILITY.md)
-- Detailed tool documentation (install_tools.md, xdg_setup.md)
+- Detailed tool documentation (script_usage.md, xdg_setup.md)
 - Developer guide (CLAUDE.md)
 
 ---

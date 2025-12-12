@@ -33,7 +33,7 @@ project/
 ├── xdg_setup.sh                   # Environment setup (314 lines)
 │
 └── docs/
-    ├── install_tools.md            # Detailed installation guide
+    ├── script_usage.md             # Detailed installation guide
     ├── xdg_setup.md               # XDG setup explanation
     ├── EXTENDING_THE_SCRIPT.md    # Developer guide for adding tools
     └── USER_SPACE_COMPATIBILITY.md # Technical compatibility analysis
@@ -522,7 +522,7 @@ messages. Ensure all commands check return codes.
 
 **Updating Documentation:**
 ```
-I added [tool]. Update README.md, CHANGELOG.md, and docs/install_tools.md 
+I added [tool]. Update README.md, CHANGELOG.md, and docs/script_usage.md 
 to include this new tool in the appropriate sections.
 ```
 
@@ -661,7 +661,7 @@ Update in:
 
 **For Users:**
 - `README.md` - Start here
-- `docs/install_tools.md` - Detailed usage guide
+- `docs/script_usage.md` - Detailed usage guide
 - `docs/xdg_setup.md` - Environment explanation
 
 **For Developers:**

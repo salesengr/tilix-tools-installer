@@ -61,6 +61,24 @@ test_cmake() {
     echo ""
 }
 
+test_github_cli() {
+    echo -e "${CYAN}Testing GitHub CLI...${NC}"
+    
+    # Test 1: Command exists
+    command -v gh &>/dev/null
+    test_result "github_cli" "Command exists" $?
+    
+    # Test 2: Version check
+    gh --version &>/dev/null
+    test_result "github_cli" "Version check" $?
+    
+    # Test 3: Binary in correct location
+    [ -f "$HOME/.local/bin/gh" ]
+    test_result "github_cli" "Binary in correct location" $?
+    
+    echo ""
+}
+
 # ===== LANGUAGE RUNTIME TESTS =====
 
 test_go() {
@@ -379,6 +397,7 @@ run_all_tests() {
     
     # Build Tools
     command -v cmake &>/dev/null && test_cmake
+    command -v gh &>/dev/null && test_github_cli
     
     # Languages
     command -v go &>/dev/null && test_go
@@ -440,6 +459,7 @@ run_specific_test() {
     
     case "$tool" in
         cmake) test_cmake ;;
+        github_cli) test_github_cli ;;
         go) test_go ;;
         nodejs) test_nodejs ;;
         rust) test_rust ;;

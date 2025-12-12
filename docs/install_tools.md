@@ -37,6 +37,18 @@ gobuster dir -u https://example.com -w wordlist.txt
 - **Usage:** `cmake --version`
 - **Why needed:** Required for building many C/C++ projects from source
 
+#### GitHub CLI 2.53.0
+- **Purpose:** Manage GitHub workflows (issues, PRs, releases) from the terminal
+- **Install Location:** `~/.local/bin/gh`
+- **Size:** ~90MB
+- **Usage:** 
+  ```bash
+  gh --version
+  gh repo clone owner/project
+  gh pr status
+  ```
+- **Why needed:** Provides authenticated GitHub access without needing browser sessions—useful for cloning, creating issues, checking PRs, and managing releases inside restricted environments.
+
 #### Go 1.21.5
 - **Purpose:** Programming language and runtime
 - **Install Location:** `~/opt/go/`

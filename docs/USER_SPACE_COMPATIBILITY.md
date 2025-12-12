@@ -57,6 +57,7 @@
 **Build Tools**
 ```
 âœ… cmake              (binary distribution)
+âœ… github-cli         (binary distribution)
 âœ… go                 (binary distribution)
 ```
 
@@ -252,6 +253,15 @@ cargo install dog
 wget https://github.com/Kitware/CMake/releases/download/v3.28.1/cmake-3.28.1-linux-x86_64.tar.gz
 tar -xzf cmake-3.28.1-linux-x86_64.tar.gz
 cp -r cmake-3.28.1-linux-x86_64/bin/* ~/.local/bin/
+```
+**Status:** âœ… Works perfectly in user-space
+
+#### GitHub CLI
+**Method:** Binary distribution
+```bash
+wget https://github.com/cli/cli/releases/download/v2.53.0/gh_2.53.0_linux_amd64.tar.gz
+tar -xzf gh_2.53.0_linux_amd64.tar.gz
+cp gh_2.53.0_linux_amd64/bin/gh ~/.local/bin/
 ```
 **Status:** âœ… Works perfectly in user-space
 

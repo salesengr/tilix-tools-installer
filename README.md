@@ -21,6 +21,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 ### Build Tools & Runtimes
 - **CMake** 3.28.1 - Build system generator
+- **GitHub CLI** 2.53.0 - Manage GitHub from the terminal
 - **Go** 1.21.5 - Programming language runtime
 - **Node.js** 20.10.0 - JavaScript runtime
 - **Rust** (latest) - Systems programming language
@@ -161,6 +162,7 @@ Comprehensive guides are available in the `docs/` directory:
 | Component | Size |
 |-----------|------|
 | CMake | ~50 MB |
+| GitHub CLI | ~90 MB |
 | Go installation | ~120 MB |
 | Node.js installation | ~50 MB |
 | Rust installation | ~800 MB |

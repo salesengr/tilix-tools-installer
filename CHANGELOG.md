@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- GitHub CLI installation option alongside existing build tools (installs user-space `gh` binary and docs).
+
 ### Removed
 - Dropped the Node.js `wappalyzer-cli` installer; the Python `wappalyzer` package now covers that functionality.
 

@@ -6,8 +6,8 @@ The `install_security_tools.sh` script is designed to be easily extensible. This
 
 ## Current Implementation Status
 
-### âœ… Fully Implemented (36 tools)
-- **Build Tools:** cmake
+### âœ… Fully Implemented (37 tools)
+- **Build Tools:** cmake, github_cli
 - **Languages:** go, nodejs, rust
 - **Python Prerequisite:** python_venv
 - **Python Tools (12):** sherlock, holehe, socialscan, h8mail, photon, sublist3r, shodan, censys, theHarvester, spiderfoot, yara, wappalyzer

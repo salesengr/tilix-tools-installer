@@ -117,7 +117,7 @@ verify_file_exists() {
 # ===== TOOL DEFINITIONS =====
 # [Rest of tool definitions remain the same]
 # Tool categories
-BUILD_TOOLS=("cmake")
+BUILD_TOOLS=("cmake" "github_cli")
 LANGUAGES=("go" "nodejs" "rust")
 PYTHON_RECON_PASSIVE=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot")
 PYTHON_RECON_DOMAIN=("sublist3r")
@@ -143,6 +143,11 @@ define_tools() {
     TOOL_SIZES[cmake]="50MB"
     TOOL_DEPENDENCIES[cmake]=""
     TOOL_INSTALL_LOCATION[cmake]="~/.local/bin/cmake"
+    
+    TOOL_INFO[github_cli]="GitHub CLI|GitHub workflow automation|Build Tool"
+    TOOL_SIZES[github_cli]="90MB"
+    TOOL_DEPENDENCIES[github_cli]=""
+    TOOL_INSTALL_LOCATION[github_cli]="~/.local/bin/gh"
     
     # Languages
     TOOL_INFO[go]="Go|Programming language runtime|Language"
@@ -335,6 +340,8 @@ is_installed() {
     case "$tool" in
         cmake)
             [ -f "$HOME/.local/bin/cmake" ] && return 0 ;;
+        github_cli)
+            [ -f "$HOME/.local/bin/gh" ] && return 0 ;;
         go)
             [ -f "$HOME/opt/go/bin/go" ] && return 0 ;;
         nodejs)
@@ -464,6 +471,81 @@ install_cmake() {
         FAILED_INSTALLS+=("cmake")
         FAILED_INSTALL_LOGS["cmake"]="$logfile"
         log_installation "cmake" "failure" "$logfile"
+        return 1
+    fi
+}
+
+install_github_cli() {
+    local logfile=$(create_tool_log "github_cli")
+    
+    {
+        echo "=========================================="
+        echo "Installing GitHub CLI"
+        echo "Started: $(date)"
+        echo "=========================================="
+        
+        mkdir -p "$HOME/opt/src"
+        cd "$HOME/opt/src" || exit 1
+        GH_CLI_VERSION="2.53.0"
+        local filename="gh_${GH_CLI_VERSION}_linux_amd64.tar.gz"
+        local url="https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${filename}"
+        
+        echo "Downloading GitHub CLI ${GH_CLI_VERSION}..."
+        if ! download_file "$url" "$filename"; then
+            echo "ERROR: Failed to download GitHub CLI"
+            return 1
+        fi
+        
+        if ! verify_file_exists "$filename" "GitHub CLI tarball"; then
+            return 1
+        fi
+        
+        echo "Extracting..."
+        if ! tar -xzf "$filename"; then
+            echo "ERROR: Failed to extract GitHub CLI"
+            return 1
+        fi
+        
+        local extracted_dir="gh_${GH_CLI_VERSION}_linux_amd64"
+        if [ ! -d "$extracted_dir" ]; then
+            echo "ERROR: Extracted directory not found"
+            return 1
+        fi
+        
+        echo "Installing to ~/.local/..."
+        mkdir -p "$HOME/.local/bin"
+        cp "$extracted_dir/bin/gh" "$HOME/.local/bin/" || return 1
+        
+        if [ -d "$extracted_dir/share/man/man1" ]; then
+            mkdir -p "$HOME/.local/share/man/man1"
+            cp "$extracted_dir/share/man/man1/"* "$HOME/.local/share/man/man1/" || return 1
+        fi
+        
+        if [ -d "$extracted_dir/share/doc" ]; then
+            mkdir -p "$HOME/.local/share/doc/gh"
+            cp -r "$extracted_dir/share/doc/." "$HOME/.local/share/doc/gh" || return 1
+        fi
+        
+        echo "Cleaning up..."
+        rm -rf "$extracted_dir" "$filename"
+        
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+    
+    if is_installed "github_cli"; then
+        echo -e "${GREEN}✓ GitHub CLI installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("github_cli")
+        log_installation "github_cli" "success" "$logfile"
+        cleanup_old_logs "github_cli"
+        return 0
+    else
+        echo -e "${RED}✗ GitHub CLI installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("github_cli")
+        FAILED_INSTALL_LOGS["github_cli"]="$logfile"
+        log_installation "github_cli" "failure" "$logfile"
         return 1
     fi
 }
@@ -987,6 +1069,7 @@ install_tool() {
     
     case "$tool" in
         cmake) install_cmake ;;
+        github_cli) install_github_cli ;;
         go) install_go ;;
         nodejs) install_nodejs ;;
         rust) install_rust ;;
@@ -1042,7 +1125,7 @@ install_all() {
     fi
     
     local all_tools=(
-        "cmake" "go" "nodejs" "rust" "python_venv"
+        "cmake" "github_cli" "go" "nodejs" "rust" "python_venv"
         "${ALL_PYTHON_TOOLS[@]}"
         "${ALL_GO_TOOLS[@]}"
         "${NODE_TOOLS[@]}"
@@ -1064,46 +1147,47 @@ show_menu() {
     echo ""
     echo -e "${MAGENTA}BUILD TOOLS${NC}"
     echo "  [1] CMake"
+    echo "  [2] GitHub CLI"
     echo ""
     echo -e "${MAGENTA}LANGUAGES & RUNTIMES${NC}"
-    echo "  [2] Go"
-    echo "  [3] Node.js"
-    echo "  [4] Rust (compile time: 5-10 min)"
+    echo "  [3] Go"
+    echo "  [4] Node.js"
+    echo "  [5] Rust (compile time: 5-10 min)"
     echo ""
     echo -e "${MAGENTA}PYTHON TOOLS - OSINT${NC}"
-    echo "  [5] Python Virtual Environment (required)"
-    echo "  [6] sherlock - Username search"
-    echo "  [7] holehe - Email verification"
-    echo "  [8] socialscan - Username/email availability"
-    echo "  [9] theHarvester - Multi-source OSINT"
-    echo "  [10] spiderfoot - Automated OSINT"
-    echo "  [11] All Python OSINT Tools"
+    echo "  [6] Python Virtual Environment (required)"
+    echo "  [7] sherlock - Username search"
+    echo "  [8] holehe - Email verification"
+    echo "  [9] socialscan - Username/email availability"
+    echo "  [10] theHarvester - Multi-source OSINT"
+    echo "  [11] spiderfoot - Automated OSINT"
+    echo "  [12] All Python OSINT Tools"
     echo ""
     echo -e "${MAGENTA}PYTHON TOOLS - CTI${NC}"
-    echo "  [12] shodan - Internet device intelligence"
-    echo "  [13] censys - Certificate/service intelligence"
-    echo "  [14] yara - Malware pattern matching"
-    echo "  [15] All Python CTI Tools"
+    echo "  [13] shodan - Internet device intelligence"
+    echo "  [14] censys - Certificate/service intelligence"
+    echo "  [15] yara - Malware pattern matching"
+    echo "  [16] All Python CTI Tools"
     echo ""
     echo -e "${MAGENTA}GO TOOLS - ACTIVE RECON${NC}"
-    echo "  [16] gobuster - Directory/DNS bruteforcing"
-    echo "  [17] ffuf - Fast web fuzzer"
-    echo "  [18] subfinder - Subdomain discovery"
-    echo "  [19] nuclei - Vulnerability scanner"
-    echo "  [20] All Go Tools"
+    echo "  [17] gobuster - Directory/DNS bruteforcing"
+    echo "  [18] ffuf - Fast web fuzzer"
+    echo "  [19] subfinder - Subdomain discovery"
+    echo "  [20] nuclei - Vulnerability scanner"
+    echo "  [21] All Go Tools"
     echo ""
     echo -e "${MAGENTA}GO TOOLS - CTI${NC}"
-    echo "  [21] virustotal - VirusTotal CLI"
+    echo "  [22] virustotal - VirusTotal CLI"
     echo ""
     echo -e "${MAGENTA}NODE.JS TOOLS${NC}"
-    echo "  [22] trufflehog - Secret scanning"
-    echo "  [23] All Node.js Tools"
+    echo "  [23] trufflehog - Secret scanning"
+    echo "  [24] All Node.js Tools"
     echo ""
     echo -e "${MAGENTA}RUST TOOLS${NC}"
-    echo "  [24] feroxbuster - Content discovery"
-    echo "  [25] rustscan - Fast port scanner"
-    echo "  [26] ripgrep - Fast grep"
-    echo "  [27] All Rust Tools (long compile time)"
+    echo "  [25] feroxbuster - Content discovery"
+    echo "  [26] rustscan - Fast port scanner"
+    echo "  [27] ripgrep - Fast grep"
+    echo "  [28] All Rust Tools (long compile time)"
     echo ""
     echo -e "${MAGENTA}BULK OPTIONS${NC}"
     echo "  [30] Install Everything"
@@ -1121,52 +1205,53 @@ process_menu_selection() {
     
     case "$selection" in
         1) install_tool "cmake" ;;
-        2) install_tool "go" ;;
-        3) install_tool "nodejs" ;;
-        4) install_tool "rust" ;;
-        5) install_tool "python_venv" ;;
-        6) install_tool "sherlock" ;;
-        7) install_tool "holehe" ;;
-        8) install_tool "socialscan" ;;
-        9) install_tool "theHarvester" ;;
-        10) install_tool "spiderfoot" ;;
-        11)
+        2) install_tool "github_cli" ;;
+        3) install_tool "go" ;;
+        4) install_tool "nodejs" ;;
+        5) install_tool "rust" ;;
+        6) install_tool "python_venv" ;;
+        7) install_tool "sherlock" ;;
+        8) install_tool "holehe" ;;
+        9) install_tool "socialscan" ;;
+        10) install_tool "theHarvester" ;;
+        11) install_tool "spiderfoot" ;;
+        12)
             install_tool "python_venv"
             for tool in "${ALL_PYTHON_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        12) install_tool "shodan" ;;
-        13) install_tool "censys" ;;
-        14) install_tool "yara" ;;
-        15)
+        13) install_tool "shodan" ;;
+        14) install_tool "censys" ;;
+        15) install_tool "yara" ;;
+        16)
             install_tool "python_venv"
             for tool in shodan censys yara; do
                 install_tool "$tool"
             done
             ;;
-        16) install_tool "gobuster" ;;
-        17) install_tool "ffuf" ;;
-        18) install_tool "subfinder" ;;
-        19) install_tool "nuclei" ;;
-        20)
+        17) install_tool "gobuster" ;;
+        18) install_tool "ffuf" ;;
+        19) install_tool "subfinder" ;;
+        20) install_tool "nuclei" ;;
+        21)
             install_tool "go"
             for tool in "${ALL_GO_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        21) install_tool "virustotal" ;;
-        22) install_tool "trufflehog" ;;
-        23)
+        22) install_tool "virustotal" ;;
+        23) install_tool "trufflehog" ;;
+        24)
             install_tool "nodejs"
             for tool in "${NODE_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        24) install_tool "feroxbuster" ;;
-        25) install_tool "rustscan" ;;
-        26) install_tool "ripgrep" ;;
-        27)
+        25) install_tool "feroxbuster" ;;
+        26) install_tool "rustscan" ;;
+        27) install_tool "ripgrep" ;;
+        28)
             echo -e "${YELLOW}Warning: Rust tools take 15-30 minutes to compile${NC}"
             read -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then

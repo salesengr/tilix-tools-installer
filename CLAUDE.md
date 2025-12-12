@@ -89,7 +89,7 @@ show_installation_summary() # Display results
 ```
 
 **Tool Categories:**
-- `BUILD_TOOLS`: cmake
+- `BUILD_TOOLS`: cmake, github_cli
 - `LANGUAGES`: go, nodejs, rust
 - `PYTHON_RECON_PASSIVE`: sherlock, holehe, socialscan, theHarvester, spiderfoot
 - `PYTHON_RECON_DOMAIN`: sublist3r

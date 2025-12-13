@@ -360,11 +360,13 @@ grep -E "wget|curl" *.sh | grep -oE "https://[^ )]+"
 - 🔍 Check for deprecated packages
 - 🔍 Verify version pinning (if critical)
 
-**Use WebSearch for vulnerability checks:**
+**Use the WebSearch tool for vulnerability checks:**
+
+*These are WebSearch tool queries, not bash commands:*
 ```
-Search: "[tool name] CVE [current year]"
-Search: "[package name] security vulnerabilities"
-Search: "[tool name] malware"
+WebSearch query: "[tool name] CVE [current year]"
+WebSearch query: "[package name] security vulnerabilities"
+WebSearch query: "[tool name] malware"
 ```
 
 ### 8. Hardcoded Paths

@@ -54,17 +54,14 @@ Match each step to the specialist best suited for it.
 
 | Agent | Specialty | Use For |
 |-------|-----------|---------|
+| @bash-script-developer | Bash scripting | Shell script development, user-space installations |
+| @test-automation-engineer | Test creation | Test functions, integration tests, validation |
+| @security-auditor | Security analysis | Vulnerability scanning, download verification |
 | @code-reviewer | Code quality analysis | Reviewing changes, finding issues (read-only) |
 | @debugger | Bug investigation & fixing | Errors, crashes, unexpected behavior |
 | @documentation-engineer | Docs & technical writing | README, API docs, guides, comments |
-| @fullstack-developer | End-to-end implementation | Features spanning DB → API → UI |
-| @frontend-developer | UI/UX implementation | React, Vue, CSS, browser concerns |
-| @backend-developer | Server-side logic | APIs, databases, authentication |
-| @test-writer | Test creation | Unit tests, integration tests, E2E |
-| @security-auditor | Security analysis | Vulnerability scanning, auth review |
-| @devops-engineer | Infrastructure & deployment | CI/CD, Docker, cloud config |
 
-*Note: Not all agents may be installed. List what's needed; user can add missing ones.*
+*Note: fullstack-developer is available in disabled/ folder if needed for other projects.*
 
 ## Output Format
 

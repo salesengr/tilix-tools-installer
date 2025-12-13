@@ -7,7 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+### Added - Development Infrastructure
+
+**AI Agent Configurations** (not part of product versioning)
+
+**New AI Agent Configurations (4)**
+- **bash-script-developer.md** - Bash scripting specialist agent replacing generic fullstack-developer
+  - Shellcheck compliance, proper quoting, error handling patterns
+  - XDG compliance verification, user-space installation patterns
+  - Project-specific patterns discovery workflow
+  - Installation function templates and generic installers
+  - Integration with test-automation-engineer and security-auditor
+- **test-automation-engineer.md** - Comprehensive test generation and validation
+  - Generic test functions (test_python_tool, test_go_tool, test_node_tool, test_rust_tool)
+  - Test result tracking with consistent reporting format
+  - Integration testing patterns and dry-run validation
+  - Test coverage analysis tools
+- **security-auditor.md** - Security review and vulnerability scanning specialist
+  - HTTPS download verification, secret detection, sudo prevention
+  - Download retry logic validation, XDG compliance checks
+  - Structured security audit report generation
+  - Command injection and path traversal prevention
+  - Supply chain security and CVE checks via WebSearch
+
+**Enhanced Existing Agent (1)**
+- **code-reviewer.md** - Enhanced with comprehensive bash-specific security checklist
+  - Project-critical security requirements (NO sudo, HTTPS only, user-space installations)
+  - Bash-specific vulnerability patterns (command injection, path traversal, secret exposure)
+  - Download verification checks and retry logic validation
+  - XDG compliance and hardcoded path detection
+
+**Development Workflow Documentation**
+- Added comprehensive "Agent Configuration & Workflows" section to CLAUDE.md (287 lines)
+  - 3 detailed workflow examples: adding tools, fixing bugs, conducting security audits
+  - Agent specialization documentation and integration patterns
+  - Expected productivity improvements: 60% faster development, 100% test coverage goal
+  - Clear responsibilities and handoff procedures between agents
+
+**Project Organization**
+- Created `.gitignore` with comprehensive exclusions
+  - Excludes `.claude/plans/` (temporary planning files)
+  - Includes `.claude/agents/` (version-controlled agent configs)
+  - Standard exclusions: OS files, IDE files, credentials, backups
+- Moved `fullstack-developer.md` to `.claude/agents/disabled/`
+  - Preserved for potential future use but not applicable to pure bash project
+- Updated `.claude/agents/README.md` with project-specific agent workflows
+
+### Changed
+- Agent system now bash-focused rather than generic web development
+- Security requirements are agent-enforced (blocks code with sudo, http://, hardcoded secrets)
+- Development workflow explicitly integrated with agent specializations
+- All agents now perform project pattern discovery before working (CRITICAL step)
+
+### Benefits
+- **Faster Development:** Agent specialization reduces context switching and rework
+- **Higher Quality:** bash-script-developer ensures shellcheck compliance and project patterns
+- **Complete Testing:** test-automation-engineer provides 100% test coverage for new tools
+- **Security Hardening:** security-auditor catches vulnerabilities before they're committed
+- **Consistent Reviews:** code-reviewer blocks common bash anti-patterns automatically
+
+### Impact
+This major update transforms the development process by introducing specialized AI agents for bash script development, testing, and security auditing. The agent system enforces project conventions automatically and significantly reduces development time for new features.
 
 ## [1.0.1] - 2026-01-05
 

@@ -1,0 +1,356 @@
+# Security Tools Installer - .gitignore
+# Generated: 2025-12-12
+
+# =============================================================================
+# Claude Code
+# =============================================================================
+
+# Temporary plan files (plans are ephemeral, don't commit)
+.claude/plans/
+
+# Keep agents committed (uncomment if you want to ignore them)
+# .claude/agents/
+
+# =============================================================================
+# Installation & Testing Artifacts
+# =============================================================================
+
+# Log files (if generated in repo directory)
+*.log
+logs/
+*.log.*
+
+# Download cache (if you add caching to the scripts)
+downloads/
+cache/
+*.tar.gz.tmp
+*.tar.gz.download
+*.zip.tmp
+
+# Test output directories
+test-results/
+test-output/
+coverage/
+
+# Temporary installation directories (if testing locally)
+tmp/
+temp/
+.tmp/
+
+# User-specific test configurations
+test.config
+local.config
+
+# =============================================================================
+# Bash/Shell Script Artifacts
+# =============================================================================
+
+# Bash history (shouldn't be here, but just in case)
+.bash_history
+.zsh_history
+.sh_history
+
+# Shell session files
+.bash_sessions/
+
+# Core dumps
+core
+core.*
+*.core
+
+# =============================================================================
+# OS-Specific Files
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# =============================================================================
+# IDEs and Editors
+# =============================================================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+*~
+tags
+[._]*.un~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+.org-id-locations
+*_archive
+*_flymake.*
+/eshell/history
+/eshell/lastdir
+/elpa/
+*.rel
+/auto/
+.cask/
+dist/
+flycheck_*.el
+/server/
+.projectile
+.dir-locals.el
+/network-security.data
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+.sublime-gulp.cache
+.sublime/
+
+# Atom
+.atom/
+
+# TextMate
+*.tmproj
+*.tmproject
+tmtags
+
+# Eclipse
+.settings/
+.project
+.classpath
+.buildpath
+
+# =============================================================================
+# Backup and Temporary Files
+# =============================================================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.swp
+*.swo
+
+# Patch files
+*.patch
+*.diff
+*.rej
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
+# =============================================================================
+# Security & Credentials (Extra caution)
+# =============================================================================
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.envrc
+
+# Credentials
+credentials.json
+credentials.yml
+credentials.yaml
+secrets.json
+secrets.yml
+secrets.yaml
+*.pem
+*.key
+*.p12
+*.pfx
+
+# API keys (in case someone accidentally creates these)
+api_keys.txt
+apikeys.txt
+tokens.txt
+
+# SSH keys
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+
+# =============================================================================
+# Documentation Build Artifacts
+# =============================================================================
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# MkDocs
+site/
+
+# Jekyll
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# =============================================================================
+# Version Control
+# =============================================================================
+
+# Git
+*.orig
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*
+*_BACKUP_*.txt
+*_BASE_*.txt
+*_LOCAL_*.txt
+*_REMOTE_*.txt
+
+# SVN
+.svn/
+
+# Mercurial
+.hg/
+.hgignore
+.hgtags
+
+# =============================================================================
+# Package Manager Artifacts (if you add any)
+# =============================================================================
+
+# Python (in case you add Python scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv
+
+# Node.js (in case you add Node tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Go (in case you add Go tooling)
+vendor/
+Godeps/
+
+# =============================================================================
+# CI/CD
+# =============================================================================
+
+# GitHub Actions artifacts (if you add CI)
+.github/workflows/*.log
+
+# GitLab CI
+.gitlab-ci-local/
+
+# =============================================================================
+# Project-Specific
+# =============================================================================
+
+# Test installations (if testing in repo directory - shouldn't happen but just in case)
+opt/
+.local/
+.config/
+.cache/
+.state/
+
+# Shellcheck output
+shellcheck.log
+shellcheck-*.log
+
+# Security scan results (if you add automated scanning)
+security-scan.log
+audit-*.log
+vulnerability-report.txt
+
+# Performance profiling
+*.prof
+
+# =============================================================================
+# Keep These Files (Exceptions)
+# =============================================================================
+
+# Keep example configuration files
+!example.config
+!*.example
+!.env.example
+
+# Keep agent configurations
+!.claude/agents/
+!.claude/agents/**
+
+# Keep documentation
+!docs/
+!docs/**
+!*.md
+!LICENSE
+
+# Keep test scripts
+!test_*.sh
+!*_test.sh

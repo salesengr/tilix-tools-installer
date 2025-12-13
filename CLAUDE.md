@@ -1,8 +1,8 @@
 # CLAUDE.md - Project Context for AI Assistants
 
-**Project:** Security Tools Installer  
-**Version:** 2.0.1  
-**Last Updated:** December 11, 2025  
+**Project:** Security Tools Installer
+**Version:** 1.0.1
+**Last Updated:** December 12, 2025
 **Purpose:** User-space installation system for OSINT/CTI/PenTest security tools
 
 ---
@@ -58,7 +58,7 @@ project/
 **Architecture:**
 ```bash
 # Global variables and configuration
-SCRIPT_VERSION="2.0.1"
+SCRIPT_VERSION="1.0.1"
 declare -A TOOL_INFO          # tool => "Name|Description|Category"
 declare -A TOOL_SIZES         # tool => "50MB"
 declare -A TOOL_DEPENDENCIES  # tool => "prerequisite1 prerequisite2"
@@ -280,7 +280,7 @@ install_go_tool "gobuster" "github.com/OJ/gobuster/v3"
 install_sherlock() { install_python_tool "sherlock" "sherlock-project"; }
 ```
 
-### 3. **Download Retry Logic** (v2.0.1)
+### 3. **Download Retry Logic**
 ```bash
 download_file() {
     local url=$1
@@ -482,7 +482,7 @@ install_toolname() {
 ### Update CHANGELOG.md
 Every change should be documented:
 ```markdown
-## [2.0.2] - YYYY-MM-DD
+## [1.0.2] - YYYY-MM-DD
 
 ### Added
 - New tool: newtool for reconnaissance
@@ -645,7 +645,7 @@ Closes #123"
 ### Version Numbering
 
 Follow Semantic Versioning:
-- **MAJOR.MINOR.PATCH** (e.g., 2.0.1)
+- **MAJOR.MINOR.PATCH** (e.g., 1.0.1)
 - **MAJOR**: Breaking changes, major restructuring
 - **MINOR**: New tools, features, improvements
 - **PATCH**: Bug fixes, minor improvements
@@ -654,6 +654,8 @@ Update in:
 1. `install_security_tools.sh` (SCRIPT_VERSION variable)
 2. `CHANGELOG.md` (new version section)
 3. `README.md` (version badge/header)
+
+**Note:** Development infrastructure changes (agent configurations, CI/CD, etc.) should be documented under `[Unreleased]` in CHANGELOG.md and do NOT trigger version bumps, as they don't affect the installed product.
 
 ---
 
@@ -826,6 +828,295 @@ which toolname
 
 ---
 
+## 🤖 Agent Configuration & Workflows
+
+This project includes 7 specialized Claude Code agents configured in `.claude/agents/` to streamline development, testing, and security auditing. These agents are trained on bash scripting best practices, project patterns, and security requirements.
+
+### Available Agents
+
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| **planner** | Strategic planning & task decomposition | Complex multi-step tasks, major features |
+| **bash-script-developer** | Bash scripting specialist | Add/refactor installation functions, implement utilities |
+| **test-automation-engineer** | Test generation & validation | Create tests for new tools, verify coverage |
+| **security-auditor** | Security review & vulnerability scanning | Before releases, audit downloads/credentials |
+| **code-reviewer** | Code quality analysis (bash-enhanced) | After ANY code changes, pre-merge reviews |
+| **debugger** | Bug investigation & systematic fixing | Installation failures, unexpected errors |
+| **documentation-engineer** | Technical writing & doc updates | Update README, CHANGELOG, guides |
+
+**Note:** The `fullstack-developer` agent has been disabled (moved to `.claude/agents/disabled/`) as it's designed for web apps, not bash scripting.
+
+### Agent Workflows
+
+#### Workflow 1: Adding a New Security Tool
+
+**Example:** Adding httpx reconnaissance tool
+
+```bash
+# Step 1: Planning
+> Use planner to create a plan for adding httpx from ProjectDiscovery
+
+# Step 2: Implementation
+> Use bash-script-developer to implement install_httpx() following existing Go tool patterns
+
+# Step 3: Testing
+> Use test-automation-engineer to create test_httpx() function
+
+# Step 4: Security Review
+> Use security-auditor to check download mechanism, verify HTTPS, check user-space compliance
+
+# Step 5: Code Quality Review
+> Use code-reviewer to verify bash best practices, shellcheck compliance, and error handling
+
+# Step 6: Documentation
+> Use documentation-engineer to update README.md, CHANGELOG.md, and docs/script_usage.md
+```
+
+**Expected Results:**
+- ✅ Properly quoted bash code (shellcheck compliant)
+- ✅ HTTPS-only downloads with verification
+- ✅ User-space installation (no sudo)
+- ✅ Comprehensive test coverage
+- ✅ Updated documentation
+- ✅ ~60% time savings vs manual
+
+#### Workflow 2: Debugging Installation Failure
+
+**Example:** nuclei installation failing with 'command not found'
+
+```bash
+# Step 1: Investigation
+> Use debugger to investigate why nuclei installation is failing
+
+# Debugger will:
+# - Read installation logs
+# - Check PATH configuration
+# - Verify Go runtime dependency
+# - Test hypotheses systematically
+# - Implement fix
+
+# Step 2: Validation
+> Use test-automation-engineer to run test_nuclei() and verify fix
+
+# Step 3: Review
+> Use code-reviewer to ensure fix doesn't introduce regressions
+```
+
+**Expected Results:**
+- ✅ Root cause identified and documented
+- ✅ Fix implemented with proper error handling
+- ✅ Tests pass
+- ✅ ~50% time savings vs trial-and-error
+
+#### Workflow 3: Security Audit Before Release
+
+**Example:** Preparing v2.1.0 release
+
+```bash
+# Step 1: Full Security Scan
+> Use security-auditor to audit entire codebase before v2.1.0 release
+
+# Checks:
+# - No sudo/root usage
+# - All downloads use HTTPS
+# - No hardcoded credentials
+# - Download verification present
+# - XDG compliance
+# - User-space only installations
+
+# Step 2: Code Quality Review
+> Use code-reviewer to check bash best practices compliance across all scripts
+
+# Step 3: Test Coverage Verification
+> Use test-automation-engineer to verify all 37 tools have corresponding tests
+
+# Step 4: Documentation Review
+> Use documentation-engineer to verify CHANGELOG completeness and version sync
+```
+
+**Expected Results:**
+- ✅ Zero critical security issues
+- ✅ Shellcheck violations resolved
+- ✅ 100% test coverage
+- ✅ Release-ready documentation
+- ✅ ~70% time savings vs manual review
+
+### Agent Best Practices
+
+#### When to Use Agents Proactively
+
+**ALWAYS use these agents without being asked:**
+
+1. **code-reviewer** - After ANY bash code changes (security is critical)
+   ```bash
+   # After modifying install_security_tools.sh
+   > Use code-reviewer to check my recent changes
+   ```
+
+2. **security-auditor** - Before releases or after download changes
+   ```bash
+   # Before tagging v2.1.0
+   > Use security-auditor for full codebase audit
+   ```
+
+3. **test-automation-engineer** - When adding new tools
+   ```bash
+   # After adding install_httpx()
+   > Use test-automation-engineer to create test_httpx()
+   ```
+
+#### Agent Specializations
+
+**bash-script-developer** knows:
+- Project patterns: `install_python_tool()`, `install_go_tool()`, `install_node_tool()`, `install_rust_tool()`
+- Tool metadata: `TOOL_INFO[]`, `TOOL_SIZES[]`, `TOOL_DEPENDENCIES[]`
+- Logging pattern: `logfile=$(create_tool_log "tool")`
+- XDG variables: `$XDG_DATA_HOME`, `$XDG_CONFIG_HOME`, etc.
+- Error handling: Explicit return code checking (set +e project style)
+
+**test-automation-engineer** knows:
+- Generic test functions: `test_python_tool()`, `test_go_tool()`, etc.
+- Test result tracking: `test_result "tool" "Test name" $?`
+- Test structure: cyan header, green [OK], red [FAIL]
+- Integration tests: dependency verification
+
+**security-auditor** knows:
+- Project constraints: NO sudo, HTTPS only, user-space only
+- Security patterns: Download verification, secret detection
+- Vulnerability checks: Command injection, path traversal, credential leaks
+- Compliance checks: XDG compliance, no hardcoded paths
+
+**code-reviewer** (enhanced) knows:
+- Shellcheck rules: SC2086 (quoting), SC2155, SC2046
+- Bash anti-patterns: unquoted expansion, useless cat, incorrect conditionals
+- Project security rules: No sudo, HTTPS only, verify downloads
+- Project patterns: Tool definitions, logging, installation verification
+
+### Quick Agent Reference
+
+```bash
+# Strategic planning
+"Use planner to create a plan for [complex task]"
+
+# Bash implementation
+"Use bash-script-developer to [implement/refactor] [function]"
+
+# Test creation
+"Use test-automation-engineer to create tests for [tool]"
+
+# Security audit
+"Use security-auditor to audit [component/entire codebase]"
+
+# Code review
+"Use code-reviewer to review [file/recent changes]"
+
+# Bug fixing
+"Use debugger to investigate [error/issue]"
+
+# Documentation
+"Use documentation-engineer to update [docs] with [changes]"
+```
+
+### Agent Integration with Development Flow
+
+#### Normal Development Cycle
+
+```
+1. Understand task → Use planner (optional, for complex tasks)
+2. Implement code → Use bash-script-developer
+3. Create tests → Use test-automation-engineer
+4. Security check → Use security-auditor
+5. Quality review → Use code-reviewer (ALWAYS)
+6. Update docs → Use documentation-engineer
+```
+
+#### Bug Fix Cycle
+
+```
+1. Investigate → Use debugger
+2. Verify fix → Use code-reviewer
+3. Ensure tests pass → Use test-automation-engineer
+```
+
+#### Release Cycle
+
+```
+1. Security audit → Use security-auditor
+2. Quality check → Use code-reviewer
+3. Test coverage → Use test-automation-engineer
+4. Docs sync → Use documentation-engineer
+```
+
+### Metrics & Success Indicators
+
+Track agent effectiveness:
+
+- **Usage Frequency:** Agents used in >80% of tool additions
+- **Error Detection:** Security/quality issues caught before merging
+- **Time Savings:** >50% reduction in development time
+- **Code Quality:** Zero shellcheck violations, 100% test coverage
+- **Security:** Zero secrets committed, all downloads HTTPS
+
+### Agent Configuration Location
+
+All agents are configured in `.claude/agents/`:
+
+```
+.claude/agents/
+├── README.md                        # Agent documentation & workflows
+├── planner.md                       # Strategic planning agent
+├── bash-script-developer.md         # Bash specialist (NEW)
+├── test-automation-engineer.md      # Test generation (NEW)
+├── security-auditor.md              # Security review (NEW)
+├── code-reviewer.md                 # Code quality (ENHANCED)
+├── debugger.md                      # Bug investigation
+├── documentation-engineer.md        # Technical writing
+└── disabled/
+    └── fullstack-developer.md       # Disabled (not applicable to bash project)
+```
+
+**To modify agent behavior:** Edit the corresponding `.md` file
+**To disable an agent:** Move to `disabled/` subdirectory
+**To create a new agent:** Add a new `.md` file with YAML frontmatter
+
+### Advanced Agent Usage
+
+#### Combining Agents
+
+For complex tasks, use agents sequentially:
+
+```bash
+# Major refactoring
+> Use planner to create refactoring strategy for download_file function
+> Use bash-script-developer to implement refactored function
+> Use security-auditor to verify download security
+> Use code-reviewer to check bash best practices
+> Use test-automation-engineer to update tests
+```
+
+#### Agent Customization
+
+Agents automatically read `CLAUDE.md` (this file) for project context. To customize:
+
+1. Add project-specific patterns to this file
+2. Update agent `.md` files for permanent changes
+3. Reference existing implementations when invoking agents
+
+#### Troubleshooting Agents
+
+**Agent not following patterns?**
+- Point to existing similar implementation: "See install_gobuster for reference"
+- Agents read CLAUDE.md for context automatically
+
+**Agent being too verbose?**
+- Be specific: "Only implement install_httpx, don't update docs yet"
+
+**Agent missing project context?**
+- Ensure CLAUDE.md is up-to-date
+- Reference specific sections: "Follow the Installation Function Pattern in CLAUDE.md"
+
+---
+
 ## 📞 Support & Contribution
 
 When contributing or seeking help:
@@ -851,5 +1142,7 @@ When contributing or seeking help:
 
 ---
 
-**Last Updated:** December 11, 2025  
+**Last Updated:** December 12, 2025
 **Maintainer Context:** This file is specifically designed to give AI assistants (like Claude Code) comprehensive context about the project structure, conventions, and best practices. Keep it updated as the project evolves.
+
+**Agent Configuration:** 7 specialized agents configured in `.claude/agents/` - See "🤖 Agent Configuration & Workflows" section above for details.

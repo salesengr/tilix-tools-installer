@@ -229,6 +229,7 @@ test_shodan() { test_python_tool "shodan" "shodan"; }
 test_censys() { test_python_tool "censys" "censys"; }
 test_theHarvester() { test_python_tool "theHarvester" "theHarvester"; }
 test_spiderfoot() { test_python_tool "spiderfoot" "spiderfoot"; }
+test_wappalyzer() { test_python_tool "wappalyzer" "python-Wappalyzer"; }
 
 test_yara() {
     echo -e "${CYAN}Testing YARA...${NC}"
@@ -418,6 +419,7 @@ run_all_tests() {
     command -v censys &>/dev/null && test_censys
     command -v theHarvester &>/dev/null && test_theHarvester
     command -v spiderfoot &>/dev/null && test_spiderfoot
+    command -v wappalyzer &>/dev/null && test_wappalyzer
     [ -f "$HOME/.local/bin/yara" ] && test_yara
     
     # Go tools
@@ -474,6 +476,7 @@ run_specific_test() {
         censys) test_censys ;;
         theHarvester) test_theHarvester ;;
         spiderfoot) test_spiderfoot ;;
+        wappalyzer) test_wappalyzer ;;
         yara) test_yara ;;
         gobuster) test_gobuster ;;
         ffuf) test_ffuf ;;

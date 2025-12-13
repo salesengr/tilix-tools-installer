@@ -1,7 +1,7 @@
 # Security Tools Installer
 
-**Version:** 1.0.1  
-**Release Date:** December 2025
+**Version:** 1.0.1
+**Release Date:** January 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
 
@@ -321,6 +321,16 @@ To add new tools to the installer:
 3. Create installation function
 4. Add to appropriate category array
 5. Test thoroughly with `--dry-run`
+
+### Agent-Assisted Development
+
+This project uses specialized AI agents for development:
+- **bash-script-developer** - Bash scripting specialist (shellcheck compliance, XDG patterns)
+- **test-automation-engineer** - Comprehensive test generation and validation
+- **security-auditor** - Security review and vulnerability scanning
+- **code-reviewer** - Quality and best practices enforcement
+
+See [CLAUDE.md](CLAUDE.md) for detailed agent workflows and integration patterns.
 
 ## 📝 Version History
 

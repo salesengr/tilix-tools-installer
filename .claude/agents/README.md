@@ -14,6 +14,8 @@ A specialized set of 7 subagents tailored for bash-based security tool installat
 | **debugger** | Bug investigation & fixing | Full | Systematic hypothesis testing |
 | **documentation-engineer** | Docs & technical writing | Full + Web | Updates README, CHANGELOG, guides |
 
+Note: bash-script-developer is included in the count above (7 active agents total).
+
 ### Agent Status
 
 **Active Agents:** 7 (in .claude/agents/)

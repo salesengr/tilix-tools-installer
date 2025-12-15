@@ -12,8 +12,9 @@
 .claude/settings.json
 
 # Keep agents committed (uncomment if you want to ignore them)
-# .claude/agents/
+ .claude/agents/
 
+CLAUDE.md
 # =============================================================================
 # Installation & Testing Artifacts
 # =============================================================================

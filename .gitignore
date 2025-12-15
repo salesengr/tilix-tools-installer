@@ -345,15 +345,13 @@ vulnerability-report.txt
 !*.example
 !.env.example
 
-# Keep agent configurations
-!.claude/agents/
-!.claude/agents/**
-
-# Keep documentation
+# Keep documentation (specific files/directories)
 !docs/
 !docs/**
-!*.md
+!README.md
+!CHANGELOG.md
 !LICENSE
+!docs/*.md
 
 # Keep test scripts
 !test_*.sh

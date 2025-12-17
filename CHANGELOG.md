@@ -5,6 +5,40 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-12-16
+
+### Changed
+- **BREAKING:** Removed user-space Go installation capability
+  - Go is now expected to be pre-installed system-wide at `/usr/local/go`
+  - Script verifies system Go availability before installing Go tools
+  - Go removed from interactive menu (menu items renumbered 1-42 → 1-41)
+  - LANGUAGES array now contains only Node.js and Rust
+  - `install_go()` function removed (64 lines)
+  - `install_go_tool()` updated to use system Go with user-space GOPATH
+  - `test_go()` renamed to `test_system_go()` with system verification
+
+### Removed
+- Go installation functionality from main installer
+- Go from LANGUAGES array and tool definitions
+- Menu option [3] for Go installation (all subsequent options renumbered)
+- `~/opt/go` directory creation from xdg_setup.sh
+- GOROOT override in environment configuration
+
+### Added
+- `verify_system_go()` function to check system Go availability before tool installations
+- Clear error messages when system Go is not found
+- System prerequisites documentation
+
+### Fixed
+- GOPATH properly set to user-space `~/opt/gopath` without overriding system GOROOT
+- Environment configuration no longer conflicts with system Go installation
+
+### Migration Notes
+- **Docker users:** No action needed if using Dockerfile with Go pre-installed
+- **Manual installations:** Ensure Go is installed at `/usr/local/go` before installing Go tools
+- **Existing installations:** User-installed Go at `~/opt/go` will be ignored; system Go will be used
+- **Menu navigation:** Go option removed; all menu numbers shifted down by one
+
 ## [Unreleased]
 
 ### Added - Development Infrastructure

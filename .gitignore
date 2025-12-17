@@ -5,6 +5,7 @@
 # Claude Code
 # =============================================================================
 
+CLAUDE.md
 # Temporary plan files (plans are ephemeral, don't commit)
 .claude/plans/
 
@@ -12,7 +13,7 @@
 .claude/settings.json
 
 # Keep agents committed (uncomment if you want to ignore them)
-# .claude/agents/
+.claude/agents/*
 
 # =============================================================================
 # Installation & Testing Artifacts

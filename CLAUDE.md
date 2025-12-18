@@ -496,94 +496,19 @@ Every change should be documented:
 
 ---
 
-## 🎯 Common Tasks & Prompts
+## 🎯 Common Tasks
 
-### For Claude Code
+**Adding a New Tool:** Add tools using generic installers (`install_python_tool`, `install_go_tool`, `install_node_tool`, `install_rust_tool`) and follow the pattern in the "Adding New Tools" section.
 
-When working on this project, use these context-aware prompts:
-
-**Adding a New Tool:**
-```
-Add a new Python OSINT tool called "newtool" that installs from PyPI 
-package "newtool-package". Follow the existing patterns in the script.
-```
-
-**Fixing Bugs:**
-```
-The download for [tool] is failing. Review the download_file() function 
-and the install_[tool]() function. Check logs at ~/.local/state/install_tools/logs/
-```
-
-**Improving Error Handling:**
-```
-Review [function_name] and add better error handling with informative 
-messages. Ensure all commands check return codes.
-```
-
-**Updating Documentation:**
-```
-I added [tool]. Update README.md, CHANGELOG.md, and docs/script_usage.md 
-to include this new tool in the appropriate sections.
-```
-
-**Refactoring:**
-```
-The [function_name] is getting too long. Refactor it into smaller, 
-reusable functions while maintaining the existing error handling pattern.
-```
+**Fixing Bugs:** Check logs at `~/.local/state/install_tools/logs/` and review the relevant `install_[tool]()` function and `download_file()` for download issues.
 
 ---
 
 ## 🔍 Debugging Tips
 
-### Common Issues
+**Tool not found after installation:** Run `source ~/.bashrc` to reload environment. Check if tool is in PATH using `which toolname`.
 
-**1. Tool not found after installation:**
-```bash
-# Check if tool installed
-is_installed "toolname"
-
-# Check PATH
-echo $PATH | grep -o "[^:]*" | while read p; do ls -la "$p" 2>/dev/null | grep toolname; done
-
-# Reload environment
-source ~/.bashrc
-```
-
-**2. Download failures:**
-```bash
-# Check log file
-cat ~/.local/state/install_tools/logs/toolname-TIMESTAMP.log
-
-# Test URL manually
-wget --spider URL
-
-# Check retry logic
-grep "Attempting download" ~/.local/state/install_tools/logs/toolname-*.log
-```
-
-**3. Python import errors:**
-```bash
-# Check venv
-ls -la ~/.local/share/virtualenvs/tools/
-
-# Activate and test
-source ~/.local/share/virtualenvs/tools/bin/activate
-python3 -c "import module"
-pip show package-name
-deactivate
-```
-
-**4. Permission issues:**
-```bash
-# Check file ownership
-ls -la ~/.local/bin/toolname
-
-# Fix if needed
-chmod +x ~/.local/bin/toolname
-```
-
-### Logging System
+**Logging System:**
 
 All logs are in: `~/.local/state/install_tools/logs/`
 
@@ -676,38 +601,6 @@ Update in:
 
 ## 🤖 Working with Claude Code
 
-### Recommended Approach
-
-**1. Load Project Context:**
-```
-@workspace Review the project structure and understand the main components.
-```
-
-**2. Before Making Changes:**
-```
-@workspace What's the current pattern for adding Python tools?
-Show me an example from the existing code.
-```
-
-**3. Making Changes:**
-```
-@workspace Add a new Go tool called "httpx" from github.com/projectdiscovery/httpx/cmd/httpx
-Follow the existing patterns and update all relevant files.
-```
-
-**4. Testing:**
-```
-@workspace Check if the syntax is correct in install_security_tools.sh 
-and verify I followed all the conventions.
-```
-
-**5. Documentation:**
-```
-@workspace I added httpx tool. Update README.md, CHANGELOG.md to reflect this addition.
-```
-
-### Things Claude Code Should Know
-
 **✅ DO:**
 - Follow existing code patterns religiously
 - Use the generic installers when possible
@@ -730,44 +623,6 @@ and verify I followed all the conventions.
 
 ---
 
-## 🎓 Learning Resources
-
-### Understanding the Codebase
-
-**Start Here:**
-1. Read `README.md` for overview
-2. Review `xdg_setup.sh` (simplest script)
-3. Study `install_security_tools.sh` structure:
-   - Global variables and arrays
-   - `define_tools()` - tool definitions
-   - Generic installers (install_python_tool, install_go_tool)
-   - Specific installers (install_sherlock, install_gobuster)
-   - Menu system and CLI handling
-4. Review `test_installation.sh` for verification patterns
-
-### Key Concepts
-
-**XDG Base Directory Specification:**
-- Standardizes where applications store files
-- `~/.local/` for user applications
-- `~/.config/` for configuration
-- `~/.cache/` for temporary data
-- See: https://specifications.freedesktop.org/basedir-spec/
-
-**User-Space Installation:**
-- No root/sudo required
-- Everything in home directory
-- PATH manipulation for discoverability
-- Virtual environments for isolation
-
-**Bash Associative Arrays:**
-```bash
-declare -A TOOL_INFO
-TOOL_INFO[toolname]="Name|Description|Category"
-echo ${TOOL_INFO[toolname]}  # Access value
-```
-
----
 
 ## 🚀 Quick Reference
 
@@ -810,21 +665,6 @@ bash test_installation.sh
 # View logs
 tail -f ~/.local/state/install_tools/installation_history.log
 ```
-
-### Common Issues & Solutions
-
-**Issue:** Tool not found after installation
-**Solution:**
-```bash
-source ~/.bashrc
-which toolname
-```
-
-**Issue:** Download failures
-**Solution:** Check logs in `~/.local/state/install_tools/logs/` - The script has 3 retries built in.
-
-**Issue:** Permission denied
-**Solution:** Never use sudo. Check that `~/.local/bin` is in your PATH.
 
 ---
 
@@ -880,117 +720,13 @@ This project includes 7 specialized Claude Code agents configured in `.claude/ag
 - ✅ Updated documentation
 - ✅ ~60% time savings vs manual
 
-#### Workflow 2: Debugging Installation Failure
-
-**Example:** nuclei installation failing with 'command not found'
-
-```bash
-# Step 1: Investigation
-> Use debugger to investigate why nuclei installation is failing
-
-# Debugger will:
-# - Read installation logs
-# - Check PATH configuration
-# - Verify Go runtime dependency
-# - Test hypotheses systematically
-# - Implement fix
-
-# Step 2: Validation
-> Use test-automation-engineer to run test_nuclei() and verify fix
-
-# Step 3: Review
-> Use code-reviewer to ensure fix doesn't introduce regressions
-```
-
-**Expected Results:**
-- ✅ Root cause identified and documented
-- ✅ Fix implemented with proper error handling
-- ✅ Tests pass
-- ✅ ~50% time savings vs trial-and-error
-
-#### Workflow 3: Security Audit Before Release
-
-**Example:** Preparing v2.1.0 release
-
-```bash
-# Step 1: Full Security Scan
-> Use security-auditor to audit entire codebase before v2.1.0 release
-
-# Checks:
-# - No sudo/root usage
-# - All downloads use HTTPS
-# - No hardcoded credentials
-# - Download verification present
-# - XDG compliance
-# - User-space only installations
-
-# Step 2: Code Quality Review
-> Use code-reviewer to check bash best practices compliance across all scripts
-
-# Step 3: Test Coverage Verification
-> Use test-automation-engineer to verify all 37 tools have corresponding tests
-
-# Step 4: Documentation Review
-> Use documentation-engineer to verify CHANGELOG completeness and version sync
-```
-
-**Expected Results:**
-- ✅ Zero critical security issues
-- ✅ Shellcheck violations resolved
-- ✅ 100% test coverage
-- ✅ Release-ready documentation
-- ✅ ~70% time savings vs manual review
-
 ### Agent Best Practices
 
-#### When to Use Agents Proactively
-
-**ALWAYS use these agents without being asked:**
-
-1. **code-reviewer** - After ANY bash code changes (security is critical)
-   ```bash
-   # After modifying install_security_tools.sh
-   > Use code-reviewer to check my recent changes
-   ```
-
-2. **security-auditor** - Before releases or after download changes
-   ```bash
-   # Before tagging v2.1.0
-   > Use security-auditor for full codebase audit
-   ```
-
-3. **test-automation-engineer** - When adding new tools
-   ```bash
-   # After adding install_httpx()
-   > Use test-automation-engineer to create test_httpx()
-   ```
-
-#### Agent Specializations
-
-**bash-script-developer** knows:
-- Project patterns: `install_python_tool()`, `install_go_tool()`, `install_node_tool()`, `install_rust_tool()`
-- Tool metadata: `TOOL_INFO[]`, `TOOL_SIZES[]`, `TOOL_DEPENDENCIES[]`
-- Logging pattern: `logfile=$(create_tool_log "tool")`
-- XDG variables: `$XDG_DATA_HOME`, `$XDG_CONFIG_HOME`, etc.
-- Error handling: Explicit return code checking (set +e project style)
-
-**test-automation-engineer** knows:
-- Generic test functions: `test_python_tool()`, `test_go_tool()`, etc.
-- Test result tracking: `test_result "tool" "Test name" $?`
-- Test structure: cyan header, green [OK], red [FAIL]
-- Integration tests: dependency verification
-
-**security-auditor** knows:
-- Project constraints: NO sudo, HTTPS only, user-space only
-- Security patterns: Download verification, secret detection
-- Vulnerability checks: Command injection, path traversal, credential leaks
-- Compliance checks: XDG compliance, no hardcoded paths
-
-**code-reviewer** (enhanced) knows:
-- Shellcheck rules: SC2086 (quoting), SC2155, SC2046
-- Bash anti-patterns: unquoted expansion, useless cat, incorrect conditionals
-- Project security rules: No sudo, HTTPS only, verify downloads
-- Project patterns: Tool definitions, logging, installation verification
+**Proactive Agent Use:**
+- Use **code-reviewer** after ANY bash code changes (security is critical)
+- Use **security-auditor** before releases or after download changes
+- Use **test-automation-engineer** when adding new tools
+- All agents automatically read this CLAUDE.md file for project context
 
 ### Quick Agent Reference
 
@@ -1017,46 +753,6 @@ This project includes 7 specialized Claude Code agents configured in `.claude/ag
 "Use documentation-engineer to update [docs] with [changes]"
 ```
 
-### Agent Integration with Development Flow
-
-#### Normal Development Cycle
-
-```
-1. Understand task → Use planner (optional, for complex tasks)
-2. Implement code → Use bash-script-developer
-3. Create tests → Use test-automation-engineer
-4. Security check → Use security-auditor
-5. Quality review → Use code-reviewer (ALWAYS)
-6. Update docs → Use documentation-engineer
-```
-
-#### Bug Fix Cycle
-
-```
-1. Investigate → Use debugger
-2. Verify fix → Use code-reviewer
-3. Ensure tests pass → Use test-automation-engineer
-```
-
-#### Release Cycle
-
-```
-1. Security audit → Use security-auditor
-2. Quality check → Use code-reviewer
-3. Test coverage → Use test-automation-engineer
-4. Docs sync → Use documentation-engineer
-```
-
-### Metrics & Success Indicators
-
-Track agent effectiveness:
-
-- **Usage Frequency:** Agents used in >80% of tool additions
-- **Error Detection:** Security/quality issues caught before merging
-- **Time Savings:** >50% reduction in development time
-- **Code Quality:** Zero shellcheck violations, 100% test coverage
-- **Security:** Zero secrets committed, all downloads HTTPS
-
 ### Agent Configuration Location
 
 All agents are configured in `.claude/agents/`:
@@ -1075,294 +771,28 @@ All agents are configured in `.claude/agents/`:
     └── fullstack-developer.md       # Disabled (not applicable to bash project)
 ```
 
-**To modify agent behavior:** Edit the corresponding `.md` file
-**To disable an agent:** Move to `disabled/` subdirectory
-**To create a new agent:** Add a new `.md` file with YAML frontmatter
-
-### Advanced Agent Usage
-
-#### Combining Agents
-
-For complex tasks, use agents sequentially:
-
-```bash
-# Major refactoring
-> Use planner to create refactoring strategy for download_file function
-> Use bash-script-developer to implement refactored function
-> Use security-auditor to verify download security
-> Use code-reviewer to check bash best practices
-> Use test-automation-engineer to update tests
-```
-
-#### Agent Customization
-
-Agents automatically read `CLAUDE.md` (this file) for project context. To customize:
-
-1. Add project-specific patterns to this file
-2. Update agent `.md` files for permanent changes
-3. Reference existing implementations when invoking agents
-
-#### Troubleshooting Agents
-
-**Agent not following patterns?**
-- Point to existing similar implementation: "See install_gobuster for reference"
-- Agents read CLAUDE.md for context automatically
-
-**Agent being too verbose?**
-- Be specific: "Only implement install_httpx, don't update docs yet"
-
-**Agent missing project context?**
-- Ensure CLAUDE.md is up-to-date
-- Reference specific sections: "Follow the Installation Function Pattern in CLAUDE.md"
-
 ---
 
 ## 🔌 MCP Server Configuration
 
 This project uses **Docker MCP (Model Context Protocol) servers** to enhance agent capabilities, reduce manual operations, and improve development velocity. MCP servers run in isolated Docker containers and provide specialized tools that agents can use.
 
-### What Are MCP Servers?
+**Recommended MCP Servers:**
 
-MCP servers are containerized services that extend Claude Code agents with specialized capabilities:
-- **Filesystem MCP**: Efficient file read/write/search operations (11 tools)
-- **Sequential Thinking MCP**: Structured problem-solving and reasoning
-- **GitHub MCP**: Automated issue/PR management and dependency checks
-- **Git MCP**: Version control automation (commit, push, branch)
-- **Brave Search MCP**: Web research and CVE lookups
-- **And 270+ more** in the Docker MCP Catalog
+This project benefits from 8 Docker MCP servers that enhance agent capabilities:
+- **Tier 1 (Essential):** Filesystem, Sequential Thinking, GitHub Official
+- **Tier 2 (High Value):** Brave Search, Git, Fetch
+- **Tier 3 (Optional):** Context7, Obsidian
 
-**Benefits:**
-- ⚡ 60-70% faster task completion
-- 🎯 2.5-3x improvement in agent velocity
-- 🔒 Sandboxed execution (security-first)
-- 🤖 Increased agent autonomy
-- ✅ Consistent, error-free operations
+**Quick Start:** Enable MCPs with `docker mcp server enable <server-name>` (requires Docker Desktop 4.48+)
 
-### Recommended MCP Servers for This Project
-
-Based on comprehensive analysis of the Docker MCP Catalog, **8 servers** are recommended in 3 tiers:
-
-#### 🎯 Tier 1: Essential (Immediate Implementation)
-
-| Server | Purpose | Impact | Cost |
-|--------|---------|--------|------|
-| **Filesystem** | File operations for ALL agents | ⭐⭐⭐⭐⭐ (60% faster file I/O) | Free |
-| **Sequential Thinking** | Structured reasoning for planner/debugger | ⭐⭐⭐⭐⭐ (40% better decisions) | Free |
-| **GitHub Official** | Issue/PR management, dependency checks | ⭐⭐⭐⭐ (critical for releases) | Free (rate limited) |
-
-#### 🎯 Tier 2: High Value
-
-| Server | Purpose | Impact | Cost |
-|--------|---------|--------|------|
-| **Brave Search** | CVE searches, security research | ⭐⭐⭐⭐ (70% faster research) | Paid (API key) |
-| **Git** | Automated git operations | ⭐⭐⭐⭐ (50% fewer errors) | Free |
-| **Fetch** | Download security bulletins, docs | ⭐⭐⭐ (useful for audits) | Free |
-
-#### 🎯 Tier 3: Optional
-
-| Server | Purpose | Impact | Cost |
-|--------|---------|--------|------|
-| **Context7** | Inject accurate shellcheck docs | ⭐⭐⭐ (reduces hallucination) | Unknown |
-| **Obsidian** | Project memory across sessions | ⭐⭐⭐ (long-term value) | Free |
-
-### Agent-MCP Compatibility Matrix
-
-How each agent benefits from MCP servers:
-
-| Agent | Filesystem | Sequential Thinking | GitHub | Git | Brave Search | Fetch |
-|-------|-----------|---------------------|--------|-----|--------------|-------|
-| **bash-script-developer** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
-| **test-automation-engineer** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
-| **security-auditor** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **code-reviewer** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ |
-| **debugger** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
-| **documentation-engineer** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **planner** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ |
-
-**Legend:** ⭐⭐⭐⭐⭐ = Essential | ⭐⭐⭐⭐ = High Value | ⭐⭐⭐ = Medium | ⭐⭐ = Low | ⭐ = Minimal
-
-### Quick Setup Guide
-
-**Prerequisites:**
-- Docker Desktop 4.48+
-- Docker MCP Toolkit enabled
-
-**Phase 1: Core Infrastructure (15 minutes)**
-```bash
-# Enable essential MCPs
-docker mcp server enable filesystem
-docker mcp server enable sequentialthinking
-docker mcp server enable github-official
-
-# Configure Filesystem allowed paths
-# In Docker Desktop MCP Toolkit: Configure allowed paths
-# /Users/mikeb/Documents/GitHub/tilix-tools-installer
-```
-
-**Phase 2: Enhanced Capabilities (20 minutes)**
-```bash
-# Generate GitHub PAT at https://github.com/settings/tokens
-# Enable GitHub MCP with PAT in Docker Desktop
-
-# Enable Git and Brave Search
-docker mcp server enable git
-docker mcp server enable brave  # Requires Brave Search API key
-docker mcp server enable fetch
-```
-
-**Phase 3: Configuration**
-
-Create `.claude/mcp_servers.json` (tracked in this repo):
-```json
-{
-  "mcpServers": {
-    "filesystem": {
-      "enabled": true,
-      "allowedPaths": ["/Users/mikeb/Documents/GitHub/tilix-tools-installer"],
-      "priority": "high",
-      "usedBy": ["all"]
-    },
-    "sequentialthinking": {
-      "enabled": true,
-      "priority": "high",
-      "usedBy": ["planner", "debugger", "bash-script-developer"]
-    },
-    "github-official": {
-      "enabled": true,
-      "auth": "PAT",
-      "priority": "high"
-    },
-    "git": { "enabled": true, "priority": "medium" },
-    "brave": { "enabled": true, "auth": "API_KEY", "priority": "medium" },
-    "fetch": { "enabled": true, "priority": "medium" }
-  }
-}
-```
-
-### Enhanced Workflows with MCPs
-
-**Example: Adding httpx reconnaissance tool (WITH MCPs)**
-
-```
-Time: 10-15 min (was 30-45 min without MCPs)
-
-Step 1: planner (with Sequential Thinking + Filesystem + GitHub)
-  → Uses Sequential Thinking to decompose task
-  → Uses Filesystem to read existing tool patterns
-  → Uses GitHub to check for open issues
-
-Step 2: bash-script-developer (with Filesystem + Brave Search)
-  → Uses Filesystem to edit install_security_tools.sh
-  → Uses Brave Search for ProjectDiscovery/httpx docs
-
-Step 3: test-automation-engineer (with Filesystem + Git)
-  → Uses Filesystem to write test_httpx()
-  → Uses Git to stage changes
-
-Step 4: security-auditor (with Filesystem + Brave + Fetch)
-  → Uses Filesystem to search for "sudo" in code
-  → Uses Brave to check "ProjectDiscovery httpx CVE"
-  → Uses Fetch to download security advisories
-
-Step 5: code-reviewer (with Filesystem + GitHub)
-  → Uses Filesystem to generate git-style diff
-  → Validates against checklist
-
-Step 6: documentation-engineer (with Filesystem + Git)
-  → Uses Filesystem to edit README.md, CHANGELOG.md
-  → Uses Git to commit with proper message
-
-Result: 70% time savings, 80% error reduction
-```
-
-**Example: Security Audit Before Release (WITH MCPs)**
-
-```
-Time: 15-25 min (was 60-90 min without MCPs)
-
-security-auditor uses:
-  → Filesystem to search entire codebase for patterns
-  → Brave Search to check CVEs for all 37 tools
-  → Fetch to download OWASP/CIS benchmarks
-  → GitHub to check dependency advisories
-
-Result: Automated, comprehensive, fast
-```
-
-### Expected Impact
-
-**Quantitative Benefits:**
-- **File operations:** 60% faster with Filesystem MCP
-- **Web searches:** 70% reduction with Brave MCP
-- **Git operations:** 50% fewer errors with Git MCP
-- **Problem-solving:** 40% better quality with Sequential Thinking MCP
-- **CVE checking:** 80% faster with automated Brave+Fetch
-- **Overall velocity:** 2.5-3x improvement
-
-**Qualitative Benefits:**
-- ✅ Reduced agent hallucination (Context7 injects accurate docs)
-- ✅ Better agent autonomy (agents don't ask "should I read X file?")
-- ✅ Consistent operations (Filesystem MCP enforces patterns)
-- ✅ Security-first (sandboxed MCP containers prevent accidents)
-- ✅ Scalability (adding new tools becomes 3x faster)
-
-### Comprehensive Documentation
-
-**Full MCP Server Configuration Plan:**
-- Location: `~/.claude/plans/gleaming-waddling-sketch.md`
-- Contents:
-  - Detailed server descriptions and capabilities
-  - 4-phase implementation plan (3 weeks)
-  - Cost-benefit analysis
-  - Risk mitigation strategies
-  - Success metrics and measurement
-  - **APPENDIX A:** Reusable framework for other projects
-
-**Reusable Framework for Other Projects:**
-- 7-step selection process (~2-3 hours)
-- Comprehensive catalog of 270+ MCP servers
-- Project templates and decision flowcharts
-- Measurement templates for ROI tracking
-- Cross-project learnings and best practices
-- **Time to replicate:** 30-45 minutes (vs 3-4 hours from scratch)
-
-**Docker MCP Resources:**
-- [Docker MCP Catalog](https://hub.docker.com/mcp) - Browse 270+ servers
-- [6 Must-Have MCP Servers (2025)](https://www.docker.com/blog/top-mcp-servers-2025/)
-- [MCP Gateway Documentation](https://docs.docker.com/ai/mcp-catalog-and-toolkit/mcp-gateway/)
-- [GitHub MCP Registry](https://github.com/docker/mcp-registry)
-
-### Agent Prompt Updates
-
-When agents invoke MCP tools, they should:
-1. **Check MCP availability first** before using Read/Write/Edit/Grep
-2. **Batch operations** (use `read_multiple_files` not multiple `Read` calls)
-3. **Use Sequential Thinking** for tasks with >3 steps
-4. **Graceful fallback** to native tools if MCP unavailable
-
-Each agent configuration in `.claude/agents/*.md` includes an "Available MCP Tools" section with:
-- When to use each MCP
-- Specific tools/capabilities
-- Concrete examples
-- Benefits and performance improvements
-
-### Current Status
-
-**Implementation Status:** Planning complete, ready for Phase 1 deployment
-
-**Next Steps:**
-1. Install Docker Desktop 4.48+ (if not already)
-2. Enable Tier 1 MCPs (Filesystem + Sequential Thinking + GitHub)
-3. Test with security-auditor running automated CVE checks
-4. Measure baseline metrics (time, errors, autonomy)
-5. Roll out to all agents with prompt updates
-6. Enable Tier 2 servers as needed
-7. Document learnings and iterate
-
-**Maintenance:**
-- Monthly: Check Docker MCP Catalog for new relevant servers
-- Quarterly: Review MCP usage statistics and adjust tiers
-- Annually: Re-evaluate entire MCP stack
+**Full Configuration Details:** See `~/.claude/plans/gleaming-waddling-sketch.md` for:
+- Complete server descriptions and capabilities
+- Implementation plan with phases and timelines
+- Agent-MCP compatibility matrix
+- Setup guides and configuration examples
+- Expected impact metrics (60-70% faster, 2.5-3x velocity)
+- Reusable framework for other projects
 
 ---
 

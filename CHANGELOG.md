@@ -69,6 +69,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Impact
 This major update transforms the development process by introducing specialized AI agents for bash script development, testing, and security auditing. The agent system enforces project conventions automatically and significantly reduces development time for new features.
 
+## [1.0.3] - 2025-12-18
+
+### Changed
+- **Go Environment Configuration** - Updated to support system-wide Go installation
+  - **xdg_setup.sh** (4 changes):
+    - Updated GOROOT to point to system Go at `/usr/local/go` instead of `~/opt/go`
+    - Updated PATH to use `/usr/local/go/bin` directly for Go binaries
+    - Removed unnecessary `~/opt/go` directory creation
+    - Added documentation comment about system Go usage
+  - **test_installation.sh** (3 changes):
+    - Made test_go() location check flexible to detect both system (`/usr/local/go`) and user-space (`~/opt/go`) Go installations
+    - Added GOPATH auto-detection to test_go_tool() with fallback to `~/opt/gopath` if not set
+    - Enhanced test_integration() with GOPATH validation and helpful error messages
+
+### Benefits
+- **Flexibility:** Tests now work with both system-installed and user-installed Go
+- **Better Errors:** Clear error messages guide users to run `source ~/.bashrc` if GOPATH not set
+- **No Wasted Space:** Removes unnecessary `~/opt/go` directory that was never used
+- **Correctness:** GOROOT now points to actual Go installation location
+
+### Technical Details
+- GOROOT: Changed from `$HOME/opt/go` to `/usr/local/go`
+- GOPATH: Remains at `$HOME/opt/gopath` (user workspace unchanged)
+- GOCACHE: Remains at `~/.cache/go-build` (XDG-compliant)
+- PATH: Now includes `/usr/local/go/bin:$GOPATH/bin`
+
+## [1.0.2] - 2025-12-18
+
+### Added
+- **New `diagnose_installation.sh` script** for installation analysis and optimization
+  - **Installation Inventory:** Lists all 37 tools with status and version detection
+  - **Disk Usage Analysis:** Shows space usage by category (binaries, artifacts, caches, data)
+  - **Build Artifact Detection:** Identifies ~1-1.5 GB of recoverable space
+    - Go build artifacts (~/opt/gopath/pkg, ~/opt/gopath/src)
+    - Cargo registry and git caches (~700 MB)
+    - pip, npm, go-build caches (~150 MB)
+    - Downloaded archives (~50 MB)
+  - **XDG Compliance Check:** Verifies directory structure follows XDG Base Directory specification
+  - **Test Diagnosis:** Analyzes test_installation.sh failures and suggests fixes
+  - **Safe Cleanup Execution:** Removes artifacts with confirmation prompts
+  - **Migration Planning:** Generates commands for XDG compliance improvements
+- **Documentation:** `docs/DIAGNOSTIC_USAGE.md` - Comprehensive diagnostic script guide
+
+### Technical Details
+- **Tool Count Fixed:** Added missing 'go' tool to diagnostic tool list (now 37 tools)
+- **Function Wiring:** Connected all main() switch cases to their implemented functions
+  - xdg-check mode → generate_xdg_report()
+  - migration-plan mode → generate_migration_plan()
+  - cleanup-plan mode → generate_cleanup_commands()
+  - full-report mode → comprehensive report with all sections
+  - cleanup mode → execute_cleanup()
+- **Safety Features:**
+  - All operations read-only by default
+  - Cleanup requires explicit --cleanup flag + confirmation
+  - Tool verification after cleanup
+  - Bash 4.0+ requirement check
+- **Report Modes:**
+  - --inventory: Tool status and versions
+  - --disk-usage: Space analysis by category
+  - --build-artifacts: Cleanable files with safety ratings
+  - --xdg-check: XDG compliance report
+  - --migration-plan: Show migration commands
+  - --cleanup-plan: Show safe cleanup commands (dry-run)
+  - --full-report: Comprehensive report (default)
+  - --cleanup: Execute cleanup with confirmation
+  - --test-diagnosis: Diagnose test failures
+
+### Benefits
+- **Space Recovery:** Can safely recover 1-1.5 GB of disk space
+- **Visibility:** Clear view of installation status and disk usage
+- **Troubleshooting:** Helps diagnose environment and test issues
+- **Maintenance:** Easy identification of cleanup opportunities
+
 ## [1.0.1] - 2026-01-05
 
 ### Added

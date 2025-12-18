@@ -124,6 +124,31 @@ bash install_security_tools.sh --dry-run sherlock gobuster
 bash test_installation.sh
 ```
 
+### 4. Analyze & Optimize Installation (Optional)
+
+```bash
+# Generate comprehensive diagnostic report
+bash diagnose_installation.sh
+
+# View specific sections
+bash diagnose_installation.sh --inventory        # List installed tools
+bash diagnose_installation.sh --disk-usage       # Analyze disk space
+bash diagnose_installation.sh --build-artifacts  # Find cleanable files
+bash diagnose_installation.sh --cleanup-plan     # Show safe cleanup commands
+
+# Execute safe cleanup to recover disk space
+bash diagnose_installation.sh --cleanup
+```
+
+The diagnostic script helps you:
+- 📊 **Inventory:** See what's installed and tool versions
+- 💾 **Disk Analysis:** Identify space usage by category (~1-1.5 GB can be recovered)
+- 🧹 **Cleanup:** Safely remove build artifacts, caches, and archives
+- ✅ **XDG Compliance:** Verify directory structure follows standards
+- 🔍 **Troubleshooting:** Diagnose test failures and environment issues
+
+**Note:** Requires Bash 4.0+ (available in Docker environments, not macOS system bash)
+
 ## 📁 Directory Structure
 
 After installation, your files will be organized as follows:
@@ -155,6 +180,7 @@ After installation, your files will be organized as follows:
 Comprehensive guides are available in the `docs/` directory:
 
 - **[Script Usage](docs/script_usage.md)** - How to run the setup, installer, and tests
+- **[Diagnostic Script Guide](docs/DIAGNOSTIC_USAGE.md)** - Analyze, optimize, and troubleshoot installations
 - **[XDG Setup Guide](docs/xdg_setup.md)** - Environment configuration explained
 - **[Extending the Script](docs/EXTENDING_THE_SCRIPT.md)** - Add your own tools
 - **[Compatibility Analysis](docs/USER_SPACE_COMPATIBILITY.md)** - Technical deep-dive

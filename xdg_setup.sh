@@ -46,7 +46,6 @@ mkdir -p ~/.cache
 
 # Additional tool directories
 mkdir -p ~/opt/tools
-mkdir -p ~/opt/go
 mkdir -p ~/opt/gopath
 mkdir -p ~/opt/src
 
@@ -105,11 +104,11 @@ export PYTHONUSERBASE="$HOME/.local"
 export PYTHON_HISTORY="$XDG_STATE_HOME/python/history"
 export PYTHONPYCACHEPREFIX="$XDG_CACHE_HOME/python"
 
-# Go configuration
-export GOROOT="$HOME/opt/go"
+# Go configuration (using system Go at /usr/local/go)
+export GOROOT="/usr/local/go"
 export GOPATH="$HOME/opt/gopath"
 export GOCACHE="$XDG_CACHE_HOME/go-build"
-export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 
 # Pip configuration (use XDG cache)
 export PIP_CACHE_DIR="$XDG_CACHE_HOME/pip"

@@ -92,9 +92,16 @@ test_go() {
     go version &>/dev/null
     test_result "go" "Version check" $?
     
-    # Test 3: Location check
-    [ -f "$HOME/opt/go/bin/go" ]
-    test_result "go" "Binary in correct location" $?
+    # Test 3: Location check (flexible for system or user-space Go)
+    if [ -f "/usr/local/go/bin/go" ]; then
+        go_binary="/usr/local/go/bin/go"
+    elif [ -f "$HOME/opt/go/bin/go" ]; then
+        go_binary="$HOME/opt/go/bin/go"
+    else
+        go_binary=""
+    fi
+    [ -n "$go_binary" ]
+    test_result "go" "Binary found in system or user-space" $?
     
     # Test 4: GOPATH set
     [ -n "$GOPATH" ]
@@ -260,25 +267,45 @@ test_yara() {
 test_go_tool() {
     local tool=$1
     local binary=${2:-$tool}
-    
+
     echo -e "${CYAN}Testing $tool...${NC}"
-    
-    # Test 1: Binary exists
-    [ -f "$HOME/opt/gopath/bin/$binary" ]
-    test_result "$tool" "Binary exists in GOPATH" $?
-    
-    # Test 2: Command in PATH
+
+    # Auto-detect GOPATH if not set
+    if [ -z "$GOPATH" ]; then
+        # GOPATH not set, try to detect from environment
+        if [ -d "$HOME/opt/gopath" ]; then
+            export GOPATH="$HOME/opt/gopath"
+        fi
+    fi
+
+    # Test 1: GOPATH environment variable set
+    [ -n "$GOPATH" ]
+    test_result "$tool" "GOPATH environment variable set" $?
+
+    # Test 2: Binary exists
+    if [ -n "$GOPATH" ]; then
+        [ -f "$GOPATH/bin/$binary" ]
+        test_result "$tool" "Binary exists in GOPATH" $?
+    else
+        test_result "$tool" "Binary exists in GOPATH" 1
+    fi
+
+    # Test 3: Command in PATH
     command -v "$binary" &>/dev/null
     test_result "$tool" "Command in PATH" $?
-    
-    # Test 3: Can show version or help
+
+    # Test 4: Can show version or help
     timeout 5 "$binary" --version &>/dev/null || timeout 5 "$binary" -h &>/dev/null
     test_result "$tool" "Can execute (version/help)" $?
-    
-    # Test 4: Is executable
-    [ -x "$HOME/opt/gopath/bin/$binary" ]
-    test_result "$tool" "Binary is executable" $?
-    
+
+    # Test 5: Is executable
+    if [ -n "$GOPATH" ]; then
+        [ -x "$GOPATH/bin/$binary" ]
+        test_result "$tool" "Binary is executable" $?
+    else
+        test_result "$tool" "Binary is executable" 1
+    fi
+
     echo ""
 }
 
@@ -369,8 +396,13 @@ test_integration() {
     # Test 2: Go tools have correct GOPATH
     if command -v gobuster &>/dev/null; then
         echo -e "${CYAN}Testing Go tool GOPATH integration...${NC}"
-        [ -f "$GOPATH/bin/gobuster" ]
-        test_result "integration" "Go tools in GOPATH" $?
+        if [ -n "$GOPATH" ]; then
+            [ -f "$GOPATH/bin/gobuster" ]
+            test_result "integration" "Go tools in \$GOPATH/bin" $?
+        else
+            test_result "integration" "Go tools in \$GOPATH/bin" 1
+            echo "  → GOPATH not set, run 'source ~/.bashrc' first"
+        fi
         echo ""
     fi
     

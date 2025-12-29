@@ -69,8 +69,7 @@ echo "  ~/.cache/            -> Cache/temporary data"
 echo ""
 echo "  ~/opt/"
 echo "    |-- tools/         -> Standalone tools"
-echo "    |-- go/            -> Go installation"
-echo "    |-- gopath/        -> Go workspace"
+echo "    |-- gopath/        -> Go workspace (for Go tools)"
 echo "    \-- src/           -> Source code"
 echo ""
 
@@ -104,11 +103,11 @@ export PYTHONUSERBASE="$HOME/.local"
 export PYTHON_HISTORY="$XDG_STATE_HOME/python/history"
 export PYTHONPYCACHEPREFIX="$XDG_CACHE_HOME/python"
 
-# Go configuration (using system Go at /usr/local/go)
-export GOROOT="/usr/local/go"
+# Go configuration (system Go at /usr/local/go, user workspace)
+# NOTE: GOROOT is set by system Go - DO NOT override
 export GOPATH="$HOME/opt/gopath"
 export GOCACHE="$XDG_CACHE_HOME/go-build"
-export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
+export PATH="$GOPATH/bin:$PATH"
 
 # Pip configuration (use XDG cache)
 export PIP_CACHE_DIR="$XDG_CACHE_HOME/pip"
@@ -245,9 +244,10 @@ This installation follows the XDG Base Directory Specification.
 
 ### ~/opt/ (Large Self-Contained Installations)
 - `tools/` - Standalone tools and binaries
-- `go/` - Go language installation
-- `gopath/` - Go workspace
+- `gopath/` - Go workspace (user-space installations of Go tools)
 - `src/` - Source code repositories
+
+Note: Go language runtime is installed at system location /usr/local/go
 
 ## Environment Variables
 

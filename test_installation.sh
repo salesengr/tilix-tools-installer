@@ -81,36 +81,44 @@ test_github_cli() {
 
 # ===== LANGUAGE RUNTIME TESTS =====
 
-test_go() {
-    echo -e "${CYAN}Testing Go...${NC}"
-    
+# Function: test_system_go
+# Purpose: Test that system Go is available and properly configured
+# Tests: Command exists, version check, location, GOPATH, compilation
+test_system_go() {
+    echo -e "${CYAN}Testing System Go (required for Go tools)...${NC}"
+
     # Test 1: Command exists
     command -v go &>/dev/null
-    test_result "go" "Command exists" $?
-    
+    test_result "system-go" "Command exists in PATH" $?
+
     # Test 2: Version check
     go version &>/dev/null
-    test_result "go" "Version check" $?
-    
-    # Test 3: Location check (flexible for system or user-space Go)
-    if [ -f "/usr/local/go/bin/go" ]; then
-        go_binary="/usr/local/go/bin/go"
-    elif [ -f "$HOME/opt/go/bin/go" ]; then
-        go_binary="$HOME/opt/go/bin/go"
+    test_result "system-go" "Version command works" $?
+
+    # Test 3: Expected system location
+    local go_path
+    go_path=$(command -v go 2>/dev/null)
+    if [[ "${go_path}" == "/usr/local/go/bin/go" || "${go_path}" == "/usr/local/bin/go" ]]; then
+        test_result "system-go" "System Go location verified" 0
     else
-        go_binary=""
+        echo -e "  ${YELLOW}Note: Go found at ${go_path}${NC}"
+        test_result "system-go" "System Go location check" 1
     fi
-    [ -n "$go_binary" ]
-    test_result "go" "Binary found in system or user-space" $?
-    
-    # Test 4: GOPATH set
-    [ -n "$GOPATH" ]
-    test_result "go" "GOPATH environment variable set" $?
-    
+
+    # Test 4: User GOPATH configured
+    if [ -n "$GOPATH" ] && [ "$GOPATH" == "$HOME/opt/gopath" ]; then
+        test_result "system-go" "User GOPATH correctly set" 0
+    elif [ -d "$HOME/opt/gopath" ]; then
+        echo -e "  ${YELLOW}Note: GOPATH not set, but directory exists${NC}"
+        test_result "system-go" "User GOPATH directory exists" 0
+    else
+        test_result "system-go" "User GOPATH configuration" 1
+    fi
+
     # Test 5: Can compile
     echo 'package main; func main() {}' | go run - &>/dev/null
-    test_result "go" "Can compile simple program" $?
-    
+    test_result "system-go" "Can compile simple program" $?
+
     echo ""
 }
 
@@ -267,45 +275,25 @@ test_yara() {
 test_go_tool() {
     local tool=$1
     local binary=${2:-$tool}
-
+    
     echo -e "${CYAN}Testing $tool...${NC}"
-
-    # Auto-detect GOPATH if not set
-    if [ -z "$GOPATH" ]; then
-        # GOPATH not set, try to detect from environment
-        if [ -d "$HOME/opt/gopath" ]; then
-            export GOPATH="$HOME/opt/gopath"
-        fi
-    fi
-
-    # Test 1: GOPATH environment variable set
-    [ -n "$GOPATH" ]
-    test_result "$tool" "GOPATH environment variable set" $?
-
-    # Test 2: Binary exists
-    if [ -n "$GOPATH" ]; then
-        [ -f "$GOPATH/bin/$binary" ]
-        test_result "$tool" "Binary exists in GOPATH" $?
-    else
-        test_result "$tool" "Binary exists in GOPATH" 1
-    fi
-
-    # Test 3: Command in PATH
+    
+    # Test 1: Binary exists
+    [ -f "$HOME/opt/gopath/bin/$binary" ]
+    test_result "$tool" "Binary exists in GOPATH" $?
+    
+    # Test 2: Command in PATH
     command -v "$binary" &>/dev/null
     test_result "$tool" "Command in PATH" $?
-
-    # Test 4: Can show version or help
+    
+    # Test 3: Can show version or help
     timeout 5 "$binary" --version &>/dev/null || timeout 5 "$binary" -h &>/dev/null
     test_result "$tool" "Can execute (version/help)" $?
-
-    # Test 5: Is executable
-    if [ -n "$GOPATH" ]; then
-        [ -x "$GOPATH/bin/$binary" ]
-        test_result "$tool" "Binary is executable" $?
-    else
-        test_result "$tool" "Binary is executable" 1
-    fi
-
+    
+    # Test 4: Is executable
+    [ -x "$HOME/opt/gopath/bin/$binary" ]
+    test_result "$tool" "Binary is executable" $?
+    
     echo ""
 }
 
@@ -396,13 +384,8 @@ test_integration() {
     # Test 2: Go tools have correct GOPATH
     if command -v gobuster &>/dev/null; then
         echo -e "${CYAN}Testing Go tool GOPATH integration...${NC}"
-        if [ -n "$GOPATH" ]; then
-            [ -f "$GOPATH/bin/gobuster" ]
-            test_result "integration" "Go tools in \$GOPATH/bin" $?
-        else
-            test_result "integration" "Go tools in \$GOPATH/bin" 1
-            echo "  → GOPATH not set, run 'source ~/.bashrc' first"
-        fi
+        [ -f "$GOPATH/bin/gobuster" ]
+        test_result "integration" "Go tools in GOPATH" $?
         echo ""
     fi
     
@@ -433,7 +416,7 @@ run_all_tests() {
     command -v gh &>/dev/null && test_github_cli
     
     # Languages
-    command -v go &>/dev/null && test_go
+    command -v go &>/dev/null && test_system_go
     command -v node &>/dev/null && test_nodejs
     command -v cargo &>/dev/null && test_rust
     
@@ -494,7 +477,7 @@ run_specific_test() {
     case "$tool" in
         cmake) test_cmake ;;
         github_cli) test_github_cli ;;
-        go) test_go ;;
+        go|system-go) test_system_go ;;
         nodejs) test_nodejs ;;
         rust) test_rust ;;
         python_venv) test_python_venv ;;

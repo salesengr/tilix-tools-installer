@@ -26,7 +26,7 @@ NC='\033[0m'
 
 
 # ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.0.1"
+SCRIPT_VERSION="1.1.0"
 DRY_RUN=false
 CHECK_UPDATES=false
 SUCCESSFUL_INSTALLS=()
@@ -113,11 +113,31 @@ verify_file_exists() {
     return 0
 }
 
+# ===== SYSTEM GO VERIFICATION =====
+
+# Function: verify_system_go
+# Purpose: Verify system Go is available before installing Go tools
+# Returns: 0 if Go is available, 1 if not found
+# Side effects: Prints Go version if found, error message if missing
+verify_system_go() {
+    if ! command -v go &>/dev/null; then
+        echo -e "${RED}ERROR: Go is not installed on this system${NC}"
+        echo "Go tools require a system Go installation (expected at /usr/local/go)"
+        echo "Please ensure Go is installed before attempting to install Go tools."
+        return 1
+    fi
+
+    local go_version
+    go_version=$(go version 2>/dev/null | awk '{print $3}')
+    echo -e "${GREEN}System Go found: ${go_version}${NC}"
+    return 0
+}
+
 # ===== TOOL DEFINITIONS =====
 # [Rest of tool definitions remain the same]
 # Tool categories
 BUILD_TOOLS=("cmake" "github_cli")
-LANGUAGES=("go" "nodejs" "rust")
+LANGUAGES=("nodejs" "rust")
 PYTHON_RECON_PASSIVE=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot")
 PYTHON_RECON_DOMAIN=("sublist3r")
 PYTHON_RECON_WEB=("photon" "wappalyzer")
@@ -149,11 +169,6 @@ define_tools() {
     TOOL_INSTALL_LOCATION[github_cli]="~/.local/bin/gh"
     
     # Languages
-    TOOL_INFO[go]="Go|Programming language runtime|Language"
-    TOOL_SIZES[go]="120MB"
-    TOOL_DEPENDENCIES[go]=""
-    TOOL_INSTALL_LOCATION[go]="~/opt/go/"
-    
     TOOL_INFO[nodejs]="Node.js|JavaScript runtime|Language"
     TOOL_SIZES[nodejs]="50MB"
     TOOL_DEPENDENCIES[nodejs]=""
@@ -235,42 +250,42 @@ define_tools() {
     # Go Tools
     TOOL_INFO[gobuster]="Gobuster|Directory/DNS/vhost bruteforcing|Active Recon"
     TOOL_SIZES[gobuster]="15MB"
-    TOOL_DEPENDENCIES[gobuster]="go"
+    TOOL_DEPENDENCIES[gobuster]=""
     TOOL_INSTALL_LOCATION[gobuster]="\$GOPATH/bin/gobuster"
-    
+
     TOOL_INFO[ffuf]="FFuF|Fast web fuzzer|Active Recon"
     TOOL_SIZES[ffuf]="12MB"
-    TOOL_DEPENDENCIES[ffuf]="go"
+    TOOL_DEPENDENCIES[ffuf]=""
     TOOL_INSTALL_LOCATION[ffuf]="\$GOPATH/bin/ffuf"
-    
+
     TOOL_INFO[httprobe]="httprobe|HTTP/HTTPS service probe|Active Recon"
     TOOL_SIZES[httprobe]="5MB"
-    TOOL_DEPENDENCIES[httprobe]="go"
+    TOOL_DEPENDENCIES[httprobe]=""
     TOOL_INSTALL_LOCATION[httprobe]="\$GOPATH/bin/httprobe"
-    
+
     TOOL_INFO[waybackurls]="waybackurls|Wayback Machine URL fetcher|OSINT"
     TOOL_SIZES[waybackurls]="5MB"
-    TOOL_DEPENDENCIES[waybackurls]="go"
+    TOOL_DEPENDENCIES[waybackurls]=""
     TOOL_INSTALL_LOCATION[waybackurls]="\$GOPATH/bin/waybackurls"
-    
+
     TOOL_INFO[assetfinder]="assetfinder|Domain/subdomain finder|OSINT"
     TOOL_SIZES[assetfinder]="5MB"
-    TOOL_DEPENDENCIES[assetfinder]="go"
+    TOOL_DEPENDENCIES[assetfinder]=""
     TOOL_INSTALL_LOCATION[assetfinder]="\$GOPATH/bin/assetfinder"
-    
+
     TOOL_INFO[subfinder]="subfinder|Subdomain discovery tool|OSINT"
     TOOL_SIZES[subfinder]="15MB"
-    TOOL_DEPENDENCIES[subfinder]="go"
+    TOOL_DEPENDENCIES[subfinder]=""
     TOOL_INSTALL_LOCATION[subfinder]="\$GOPATH/bin/subfinder"
-    
+
     TOOL_INFO[nuclei]="Nuclei|Vulnerability scanner|Vuln Scan"
     TOOL_SIZES[nuclei]="20MB"
-    TOOL_DEPENDENCIES[nuclei]="go"
+    TOOL_DEPENDENCIES[nuclei]=""
     TOOL_INSTALL_LOCATION[nuclei]="\$GOPATH/bin/nuclei"
-    
+
     TOOL_INFO[virustotal]="VirusTotal CLI|VT API interaction|CTI"
     TOOL_SIZES[virustotal]="10MB"
-    TOOL_DEPENDENCIES[virustotal]="go"
+    TOOL_DEPENDENCIES[virustotal]=""
     TOOL_INSTALL_LOCATION[virustotal]="\$GOPATH/bin/vt"
     
     # Node.js Tools
@@ -341,8 +356,6 @@ is_installed() {
             [ -f "$HOME/.local/bin/cmake" ] && return 0 ;;
         github_cli)
             [ -f "$HOME/.local/bin/gh" ] && return 0 ;;
-        go)
-            [ -f "$HOME/opt/go/bin/go" ] && return 0 ;;
         nodejs)
             [ -f "$HOME/opt/node/bin/node" ] && return 0 ;;
         rust)
@@ -550,71 +563,6 @@ install_github_cli() {
 }
 
 # Languages
-install_go() {
-    local logfile=$(create_tool_log "go")
-    
-    {
-        echo "=========================================="
-        echo "Installing Go"
-        echo "Started: $(date)"
-        echo "=========================================="
-        
-        mkdir -p "$HOME/opt"
-        cd "$HOME/opt" || exit 1
-        GO_VERSION="1.21.5"
-        local filename="go${GO_VERSION}.linux-amd64.tar.gz"
-        local url="https://go.dev/dl/${filename}"
-        
-        echo "Downloading Go ${GO_VERSION}..."
-        if ! download_file "$url" "$filename"; then
-            echo "ERROR: Failed to download Go"
-            return 1
-        fi
-        
-        if ! verify_file_exists "$filename" "Go tarball"; then
-            return 1
-        fi
-        
-        echo "Extracting..."
-        if ! tar -xzf "$filename"; then
-            echo "ERROR: Failed to extract Go"
-            return 1
-        fi
-        
-        echo "Cleaning up..."
-        rm "$filename"
-        
-        echo "Setting up environment..."
-        export GOROOT="$HOME/opt/go"
-        export GOPATH="$HOME/opt/gopath"
-        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
-        mkdir -p "$GOPATH"
-        
-        echo "=========================================="
-        echo "Completed: $(date)"
-        echo "=========================================="
-    } > "$logfile" 2>&1
-    
-    if is_installed "go"; then
-        echo -e "${GREEN}[OK] Go installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("go")
-        log_installation "go" "success" "$logfile"
-        cleanup_old_logs "go"
-        # Set for current session
-        export GOROOT="$HOME/opt/go"
-        export GOPATH="$HOME/opt/gopath"
-        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
-        return 0
-    else
-        echo -e "${RED}[FAIL] Go installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("go")
-        FAILED_INSTALL_LOGS["go"]="$logfile"
-        log_installation "go" "failure" "$logfile"
-        return 1
-    fi
-}
-
 install_nodejs() {
     local logfile=$(create_tool_log "nodejs")
     
@@ -903,38 +851,55 @@ install_yara() {
 }
 
 # Generic Go tool installer
+# Function: install_go_tool
+# Purpose: Install a Go-based tool using system Go and user-space GOPATH
+# Parameters:
+#   $1 - tool name (e.g., "gobuster")
+#   $2 - Go repository path (e.g., "github.com/OJ/gobuster/v3")
+# Returns: 0 on success, 1 on failure
+# Dependencies: Requires system Go to be installed
 install_go_tool() {
     local tool=$1
     local repo=$2
     local logfile=$(create_tool_log "$tool")
-    
+
+    # Verify system Go is available
+    if ! verify_system_go; then
+        echo -e "${RED}✗ Cannot install $tool: System Go not found${NC}"
+        FAILED_INSTALLS+=("$tool")
+        return 1
+    fi
+
     {
         echo "=========================================="
         echo "Installing $tool"
         echo "Started: $(date)"
         echo "=========================================="
-        
-        export GOROOT="$HOME/opt/go"
+
+        # Use system Go, set user-space GOPATH
         export GOPATH="$HOME/opt/gopath"
-        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+        export PATH="$GOPATH/bin:$PATH"
         mkdir -p "$GOPATH"
-        
+
+        echo "Using system Go: $(go version)"
+        echo "GOPATH: $GOPATH"
+        echo ""
         echo "Compiling $tool from source..."
         go install "$repo@latest" || return 1
-        
+
         echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
     } > "$logfile" 2>&1
-    
+
     if is_installed "$tool"; then
-        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
+        echo -e "${GREEN}✓ $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}[FAIL] $tool installation failed${NC}"
+        echo -e "${RED}✗ $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -1069,7 +1034,6 @@ install_tool() {
     case "$tool" in
         cmake) install_cmake ;;
         github_cli) install_github_cli ;;
-        go) install_go ;;
         nodejs) install_nodejs ;;
         rust) install_rust ;;
         python_venv) install_python_venv ;;
@@ -1124,7 +1088,7 @@ install_all() {
     fi
     
     local all_tools=(
-        "cmake" "github_cli" "go" "nodejs" "rust" "python_venv"
+        "cmake" "github_cli" "nodejs" "rust" "python_venv"
         "${ALL_PYTHON_TOOLS[@]}"
         "${ALL_GO_TOOLS[@]}"
         "${NODE_TOOLS[@]}"
@@ -1150,44 +1114,43 @@ show_menu() {
     echo "  [2] GitHub CLI"
     echo ""
     echo -e "${MAGENTA}LANGUAGES & RUNTIMES${NC}"
-    echo "  [3] Go"
-    echo "  [4] Node.js"
-    echo "  [5] Rust (compile time: 5-10 min)"
+    echo "  [3] Node.js"
+    echo "  [4] Rust (compile time: 5-10 min)"
     echo ""
     echo -e "${MAGENTA}PYTHON TOOLS - OSINT${NC}"
-    echo "  [6] Python Virtual Environment (required)"
-    echo "  [7] sherlock - Username search"
-    echo "  [8] holehe - Email verification"
-    echo "  [9] socialscan - Username/email availability"
-    echo "  [10] theHarvester - Multi-source OSINT"
-    echo "  [11] spiderfoot - Automated OSINT"
-    echo "  [12] All Python OSINT Tools"
+    echo "  [5] Python Virtual Environment (required)"
+    echo "  [6] sherlock - Username search"
+    echo "  [7] holehe - Email verification"
+    echo "  [8] socialscan - Username/email availability"
+    echo "  [9] theHarvester - Multi-source OSINT"
+    echo "  [10] spiderfoot - Automated OSINT"
+    echo "  [11] All Python OSINT Tools"
     echo ""
     echo -e "${MAGENTA}PYTHON TOOLS - CTI${NC}"
-    echo "  [13] shodan - Internet device intelligence"
-    echo "  [14] censys - Certificate/service intelligence"
-    echo "  [15] yara - Malware pattern matching"
-    echo "  [16] All Python CTI Tools"
+    echo "  [12] shodan - Internet device intelligence"
+    echo "  [13] censys - Certificate/service intelligence"
+    echo "  [14] yara - Malware pattern matching"
+    echo "  [15] All Python CTI Tools"
     echo ""
     echo -e "${MAGENTA}GO TOOLS - ACTIVE RECON${NC}"
-    echo "  [17] gobuster - Directory/DNS bruteforcing"
-    echo "  [18] ffuf - Fast web fuzzer"
-    echo "  [19] subfinder - Subdomain discovery"
-    echo "  [20] nuclei - Vulnerability scanner"
-    echo "  [21] All Go Tools"
+    echo "  [16] gobuster - Directory/DNS bruteforcing"
+    echo "  [17] ffuf - Fast web fuzzer"
+    echo "  [18] subfinder - Subdomain discovery"
+    echo "  [19] nuclei - Vulnerability scanner"
+    echo "  [20] All Go Tools"
     echo ""
     echo -e "${MAGENTA}GO TOOLS - CTI${NC}"
-    echo "  [22] virustotal - VirusTotal CLI"
+    echo "  [21] virustotal - VirusTotal CLI"
     echo ""
     echo -e "${MAGENTA}NODE.JS TOOLS${NC}"
-    echo "  [23] trufflehog - Secret scanning"
-    echo "  [24] All Node.js Tools"
+    echo "  [22] trufflehog - Secret scanning"
+    echo "  [23] All Node.js Tools"
     echo ""
     echo -e "${MAGENTA}RUST TOOLS${NC}"
-    echo "  [25] feroxbuster - Content discovery"
-    echo "  [26] rustscan - Fast port scanner"
-    echo "  [27] ripgrep - Fast grep"
-    echo "  [28] All Rust Tools (long compile time)"
+    echo "  [24] feroxbuster - Content discovery"
+    echo "  [25] rustscan - Fast port scanner"
+    echo "  [26] ripgrep - Fast grep"
+    echo "  [27] All Rust Tools (long compile time)"
     echo ""
     echo -e "${MAGENTA}BULK OPTIONS${NC}"
     echo "  [30] Install Everything"
@@ -1206,52 +1169,56 @@ process_menu_selection() {
     case "$selection" in
         1) install_tool "cmake" ;;
         2) install_tool "github_cli" ;;
-        3) install_tool "go" ;;
-        4) install_tool "nodejs" ;;
-        5) install_tool "rust" ;;
-        6) install_tool "python_venv" ;;
-        7) install_tool "sherlock" ;;
-        8) install_tool "holehe" ;;
-        9) install_tool "socialscan" ;;
-        10) install_tool "theHarvester" ;;
-        11) install_tool "spiderfoot" ;;
-        12)
+        3) install_tool "nodejs" ;;
+        4) install_tool "rust" ;;
+        5) install_tool "python_venv" ;;
+        6) install_tool "sherlock" ;;
+        7) install_tool "holehe" ;;
+        8) install_tool "socialscan" ;;
+        9) install_tool "theHarvester" ;;
+        10) install_tool "spiderfoot" ;;
+        11)
             install_tool "python_venv"
             for tool in "${ALL_PYTHON_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        13) install_tool "shodan" ;;
-        14) install_tool "censys" ;;
-        15) install_tool "yara" ;;
-        16)
+        12) install_tool "shodan" ;;
+        13) install_tool "censys" ;;
+        14) install_tool "yara" ;;
+        15)
             install_tool "python_venv"
             for tool in shodan censys yara; do
                 install_tool "$tool"
             done
             ;;
-        17) install_tool "gobuster" ;;
-        18) install_tool "ffuf" ;;
-        19) install_tool "subfinder" ;;
-        20) install_tool "nuclei" ;;
-        21)
-            install_tool "go"
+        16) install_tool "gobuster" ;;
+        17) install_tool "ffuf" ;;
+        18) install_tool "subfinder" ;;
+        19) install_tool "nuclei" ;;
+        20)
+            echo -e "${YELLOW}Installing all Go tools (using system Go)...${NC}"
+            if ! verify_system_go; then
+                echo -e "${RED}✗ System Go not found. Cannot install Go tools.${NC}"
+                read -p "Press Enter to continue..."
+                return 1
+            fi
             for tool in "${ALL_GO_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        22) install_tool "virustotal" ;;
-        23) install_tool "trufflehog" ;;
-        24)
+        21) install_tool "virustotal" ;;
+        22) install_tool "trufflehog" ;;
+        23)
             install_tool "nodejs"
             for tool in "${NODE_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        25) install_tool "feroxbuster" ;;
-        26) install_tool "rustscan" ;;
-        27) install_tool "ripgrep" ;;
-        28)
+        24) install_tool "feroxbuster" ;;
+        25) install_tool "rustscan" ;;
+        26) install_tool "ripgrep" ;;
+        27)
             echo -e "${YELLOW}Warning: Rust tools take 15-30 minutes to compile${NC}"
             read -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then
@@ -1413,7 +1380,12 @@ process_cli_args() {
     fi
     
     if [[ "${args[0]}" == "--go-tools" ]]; then
-        install_tool "go"
+        echo -e "${YELLOW}Installing all Go tools (using system Go)...${NC}"
+        if ! verify_system_go; then
+            echo -e "${RED}ERROR: System Go not found. Cannot install Go tools.${NC}"
+            echo "Please ensure Go is installed at /usr/local/go"
+            exit 1
+        fi
         for tool in "${ALL_GO_TOOLS[@]}"; do
             install_tool "$tool"
         done

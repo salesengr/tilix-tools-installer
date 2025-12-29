@@ -5,6 +5,8 @@
 # Claude Code
 # =============================================================================
 .claude/*
+
+CLAUDE.md
 # Temporary plan files (plans are ephemeral, don't commit)
 #.claude/plans/
 

@@ -86,6 +86,7 @@ test_github_cli() {
 # Tests: Command exists, version check, location, GOPATH, compilation
 test_system_go() {
     echo -e "${CYAN}Testing System Go (required for Go tools)...${NC}"
+    echo "  DEBUG: Starting test_system_go function"
 
     # Test 1: Command exists
     command -v go &>/dev/null
@@ -116,7 +117,9 @@ test_system_go() {
     fi
 
     # Test 5: Can compile
+    echo "  DEBUG: Starting Go compilation test"
     temp_go_file="/tmp/go_test_$$.go"
+    echo "  DEBUG: Creating temp file: $temp_go_file"
     echo 'package main; func main() {}' > "$temp_go_file"
     echo "  DEBUG: About to run: go run $temp_go_file"
     echo "  DEBUG: About to test Go compilation..."
@@ -126,6 +129,7 @@ test_system_go() {
     echo "  DEBUG: Go output: '$go_output'"
     test_result "system-go" "Can compile simple program" $go_exit_code
     rm -f "$temp_go_file"
+    echo "  DEBUG: Finished Go compilation test"
 
     echo ""
 }

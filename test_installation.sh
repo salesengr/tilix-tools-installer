@@ -118,9 +118,14 @@ test_system_go() {
     # Test 5: Can compile
     temp_go_file="/tmp/go_test_$$.go"
     echo 'package main; func main() {}' > "$temp_go_file"
-    go_result=0
-    go run "$temp_go_file" >/dev/null 2>&1 || go_result=1
-    test_result "system-go" "Can compile simple program" $go_result
+    echo "  DEBUG: About to run: go run $temp_go_file"
+    if go run "$temp_go_file" 2>&1; then
+        echo "  DEBUG: Go command succeeded"
+        test_result "system-go" "Can compile simple program" 0
+    else
+        echo "  DEBUG: Go command failed with exit code $?"
+        test_result "system-go" "Can compile simple program" 1
+    fi
     rm -f "$temp_go_file"
 
     echo ""
@@ -146,14 +151,28 @@ test_nodejs() {
     test_result "nodejs" "npm version check" $?
     
     # Test 5: Location check (flexible - check system or custom location)
+    echo "  DEBUG: Testing node locations..."
+    echo "  DEBUG: HOME=$HOME"
+    echo "  DEBUG: Custom node path check: [ -f $HOME/opt/node/bin/node ]"
+    [ -f "$HOME/opt/node/bin/node" ] && echo "  DEBUG: Custom node exists" || echo "  DEBUG: Custom node missing"
+    echo "  DEBUG: System node path check: [ -L /usr/local/bin/node ] || [ -f /usr/local/bin/node ]"
+    [ -L "/usr/local/bin/node" ] && echo "  DEBUG: System node is symlink" || echo "  DEBUG: System node not symlink"
+    [ -f "/usr/local/bin/node" ] && echo "  DEBUG: System node exists as file" || echo "  DEBUG: System node missing as file"
+    echo "  DEBUG: Node in PATH check: command -v node"
+    command -v node >/dev/null 2>&1 && echo "  DEBUG: Node found in PATH" || echo "  DEBUG: Node not in PATH"
+    
     node_location_result=1
     if [ -f "$HOME/opt/node/bin/node" ]; then
+        echo "  DEBUG: Using custom location"
         node_location_result=0
     elif [ -L "/usr/local/bin/node" ] || [ -f "/usr/local/bin/node" ]; then
+        echo "  DEBUG: Using system location"
         node_location_result=0
     elif command -v node >/dev/null 2>&1; then
+        echo "  DEBUG: Using PATH location"
         node_location_result=0
     fi
+    echo "  DEBUG: Final result: $node_location_result"
     test_result "nodejs" "Binary in correct location" $node_location_result
     
     # Test 6: Can run JavaScript

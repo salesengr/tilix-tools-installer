@@ -119,13 +119,12 @@ test_system_go() {
     temp_go_file="/tmp/go_test_$$.go"
     echo 'package main; func main() {}' > "$temp_go_file"
     echo "  DEBUG: About to run: go run $temp_go_file"
-    if go run "$temp_go_file" 2>&1; then
-        echo "  DEBUG: Go command succeeded"
-        test_result "system-go" "Can compile simple program" 0
-    else
-        echo "  DEBUG: Go command failed with exit code $?"
-        test_result "system-go" "Can compile simple program" 1
-    fi
+    echo "  DEBUG: About to test Go compilation..."
+    go_output=$(go run "$temp_go_file" 2>&1)
+    go_exit_code=$?
+    echo "  DEBUG: Go exit code: $go_exit_code"
+    echo "  DEBUG: Go output: '$go_output'"
+    test_result "system-go" "Can compile simple program" $go_exit_code
     rm -f "$temp_go_file"
 
     echo ""

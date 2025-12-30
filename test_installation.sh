@@ -116,18 +116,11 @@ test_system_go() {
     fi
 
     # Test 5: Can compile
-    local temp_go_file=$(mktemp --suffix=.go)
+    temp_go_file="/tmp/go_test_$$.go"
     echo 'package main; func main() {}' > "$temp_go_file"
-    echo "  DEBUG: temp_go_file=$temp_go_file"
-    echo "  DEBUG: Running go run $temp_go_file"
-    if go run "$temp_go_file" 2>&1; then
-        echo "  DEBUG: Go compilation succeeded"
-        test_result "system-go" "Can compile simple program" 0
-    else
-        local exit_code=$?
-        echo "  DEBUG: Go compilation failed with exit code $exit_code"
-        test_result "system-go" "Can compile simple program" 1
-    fi
+    go_result=0
+    go run "$temp_go_file" >/dev/null 2>&1 || go_result=1
+    test_result "system-go" "Can compile simple program" $go_result
     rm -f "$temp_go_file"
 
     echo ""
@@ -153,17 +146,15 @@ test_nodejs() {
     test_result "nodejs" "npm version check" $?
     
     # Test 5: Location check (flexible - check system or custom location)
-    echo "  DEBUG: Checking node locations..."
-    echo "  DEBUG: Custom location exists: $([ -f "$HOME/opt/node/bin/node" ] && echo 'YES' || echo 'NO')"
-    echo "  DEBUG: System location exists: $([ -f "/usr/local/bin/node" ] && echo 'YES' || echo 'NO')"
-    echo "  DEBUG: Node in PATH: $(command -v node &>/dev/null && echo 'YES' || echo 'NO')"
-    if [ -f "$HOME/opt/node/bin/node" ] || [ -f "/usr/local/bin/node" ] || command -v node &>/dev/null; then
-        echo "  DEBUG: Location test passed"
-        test_result "nodejs" "Binary in correct location" 0
-    else
-        echo "  DEBUG: Location test failed"
-        test_result "nodejs" "Binary in correct location" 1
+    node_location_result=1
+    if [ -f "$HOME/opt/node/bin/node" ]; then
+        node_location_result=0
+    elif [ -L "/usr/local/bin/node" ] || [ -f "/usr/local/bin/node" ]; then
+        node_location_result=0
+    elif command -v node >/dev/null 2>&1; then
+        node_location_result=0
     fi
+    test_result "nodejs" "Binary in correct location" $node_location_result
     
     # Test 6: Can run JavaScript
     node -e "console.log('test')" &>/dev/null

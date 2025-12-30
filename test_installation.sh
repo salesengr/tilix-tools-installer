@@ -118,9 +118,14 @@ test_system_go() {
     # Test 5: Can compile
     local temp_go_file=$(mktemp --suffix=.go)
     echo 'package main; func main() {}' > "$temp_go_file"
-    if go run "$temp_go_file" &>/dev/null; then
+    echo "  DEBUG: temp_go_file=$temp_go_file"
+    echo "  DEBUG: Running go run $temp_go_file"
+    if go run "$temp_go_file" 2>&1; then
+        echo "  DEBUG: Go compilation succeeded"
         test_result "system-go" "Can compile simple program" 0
     else
+        local exit_code=$?
+        echo "  DEBUG: Go compilation failed with exit code $exit_code"
         test_result "system-go" "Can compile simple program" 1
     fi
     rm -f "$temp_go_file"
@@ -148,9 +153,15 @@ test_nodejs() {
     test_result "nodejs" "npm version check" $?
     
     # Test 5: Location check (flexible - check system or custom location)
+    echo "  DEBUG: Checking node locations..."
+    echo "  DEBUG: Custom location exists: $([ -f "$HOME/opt/node/bin/node" ] && echo 'YES' || echo 'NO')"
+    echo "  DEBUG: System location exists: $([ -f "/usr/local/bin/node" ] && echo 'YES' || echo 'NO')"
+    echo "  DEBUG: Node in PATH: $(command -v node &>/dev/null && echo 'YES' || echo 'NO')"
     if [ -f "$HOME/opt/node/bin/node" ] || [ -f "/usr/local/bin/node" ] || command -v node &>/dev/null; then
+        echo "  DEBUG: Location test passed"
         test_result "nodejs" "Binary in correct location" 0
     else
+        echo "  DEBUG: Location test failed"
         test_result "nodejs" "Binary in correct location" 1
     fi
     

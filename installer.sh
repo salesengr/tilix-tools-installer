@@ -58,4 +58,5 @@ echo "Step 3/3: Launching installation menu..."
 echo ""
 
 # Launch interactive installer
-bash install_security_tools.sh
+# Use exec to replace this process and ensure stdin is properly connected
+exec bash install_security_tools.sh

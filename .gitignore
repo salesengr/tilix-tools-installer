@@ -4,19 +4,13 @@
 # =============================================================================
 # Claude Code
 # =============================================================================
-.claude/*
 
-CLAUDE.md
 # Temporary plan files (plans are ephemeral, don't commit)
-#.claude/plans/
+.claude/plans/
 
-# User-specific Claude settings (don't commit)
-#.claude/settings.json
-
-# Keep agents committed (uncomment if you want to ignore them)
-#.claude/agents/
-
-CLAUDE.md
+# Keep these tracked:
+# - CLAUDE.md (project context for AI assistants)
+# - .claude/agents/ (agent configurations)
 # =============================================================================
 # Installation & Testing Artifacts
 # =============================================================================

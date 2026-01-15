@@ -398,7 +398,7 @@ For tool installation workflows, see [script_usage.md](script_usage.md)
 
 ## Version History
 
-- **v1.0.1** - ASCII-only status output and refreshed cross-references
+- **v1.1.0** - ASCII-only status output and refreshed cross-references
 - **v1.0** - Initial release with complete XDG setup
   - All XDG base directories
   - Environment variables for Python, Go, npm, pip, Rust

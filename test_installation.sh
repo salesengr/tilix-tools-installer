@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test Script for Security Tools Installation
-# Version: 1.0.1
+# Version: 1.1.0
 # Verifies all installed tools are working correctly
 #
 # Usage: bash test_installation.sh [tool_name]

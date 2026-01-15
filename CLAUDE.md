@@ -1,7 +1,7 @@
 # CLAUDE.md - Project Context for AI Assistants
 
 **Project:** Security Tools Installer
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Last Updated:** December 16, 2025
 **Purpose:** User-space installation system for OSINT/CTI/PenTest security tools
 
@@ -29,8 +29,11 @@ project/
 ├── CLAUDE.md                       # This file - AI assistant context
 │
 ├── install_security_tools.sh       # Main installer (1,524 lines)
-├── test_installation.sh            # Verification suite (533 lines)
 ├── xdg_setup.sh                   # Environment setup (314 lines)
+│
+├── scripts/                        # Supporting utilities
+│   ├── test_installation.sh            # Verification suite (533 lines)
+│   └── diagnose_installation.sh        # Diagnostics & maintenance
 │
 └── docs/
     ├── script_usage.md             # Detailed installation guide
@@ -58,7 +61,7 @@ project/
 **Architecture:**
 ```bash
 # Global variables and configuration
-SCRIPT_VERSION="1.1.0"
+SCRIPT_VERSION="1.2.0"
 declare -A TOOL_INFO          # tool => "Name|Description|Category"
 declare -A TOOL_SIZES         # tool => "50MB"
 declare -A TOOL_DEPENDENCIES  # tool => "prerequisite1 prerequisite2"
@@ -138,7 +141,7 @@ CARGO_HOME="$XDG_DATA_HOME/cargo"
 RUSTUP_HOME="$XDG_DATA_HOME/rustup"
 ```
 
-### 3. **test_installation.sh** (Verification Suite)
+### 3. **scripts/test_installation.sh** (Verification Suite)
 
 **Purpose:** Verify all installed tools are working correctly
 
@@ -346,7 +349,7 @@ bash install_security_tools.sh --dry-run newtool
 bash xdg_setup.sh
 source ~/.bashrc
 bash install_security_tools.sh newtool
-bash test_installation.sh newtool
+bash scripts/test_installation.sh newtool
 ```
 
 **4. Verify Logs:**
@@ -480,7 +483,7 @@ git checkout -b feature/add-newtool
 bash -n install_security_tools.sh  # Syntax check
 bash install_security_tools.sh --dry-run newtool  # Preview
 bash install_security_tools.sh newtool  # Actual install
-bash test_installation.sh newtool  # Verify
+bash scripts/test_installation.sh newtool  # Verify
 ```
 
 **4. Update documentation:**
@@ -600,7 +603,8 @@ and verify I followed all the conventions.
 1. **README.md** - Project overview
 2. **xdg_setup.sh** - Simplest script, environment setup
 3. **install_security_tools.sh** - Main installer: global variables/arrays, `define_tools()`, generic installers (`install_python_tool`, `install_go_tool`), menu system
-4. **test_installation.sh** - Verification patterns
+4. **scripts/test_installation.sh** - Verification patterns
+5. **scripts/diagnose_installation.sh** - Diagnostics and maintenance
 
 ### Key Concepts
 
@@ -652,7 +656,7 @@ bash install_security_tools.sh --python-tools
 bash install_security_tools.sh --dry-run nuclei
 
 # Test installation
-bash test_installation.sh
+bash scripts/test_installation.sh
 
 # View logs
 tail -f ~/.local/state/install_tools/installation_history.log

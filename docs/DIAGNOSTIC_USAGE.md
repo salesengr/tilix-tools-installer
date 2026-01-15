@@ -1,6 +1,6 @@
 # Diagnostic Script Usage Guide
 
-**Script:** `diagnose_installation.sh`
+**Script:** `scripts/diagnose_installation.sh`
 **Version:** 1.0.0
 **Purpose:** Analyze, optimize, and troubleshoot security tools installation
 
@@ -27,7 +27,7 @@ The diagnostic script provides comprehensive analysis of your security tools ins
 ### Generate Full Report (Default)
 
 ```bash
-bash diagnose_installation.sh
+bash scripts/diagnose_installation.sh
 ```
 
 This displays a comprehensive report covering:
@@ -41,26 +41,26 @@ This displays a comprehensive report covering:
 
 ```bash
 # List installed tools and versions
-bash diagnose_installation.sh --inventory
+bash scripts/diagnose_installation.sh --inventory
 
 # Analyze disk space usage
-bash diagnose_installation.sh --disk-usage
+bash scripts/diagnose_installation.sh --disk-usage
 
 # Find cleanable artifacts
-bash diagnose_installation.sh --build-artifacts
+bash scripts/diagnose_installation.sh --build-artifacts
 
 # Check XDG compliance
-bash diagnose_installation.sh --xdg-check
+bash scripts/diagnose_installation.sh --xdg-check
 
 # Show cleanup commands (dry-run)
-bash diagnose_installation.sh --cleanup-plan
+bash scripts/diagnose_installation.sh --cleanup-plan
 ```
 
 ### Execute Cleanup
 
 ```bash
 # Clean up artifacts with confirmation prompts
-bash diagnose_installation.sh --cleanup
+bash scripts/diagnose_installation.sh --cleanup
 ```
 
 This will:
@@ -93,19 +93,19 @@ This will:
 
 ```bash
 # Generate full report and save to file
-bash diagnose_installation.sh > report.txt
+bash scripts/diagnose_installation.sh > report.txt
 
 # Quick status check
-bash diagnose_installation.sh --inventory
+bash scripts/diagnose_installation.sh --inventory
 
 # Identify cleanup opportunities
-bash diagnose_installation.sh --cleanup-plan
+bash scripts/diagnose_installation.sh --cleanup-plan
 
 # Execute cleanup
-bash diagnose_installation.sh --cleanup
+bash scripts/diagnose_installation.sh --cleanup
 
 # Diagnose test failures
-bash diagnose_installation.sh --test-diagnosis
+bash scripts/diagnose_installation.sh --test-diagnosis
 ```
 
 ---
@@ -242,7 +242,7 @@ rm -rf ~/.local/share/cargo/git/*
 
 Expected space recovery: 698 MB
 
-To execute cleanup, run: ./diagnose_installation.sh --cleanup
+To execute cleanup, run: ./scripts/diagnose_installation.sh --cleanup
 ```
 
 ---
@@ -274,7 +274,7 @@ To execute cleanup, run: ./diagnose_installation.sh --cleanup
 ### Cleanup Process
 
 ```bash
-bash diagnose_installation.sh --cleanup
+bash scripts/diagnose_installation.sh --cleanup
 ```
 
 **Steps:**
@@ -333,7 +333,7 @@ Analyzes test_installation.sh failures and suggests fixes.
 ### Usage
 
 ```bash
-bash diagnose_installation.sh --test-diagnosis
+bash scripts/diagnose_installation.sh --test-diagnosis
 ```
 
 ### Example Output
@@ -397,7 +397,7 @@ Generates commands to migrate non-compliant locations to XDG-compliant paths.
 ### Usage
 
 ```bash
-bash diagnose_installation.sh --migration-plan
+bash scripts/diagnose_installation.sh --migration-plan
 ```
 
 ### Example Output
@@ -444,7 +444,7 @@ source ~/.bashrc
 **Fix:**
 - Run in Docker environment (has Bash 4+)
 - Install newer bash: `brew install bash` (if on macOS)
-- Use explicit path: `/usr/local/bin/bash diagnose_installation.sh`
+- Use explicit path: `/usr/local/bin/bash scripts/diagnose_installation.sh`
 
 ### Cleanup Doesn't Remove Files
 
@@ -507,25 +507,25 @@ ls -lh ~/.local/share/cargo/registry
 
 1. **After Installation:**
    ```bash
-   bash diagnose_installation.sh --full-report > report.txt
+   bash scripts/diagnose_installation.sh --full-report > report.txt
    ```
    Save baseline report for reference
 
 2. **Monthly Maintenance:**
    ```bash
-   bash diagnose_installation.sh --cleanup-plan
+   bash scripts/diagnose_installation.sh --cleanup-plan
    ```
    Review cleanup opportunities
 
 3. **Before Major Changes:**
    ```bash
-   bash diagnose_installation.sh --inventory > inventory-before.txt
+   bash scripts/diagnose_installation.sh --inventory > inventory-before.txt
    ```
    Document current state
 
 4. **Troubleshooting:**
    ```bash
-   bash diagnose_installation.sh --test-diagnosis
+   bash scripts/diagnose_installation.sh --test-diagnosis
    ```
    Identify and fix environment issues
 
@@ -545,34 +545,34 @@ ls -lh ~/.local/share/cargo/registry
 
 ```bash
 # Save full report with timestamp
-bash diagnose_installation.sh --full-report > "diagnostic-$(date +%Y%m%d-%H%M%S).txt"
+bash scripts/diagnose_installation.sh --full-report > "diagnostic-$(date +%Y%m%d-%H%M%S).txt"
 
 # Save specific section
-bash diagnose_installation.sh --disk-usage > disk-usage.txt
+bash scripts/diagnose_installation.sh --disk-usage > disk-usage.txt
 
 # Redirect to file and display
-bash diagnose_installation.sh --full-report | tee report.txt
+bash scripts/diagnose_installation.sh --full-report | tee report.txt
 ```
 
 ### Automating Cleanup
 
 ```bash
 # Scheduled cleanup (add to cron)
-0 0 1 * * bash /path/to/diagnose_installation.sh --cleanup-plan | mail -s "Cleanup Opportunities" admin@example.com
+0 0 1 * * bash /path/to/scripts/diagnose_installation.sh --cleanup-plan | mail -s "Cleanup Opportunities" admin@example.com
 
 # Automated cleanup with confirmation bypass (use with caution)
-echo "yes" | bash diagnose_installation.sh --cleanup
+echo "yes" | bash scripts/diagnose_installation.sh --cleanup
 ```
 
 ### Integrating with CI/CD
 
 ```bash
 # Pre-deployment check
-bash diagnose_installation.sh --inventory > inventory.txt
-bash diagnose_installation.sh --disk-usage > disk-usage.txt
+bash scripts/diagnose_installation.sh --inventory > inventory.txt
+bash scripts/diagnose_installation.sh --disk-usage > disk-usage.txt
 
 # Fail if disk usage exceeds threshold
-disk_usage=$(bash diagnose_installation.sh --disk-usage | grep "TOTAL" | awk '{print $2}')
+disk_usage=$(bash scripts/diagnose_installation.sh --disk-usage | grep "TOTAL" | awk '{print $2}')
 if [ "$disk_usage" -gt 3000000000 ]; then
     echo "ERROR: Disk usage too high"
     exit 1
@@ -615,7 +615,7 @@ For issues or questions:
 
 1. Check the [troubleshooting section](#troubleshooting) above
 2. Review logs at `~/.local/state/install_tools/logs/`
-3. Run test diagnosis: `bash diagnose_installation.sh --test-diagnosis`
+3. Run test diagnosis: `bash scripts/diagnose_installation.sh --test-diagnosis`
 4. Check main documentation: [README.md](../README.md)
 5. Open an issue with your diagnostic report attached
 

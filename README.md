@@ -1,9 +1,11 @@
 # Security Tools Installer
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Release Date:** January 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
+
+**Architecture:** Modular design with 11 focused library modules for maintainability and extensibility.
 
 ## 🎯 Features
 
@@ -77,18 +79,60 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 ## 🚀 Quick Start
 
-### 1. Setup XDG Environment (First Time Only)
+Choose your preferred installation method:
+
+### Method 1: One-Command Bootstrap (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/tilix-tools-installer/main/installer.sh | bash
+```
+
+This single command will:
+1. Clone the repository (if needed)
+2. Set up XDG environment
+3. Reload shell configuration
+4. Launch interactive installation menu
+
+**Note:** Requires `git` and `curl` to be installed.
+
+---
+
+### Method 2: Manual Setup
+
+#### 1. Clone Repository
+```bash
+git clone https://github.com/YOUR_USERNAME/tilix-tools-installer.git
+cd tilix-tools-installer
+```
+
+#### 2. Run Bootstrap
+```bash
+bash installer.sh
+```
+
+This will:
+1. Set up XDG environment
+2. Reload shell configuration
+3. Open interactive installation menu
+
+---
+
+### Method 3: Step-by-Step (Advanced Users)
+
+If you prefer manual control over each step:
+
+#### 1. Setup XDG Environment (First Time Only)
 
 ```bash
 bash xdg_setup.sh
-source ~/.bashrc
+source ~/.bashrc  # or source ~/.zshrc for zsh
 ```
 
 This creates the directory structure following XDG Base Directory standards.
 
-### 2. Install Tools
+#### 2. Install Tools
 
-#### Interactive Mode (Recommended)
+**Interactive Mode (Recommended)**
 ```bash
 bash install_security_tools.sh
 ```
@@ -98,7 +142,7 @@ Then use the menu to select tools:
 - Categories (Python, Go, Node, Rust)
 - Install everything (option 30)
 
-#### Command Line Mode
+**Command Line Mode**
 ```bash
 # Install specific tools
 bash install_security_tools.sh sherlock gobuster nuclei

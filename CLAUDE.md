@@ -1,8 +1,8 @@
 # CLAUDE.md - Project Context for AI Assistants
 
 **Project:** Security Tools Installer
-**Version:** 1.2.0
-**Last Updated:** December 16, 2025
+**Version:** 1.3.0
+**Last Updated:** January 15, 2026
 **Purpose:** User-space installation system for OSINT/CTI/PenTest security tools
 
 ---
@@ -28,8 +28,29 @@ project/
 ├── CHANGELOG.md                    # Version history
 ├── CLAUDE.md                       # This file - AI assistant context
 │
-├── install_security_tools.sh       # Main installer (1,524 lines)
+├── installer.sh                    # Bootstrap installer (one-command setup)
+├── install_security_tools.sh       # Main installer orchestrator (196 lines)
 ├── xdg_setup.sh                   # Environment setup (314 lines)
+│
+├── lib/                           # Modular library (11 modules, 1,357 lines)
+│   ├── core/                      # Core utilities (4 modules)
+│   │   ├── logging.sh            # Log management
+│   │   ├── download.sh           # Retry-enabled downloads
+│   │   ├── verification.sh       # Installation checks
+│   │   └── dependencies.sh       # Dependency resolution
+│   │
+│   ├── data/                      # Data definitions (1 module)
+│   │   └── tool-definitions.sh   # Tool metadata (222 lines)
+│   │
+│   ├── installers/                # Installation functions (3 modules)
+│   │   ├── generic.sh            # Generic installers (219 lines)
+│   │   ├── runtimes.sh           # Runtime installers (310 lines)
+│   │   └── tools.sh              # Tool-specific wrappers (123 lines)
+│   │
+│   └── ui/                        # User interface (3 modules)
+│       ├── menu.sh               # Interactive menu (156 lines)
+│       ├── display.sh            # Status displays (137 lines)
+│       └── orchestration.sh      # Installation coordination (190 lines)
 │
 ├── scripts/                        # Supporting utilities
 │   ├── test_installation.sh            # Verification suite (533 lines)
@@ -42,13 +63,23 @@ project/
     └── USER_SPACE_COMPATIBILITY.md # Technical compatibility analysis
 ```
 
+### Modular Architecture Benefits
+
+**v1.3.0 Restructuring:**
+- **Main script reduced:** 1,581 lines → 196 lines (87% reduction)
+- **Focused modules:** 11 specialized modules (50-310 lines each)
+- **Clear separation:** Core utilities, installers, UI, and data
+- **Easy testing:** Individual modules can be tested independently
+- **Better collaboration:** Multiple developers can work on different modules
+- **Enhanced reusability:** Core functions available for other scripts
+
 ---
 
 ## 🔧 Core Components
 
-### 1. **install_security_tools.sh** (Main Installer)
+### 1. **install_security_tools.sh** (Main Orchestrator - 196 lines)
 
-**Purpose:** Install and manage security tools in user-space
+**Purpose:** Thin orchestration layer that sources library modules and coordinates installation
 
 **Key Features:**
 - Interactive menu system (42 options)
@@ -58,38 +89,111 @@ project/
 - Retry logic for downloads
 - Dry-run mode
 
-**Architecture:**
+**Architecture (v1.3.0 - Modular):**
 ```bash
-# Global variables and configuration
-SCRIPT_VERSION="1.2.0"
+# Main script responsibilities (196 lines)
+# - Define global variables and configuration
+# - Source library modules in dependency order
+# - Parse command-line arguments
+# - Initialize environment
+# - Route to appropriate mode (interactive/CLI/dry-run)
+
+# Global variables
+SCRIPT_VERSION="1.3.0"
 declare -A TOOL_INFO          # tool => "Name|Description|Category"
 declare -A TOOL_SIZES         # tool => "50MB"
 declare -A TOOL_DEPENDENCIES  # tool => "prerequisite1 prerequisite2"
 declare -A INSTALLED_STATUS   # tool => "true"|"false"
 
-# Core functions
-init_logging()              # Set up log directory and history
-define_tools()              # Define all available tools
-scan_installed_tools()      # Check what's already installed
-check_dependencies()        # Verify prerequisites
-install_tool()              # Main installation dispatcher
-download_file()             # Retry-enabled download (NEW in v2.0.1)
-verify_file_exists()        # Pre-extraction validation (NEW in v2.0.1)
+# Source library modules (in dependency order)
+source "${SCRIPT_DIR}/lib/core/logging.sh"
+source "${SCRIPT_DIR}/lib/core/download.sh"
+source "${SCRIPT_DIR}/lib/core/verification.sh"
+source "${SCRIPT_DIR}/lib/core/dependencies.sh"
+source "${SCRIPT_DIR}/lib/data/tool-definitions.sh"
+source "${SCRIPT_DIR}/lib/installers/generic.sh"
+source "${SCRIPT_DIR}/lib/installers/runtimes.sh"
+source "${SCRIPT_DIR}/lib/installers/tools.sh"
+source "${SCRIPT_DIR}/lib/ui/display.sh"
+source "${SCRIPT_DIR}/lib/ui/menu.sh"
+source "${SCRIPT_DIR}/lib/ui/orchestration.sh"
 
-# Installation functions (per tool type)
-install_cmake()             # Build tools
-install_go()                # Language runtimes
-install_python_venv()       # Python environment
-install_python_tool()       # Generic Python installer
-install_go_tool()           # Generic Go installer
-install_node_tool()         # Generic Node.js installer
-install_rust_tool()         # Generic Rust installer
-
-# User interface
-show_menu()                 # Interactive menu
-process_menu_selection()    # Handle menu input
-show_installation_summary() # Display results
+# Main function coordinates the flow
+main() {
+    parse_arguments "$@"
+    verify_xdg_environment
+    init_logging
+    define_tools
+    scan_installed_tools
+    # Route to interactive or CLI mode
+}
 ```
+
+### 1.1 **lib/core/** (Core Utilities - 4 modules)
+
+**logging.sh** - Log management
+- `init_logging()` - Create log directories
+- `create_tool_log()` - Generate timestamped log filenames
+- `cleanup_old_logs()` - Retain only 10 most recent logs per tool
+- `log_installation()` - Record to history log
+
+**download.sh** - Retry-enabled downloads
+- `download_file()` - Download with 3 retries and file verification
+- `verify_file_exists()` - Pre-extraction validation
+
+**verification.sh** - Installation checks
+- `is_installed()` - Check if tool exists in PATH
+- `scan_installed_tools()` - Populate INSTALLED_STATUS array
+- `verify_system_go()` - Check for system Go installation
+- `verify_xdg_environment()` - Validate XDG setup
+
+**dependencies.sh** - Dependency resolution
+- `check_dependencies()` - Resolve and install prerequisites recursively
+
+### 1.2 **lib/data/** (Data Definitions - 1 module)
+
+**tool-definitions.sh (222 lines)** - Tool metadata
+- Category arrays: `BUILD_TOOLS`, `LANGUAGES`, `PYTHON_RECON_PASSIVE`, etc.
+- `define_tools()` - Initialize all tool metadata in associative arrays
+- `TOOL_INFO`, `TOOL_SIZES`, `TOOL_DEPENDENCIES`, `TOOL_INSTALL_LOCATION`
+
+### 1.3 **lib/installers/** (Installation Functions - 3 modules)
+
+**generic.sh (219 lines)** - Generic installers for each language ecosystem
+- `install_python_tool()` - Python pip installer with wrapper creation
+- `install_go_tool()` - Go install wrapper
+- `install_node_tool()` - npm global installer
+- `install_rust_tool()` - cargo installer
+- `create_python_wrapper()` - Wrapper script generator for venv activation
+
+**runtimes.sh (310 lines)** - Language runtime and build tool installers
+- `install_cmake()` - CMake from source
+- `install_github_cli()` - GitHub CLI from tarball
+- `install_nodejs()` - Node.js from tarball
+- `install_rust()` - Rust via rustup
+- `install_python_venv()` - Python virtual environment
+
+**tools.sh (123 lines)** - Tool-specific wrappers
+- 25+ tool-specific wrapper functions (one-liners calling generic installers)
+- `install_yara()` - Custom YARA installer with fallback logic
+- Examples: `install_sherlock()`, `install_gobuster()`, `install_nuclei()`
+
+### 1.4 **lib/ui/** (User Interface - 3 modules)
+
+**menu.sh (156 lines)** - Interactive menu
+- `show_menu()` - Display categorized tool menu
+- `process_menu_selection()` - Handle menu input and route to installers
+- `print_shell_reload_reminder()` - Post-install guidance
+
+**display.sh (137 lines)** - Status and information display
+- `show_installed()` - Display installation status with color coding
+- `show_logs()` - Show log file locations
+- `show_installation_summary()` - Post-install summary with success/failure stats
+
+**orchestration.sh (190 lines)** - High-level installation coordination
+- `install_tool()` - Master dispatcher routing tools to correct installers
+- `install_all()` - Bulk installer for all tools
+- `dry_run_install()` - Preview installation without executing
 
 **Tool Categories:**
 - `BUILD_TOOLS`: cmake, github_cli
@@ -285,20 +389,27 @@ WRAPPER_EOF
 
 ## 📋 Adding New Tools
 
-### 7-Step Process
+### 6-Step Process (v1.3.0 Modular Architecture)
 
-1. **Define tool metadata** in `define_tools()` - Add `TOOL_INFO[]`, `TOOL_SIZES[]`, `TOOL_DEPENDENCIES[]`, `TOOL_INSTALL_LOCATION[]`
-2. **Add to category array** - e.g., `PYTHON_RECON_PASSIVE=("sherlock" "holehe" "newtool")`
-3. **Add installation check** in `is_installed()` - Check if binary exists
-4. **Create installation function**:
+With the modular architecture, adding tools is even simpler—you only edit specific library modules:
+
+1. **Define tool metadata** in `lib/data/tool-definitions.sh` - Add `TOOL_INFO[]`, `TOOL_SIZES[]`, `TOOL_DEPENDENCIES[]`, `TOOL_INSTALL_LOCATION[]` and add to category array
+2. **Add installation check** in `lib/core/verification.sh` - Update `is_installed()` function
+3. **Create installation wrapper** in `lib/installers/tools.sh`:
    - Python: `install_newtool() { install_python_tool "newtool" "package-name"; }`
    - Go: `install_newtool() { install_go_tool "newtool" "github.com/author/newtool"; }`
    - Custom: Write `install_newtool()` with proper logging and error handling
-5. **Add to dispatcher** in `install_tool()` - Add case statement entry
-6. **Add to menu** in `show_menu()` and `process_menu_selection()`
-7. **Create test function** in `test_installation.sh` - Verify installation works
+4. **Add to dispatcher** in `lib/ui/orchestration.sh` - Add case statement entry in `install_tool()`
+5. **Update menu** in `lib/ui/menu.sh` - Add to `show_menu()` and `process_menu_selection()`
+6. **Create test function** in `scripts/test_installation.sh` - Verify installation works
 
-**Complete examples and code patterns:** See `docs/EXTENDING_THE_SCRIPT.md`
+**Benefits of Modular Approach:**
+- No changes needed to main script
+- Clear file locations for each task
+- Easier to review changes (focused diffs)
+- Multiple developers can work on different modules
+
+**Complete examples and code patterns:** See `docs/EXTENDING_THE_SCRIPT.md` and `lib/README.md`
 
 ---
 
@@ -848,8 +959,10 @@ When contributing or seeking help:
 
 ---
 
-**Last Updated:** December 16, 2025
+**Last Updated:** January 15, 2026
 **Maintainer Context:** This file provides AI assistants (like Claude Code) with essential project context. For detailed workflows and examples, see `.claude/agents/WORKFLOWS.md`.
+
+**Modular Architecture (v1.3.0):** 11 focused library modules in `lib/` directory. See `lib/README.md` for detailed module documentation.
 
 **Agent Configuration:** 7 specialized agents in `.claude/agents/` - See "🤖 Agent Configuration & Workflows" section. Detailed workflows in `WORKFLOWS.md`.
 

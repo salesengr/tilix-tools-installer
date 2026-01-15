@@ -169,6 +169,20 @@ WGETRC_EOF
     # Determine mode
     if [ ${#args[@]} -eq 0 ]; then
         # Interactive menu mode
+        # Verify stdin is connected to a terminal
+        if [ ! -t 0 ]; then
+            echo -e "${RED}Error: stdin is not connected to a terminal${NC}"
+            echo ""
+            echo "This script requires an interactive terminal to run the menu."
+            echo ""
+            echo "Solutions:"
+            echo "  1. Run directly: bash install_security_tools.sh"
+            echo "  2. Use CLI mode: bash install_security_tools.sh <tool-name>"
+            echo "  3. If piping via curl, save and run: curl -O URL && bash install_security_tools.sh"
+            echo ""
+            exit 1
+        fi
+
         while true; do
             show_menu
             read -r selection

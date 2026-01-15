@@ -2,15 +2,15 @@
 # Generated: 2025-12-12
 
 # =============================================================================
-# Claude Code
+# Claude Code (Private - not included in public repo)
 # =============================================================================
 
-# Temporary plan files (plans are ephemeral, don't commit)
-.claude/plans/
+# All Claude Code files (agent configs, plans, MCP setup, validation)
+.claude/
+CLAUDE.md
 
-# Keep these tracked:
-# - CLAUDE.md (project context for AI assistants)
-# - .claude/agents/ (agent configurations)
+# Note: These files contain development workflows and AI assistant context
+# that are specific to the maintainer's setup and should not be public
 # =============================================================================
 # Installation & Testing Artifacts
 # =============================================================================

@@ -21,61 +21,18 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 ## 📦 What Gets Installed
 
-### Build Tools & Runtimes
-- **CMake** 3.28.1 - Build system generator
-- **GitHub CLI** 2.53.0 - Manage GitHub from the terminal
-- **Go** 1.21.5 - Programming language runtime
-- **Node.js** 20.10.0 - JavaScript runtime
-- **Rust** (latest) - Systems programming language
+### Tool Summary
 
-### Python Tools (16 tools)
-**OSINT/Reconnaissance:**
-- sherlock - Username search across 300+ social networks
-- holehe - Email verification across websites
-- socialscan - Username/email availability checker
-- theHarvester - Multi-source OSINT gathering
-- spiderfoot - Automated OSINT collection
-- sublist3r - Subdomain enumeration
-- photon - Fast web crawler
+| Category | Count | Key Tools |
+|----------|-------|-----------|
+| **Build Tools & Runtimes** | 5 | CMake, GitHub CLI, Go, Node.js, Rust |
+| **Python Tools** | 12 | sherlock, holehe, theHarvester, sublist3r, nuclei |
+| **Go Tools** | 8 | gobuster, ffuf, subfinder, nuclei, virustotal |
+| **Node.js Tools** | 3 | trufflehog, git-hound, jwt-cracker |
+| **Rust Tools** | 8 | feroxbuster, rustscan, ripgrep, fd, bat |
+| **Total** | **37** | Complete OSINT/CTI/PenTest toolkit |
 
-**Cyber Threat Intelligence:**
-- shodan - Internet device search engine CLI
-- censys - Internet-wide scanning data
-- yara - Pattern matching for malware research
-- h8mail - Email OSINT and breach hunting
-
-### Go Tools (8 tools)
-**Active Reconnaissance:**
-- gobuster - Directory/DNS/vhost bruteforcing
-- ffuf - Fast web fuzzer
-- httprobe - HTTP/HTTPS service probe
-- nuclei - Vulnerability scanner
-
-**Passive Reconnaissance:**
-- waybackurls - Wayback Machine URL fetcher
-- assetfinder - Domain/subdomain finder
-- subfinder - Subdomain discovery tool
-
-**CTI:**
-- virustotal - VirusTotal CLI
-
-### Node.js Tools (3 tools)
-- trufflehog - Secret scanning in git repositories
-- git-hound - GitHub reconnaissance
-- jwt-cracker - JWT token analysis
-
-### Rust Tools (8 tools)
-**Reconnaissance:**
-- feroxbuster - Fast content discovery
-- rustscan - Modern fast port scanner
-
-**Utilities:**
-- ripgrep - Fast recursive grep
-- fd - Fast file finder
-- bat - Cat with syntax highlighting
-- sd - Intuitive find & replace
-- tokei - Code statistics analyzer
-- dog - Modern DNS client
+For complete tool descriptions, usage examples, and update instructions, see 📖 **[Security Tools Reference](docs/TOOLS_REFERENCE.md)**.
 
 ## 🚀 Quick Start
 
@@ -88,7 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/tilix-tools-installer
 ```
 
 This single command will:
-1. Clone the repository (if needed)
+1. Clone the repository to `~/Documents/tilix-tools-installer` (if needed)
 2. Set up XDG environment
 3. Reload shell configuration
 4. Launch interactive installation menu
@@ -101,6 +58,7 @@ This single command will:
 
 #### 1. Clone Repository
 ```bash
+cd ~/Documents
 git clone https://github.com/YOUR_USERNAME/tilix-tools-installer.git
 cd tilix-tools-installer
 ```
@@ -230,79 +188,39 @@ Comprehensive guides are available in the `docs/` directory:
 - **[Compatibility Analysis](docs/USER_SPACE_COMPATIBILITY.md)** - Technical deep-dive
 - **[Tool Installation Summary](docs/tool_installation_summary.md)** - Where each tool lands on disk
 
-## 💾 Disk Space Requirements
+## 💾 Installation Requirements
 
-| Component | Size |
-|-----------|------|
-| CMake | ~50 MB |
-| GitHub CLI | ~90 MB |
-| Go installation | ~120 MB |
-| Node.js installation | ~50 MB |
-| Rust installation | ~800 MB |
-| Python venv + tools | ~80 MB |
-| Go tools (compiled) | ~100 MB |
-| Node.js tools | ~80 MB |
-| Rust tools (compiled) | ~30 MB |
-| **Total** | **~1.3-2 GB** |
+| Requirement | Details |
+|-------------|---------|
+| **Disk Space** | 1.3-2 GB total (Rust: 800MB, Go: 120MB, Python: 80MB, Node.js: 50MB, Tools: ~200MB) |
+| **Time** | 30-60 minutes (complete installation), Rust tools take 20-30 min |
+| **OS** | Ubuntu 20.04+ or compatible Linux distribution |
+| **Python** | 3.8+ (usually pre-installed) |
+| **Permissions** | Regular user account (no sudo required) |
+| **Network** | Internet connection for downloads |
 
-*Note: Rust is the largest component. You can skip Rust tools if space is limited.*
+*Note: Rust is the largest and slowest component. You can skip Rust tools if space/time is limited.*
 
-## ⏱️ Installation Time
+## 🔧 Quick Usage Examples
 
-| Installation Type | Time Estimate |
-|-------------------|---------------|
-| XDG setup only | 1 minute |
-| Python tools only | 5-10 minutes |
-| Go tools only | 5-15 minutes |
-| Node.js tools only | 2-5 minutes |
-| Rust tools only | 20-30 minutes* |
-| **Everything** | **30-60 minutes** |
-
-*Rust tools compile from source and take significantly longer.*
-
-## 🔧 Usage Examples
-
-### Python Tools
 ```bash
-# Username search
+# Username search across 300+ platforms
 sherlock john_doe
 
-# Email verification
-holehe target@example.com
-
-# Breach hunting
-h8mail -t victim@example.com
-
-# Subdomain enumeration
-sublist3r -d example.com
-```
-
-### Go Tools
-```bash
-# Directory bruteforce
+# Fast directory bruteforcing
 gobuster dir -u https://target.com -w wordlist.txt
-
-# Fast fuzzing
-ffuf -u https://target.com/FUZZ -w wordlist.txt
 
 # Subdomain discovery
 subfinder -d target.com -o subdomains.txt
 
-# Vulnerability scanning
+# Vulnerability scanning with 5,000+ templates
 nuclei -u https://target.com
-```
 
-### Rust Tools
-```bash
-# Fast port scan
+# Fast port scanning
 rustscan -a target.com
-
-# Content discovery
-feroxbuster -u https://target.com
-
-# Fast grep
-rg "pattern" /path/to/search
 ```
+
+For complete usage examples for all 37 tools, see 📖 **[Security Tools Reference](docs/TOOLS_REFERENCE.md)**.
 
 ## 🔄 Updating Tools
 
@@ -355,13 +273,6 @@ ls -la ~/opt/gopath/bin/
 ### Download failures
 Check the detailed log files in `~/.local/state/install_tools/logs/` for specific errors.
 
-## 📋 Requirements
-
-- **OS:** Ubuntu 20.04+ (or compatible Linux distribution)
-- **Python:** 3.8+ (usually pre-installed)
-- **Disk Space:** 2GB free space
-- **Network:** Internet connection for downloads
-- **Permissions:** Regular user account (no sudo required)
 
 ## 🔐 Security Notes
 
@@ -394,13 +305,9 @@ To add new tools to the installer:
 
 ### Agent-Assisted Development
 
-This project uses specialized AI agents for development:
-- **bash-script-developer** - Bash scripting specialist (shellcheck compliance, XDG patterns)
-- **test-automation-engineer** - Comprehensive test generation and validation
-- **security-auditor** - Security review and vulnerability scanning
-- **code-reviewer** - Quality and best practices enforcement
+This project uses 7 specialized AI agents to streamline development, testing, and security auditing. Agents enforce project conventions automatically and reduce development time by 60-70%.
 
-See [CLAUDE.md](CLAUDE.md) for detailed agent workflows and integration patterns.
+For agent workflows and usage patterns, see 📖 **[Agent Usage Guide](.claude/agents/AGENT_USAGE.md)**.
 
 ## 📝 Version History
 

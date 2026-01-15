@@ -1,6 +1,10 @@
 # Agent Workflows & Usage Patterns
 
-This document provides detailed workflows, examples, and best practices for using the 7 specialized agents configured for this project. For agent descriptions and quick reference, see the main `CLAUDE.md` file.
+This document provides detailed workflows, examples, and best practices for using the 7 specialized agents configured for this project.
+
+📖 **For comprehensive agent usage guide, decision trees, and troubleshooting, see [AGENT_USAGE.md](AGENT_USAGE.md)**
+
+For agent descriptions and quick reference, see the main `CLAUDE.md` file.
 
 ---
 

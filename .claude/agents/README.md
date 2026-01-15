@@ -369,9 +369,12 @@ Potential additions:
 
 ## Documentation
 
-- **Project context:** See CLAUDE.md (comprehensive AI assistant guide)
-- **Development guide:** See docs/EXTENDING_THE_SCRIPT.md
-- **Usage guide:** See docs/script_usage.md
+- **Agent usage guide:** 📖 See [AGENT_USAGE.md](AGENT_USAGE.md) for comprehensive agent workflows, decision trees, and troubleshooting
+- **MCP integration:** 📖 See [../MCP_SETUP.md](../MCP_SETUP.md) for Docker MCP server setup and agent-MCP compatibility
+- **Detailed workflows:** 📖 See [WORKFLOWS.md](WORKFLOWS.md) for step-by-step examples and best practices
+- **Project context:** See ../CLAUDE.md (comprehensive AI assistant guide)
+- **Development guide:** See ../docs/EXTENDING_THE_SCRIPT.md
+- **Usage guide:** See ../docs/script_usage.md
 - **Agent details:** Each agent has detailed instructions in its .md file
 
 ## Contributing

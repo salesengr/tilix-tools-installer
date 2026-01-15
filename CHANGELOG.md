@@ -8,58 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.0] - 2026-01-15
 
 ### Changed
-- **Architecture:** Modularized monolithic installer into focused library modules
-  - Restructured `install_security_tools.sh` from 1,581 lines into 11 focused modules (87.6% reduction)
-  - Main script reduced to 196 lines - now a thin orchestration layer
-  - Created `lib/` directory structure with 4 subdirectories (core, data, installers, ui)
-  - Separated concerns: logging, downloads, verification, dependencies, tool definitions, installers, UI
+- **Architecture:** Modularized monolithic installer into 11 focused library modules
+  - Main script reduced from 1,581 lines → 196 lines (87% reduction)
+  - Created `lib/` directory with core, data, installers, and ui subdirectories
   - All functionality preserved - 100% backward compatible
+  - See `lib/README.md` for module documentation
 
 ### Added
-- **lib/core/** - Core utilities (4 modules, 221 lines total)
-  - `logging.sh` - Log management functions (53 lines)
-  - `download.sh` - Download with retry logic (57 lines)
-  - `verification.sh` - Installation status checks (80 lines)
-  - `dependencies.sh` - Dependency resolution (31 lines)
-- **lib/data/** - Data definitions (1 module, 222 lines)
-  - `tool-definitions.sh` - All tool metadata and 14 category arrays
-- **lib/installers/** - Installation functions (3 modules, 652 lines total)
-  - `generic.sh` - Generic installers for Python, Go, Node.js, Rust (219 lines)
-  - `runtimes.sh` - Language runtime installers (310 lines)
-  - `tools.sh` - 25 tool wrapper functions + YARA (123 lines)
-- **lib/ui/** - User interface (3 modules, 483 lines total)
-  - `menu.sh` - Interactive menu system (156 lines)
-  - `display.sh` - Status and information display (137 lines)
-  - `orchestration.sh` - Installation coordination (190 lines)
-- **installer.sh** - One-command bootstrap script for fresh installations
-  - Auto-clones repository if needed
-  - Executes `xdg_setup.sh` automatically
-  - Detects and sources appropriate shell config (.bashrc or .zshrc)
-  - Launches interactive installation menu
+- **Modular Library Structure:**
+  - `lib/core/` - Logging, downloads, verification, dependencies (4 modules)
+  - `lib/data/` - Tool definitions and metadata (1 module)
+  - `lib/installers/` - Generic, runtime, and tool-specific installers (3 modules)
+  - `lib/ui/` - Menu, display, and orchestration (3 modules)
+- **installer.sh** - One-command bootstrap script
+  - Auto-clones repository, executes xdg_setup.sh, launches menu
   - Supports both bash and zsh
-- **lib/README.md** - Comprehensive library documentation (400+ lines)
-- **MODULARIZATION_SUMMARY.md** - Detailed summary of changes and patterns
 
 ### Benefits
-- **Improved Maintainability:** Focused 50-310 line modules vs single 1,581-line script
-- **Enhanced Testability:** Each module can be tested independently
-- **Better Collaboration:** Clear module ownership, easier code reviews
-- **Easier Debugging:** Clear separation of concerns simplifies troubleshooting
-- **Simplified Extensions:** Adding new tools requires changes to only 3-4 files
-- **Industry Standard:** Follows common patterns (lib/core, lib/ui, lib/data)
-
-### Documentation
-- Updated README.md with three installation methods (bootstrap, manual, step-by-step)
-- Updated CLAUDE.md with complete architecture documentation
-- Updated docs/EXTENDING_THE_SCRIPT.md with modular file locations
-- Created lib/README.md with comprehensive module documentation
-
-### Technical Details
-- Module sourcing order carefully designed for dependency management
-- Global variables remain in main script for cross-module access
-- All 38 tools supported with no functional changes
-- Syntax validation: All 13 files pass bash -n checks
-- Version headers: All modules labeled 1.3.0
+- Improved maintainability (50-310 line focused modules)
+- Enhanced testability (independent module testing)
+- Simplified tool additions (changes to only 3-4 files)
+- Better collaboration and code reviews
 
 ## [1.2.0] - 2026-01-15
 
@@ -116,67 +85,16 @@ Update any scripts or aliases to use new paths:
 
 ## [Unreleased]
 
-### Added - Development Infrastructure
+### Development Infrastructure
 
-**AI Agent Configurations** (not part of product versioning)
+Development infrastructure changes (agent configurations, CI/CD, tooling) are now tracked separately in 📖 **[DEV_CHANGELOG.md](DEV_CHANGELOG.md)**.
 
-**New AI Agent Configurations (4)**
-- **bash-script-developer.md** - Bash scripting specialist agent replacing generic fullstack-developer
-  - Shellcheck compliance, proper quoting, error handling patterns
-  - XDG compliance verification, user-space installation patterns
-  - Project-specific patterns discovery workflow
-  - Installation function templates and generic installers
-  - Integration with test-automation-engineer and security-auditor
-- **test-automation-engineer.md** - Comprehensive test generation and validation
-  - Generic test functions (test_python_tool, test_go_tool, test_node_tool, test_rust_tool)
-  - Test result tracking with consistent reporting format
-  - Integration testing patterns and dry-run validation
-  - Test coverage analysis tools
-- **security-auditor.md** - Security review and vulnerability scanning specialist
-  - HTTPS download verification, secret detection, sudo prevention
-  - Download retry logic validation, XDG compliance checks
-  - Structured security audit report generation
-  - Command injection and path traversal prevention
-  - Supply chain security and CVE checks via WebSearch
+**Recent Infrastructure Updates:**
+- AI agent system (7 specialized agents, 60% faster development)
+- MCP server configuration planning complete
+- Project organization improvements
 
-**Enhanced Existing Agent (1)**
-- **code-reviewer.md** - Enhanced with comprehensive bash-specific security checklist
-  - Project-critical security requirements (NO sudo, HTTPS only, user-space installations)
-  - Bash-specific vulnerability patterns (command injection, path traversal, secret exposure)
-  - Download verification checks and retry logic validation
-  - XDG compliance and hardcoded path detection
-
-**Development Workflow Documentation**
-- Added comprehensive "Agent Configuration & Workflows" section to CLAUDE.md (287 lines)
-  - 3 detailed workflow examples: adding tools, fixing bugs, conducting security audits
-  - Agent specialization documentation and integration patterns
-  - Expected productivity improvements: 60% faster development, 100% test coverage goal
-  - Clear responsibilities and handoff procedures between agents
-
-**Project Organization**
-- Created `.gitignore` with comprehensive exclusions
-  - Excludes `.claude/plans/` (temporary planning files)
-  - Includes `.claude/agents/` (version-controlled agent configs)
-  - Standard exclusions: OS files, IDE files, credentials, backups
-- Moved `fullstack-developer.md` to `.claude/agents/disabled/`
-  - Preserved for potential future use but not applicable to pure bash project
-- Updated `.claude/agents/README.md` with project-specific agent workflows
-
-### Changed
-- Agent system now bash-focused rather than generic web development
-- Security requirements are agent-enforced (blocks code with sudo, http://, hardcoded secrets)
-- Development workflow explicitly integrated with agent specializations
-- All agents now perform project pattern discovery before working (CRITICAL step)
-
-### Benefits
-- **Faster Development:** Agent specialization reduces context switching and rework
-- **Higher Quality:** bash-script-developer ensures shellcheck compliance and project patterns
-- **Complete Testing:** test-automation-engineer provides 100% test coverage for new tools
-- **Security Hardening:** security-auditor catches vulnerabilities before they're committed
-- **Consistent Reviews:** code-reviewer blocks common bash anti-patterns automatically
-
-### Impact
-This major update transforms the development process by introducing specialized AI agents for bash script development, testing, and security auditing. The agent system enforces project conventions automatically and significantly reduces development time for new features.
+See DEV_CHANGELOG.md for complete details on development tooling and workflows.
 
 ## [1.0.3] - 2025-12-18
 
@@ -274,76 +192,33 @@ This major update transforms the development process by introducing specialized 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires no sudo access.
 
 #### Core Features
-- Interactive menu system for tool selection
-- CLI support for automation and scripting
-- Comprehensive logging system with rotation
+- Interactive menu system and CLI support
+- 37+ security tools (Python, Go, Node.js, Rust)
 - Automatic dependency resolution
-- Dry-run mode for preview installations
-- Installation status tracking
-- Support for comma-separated menu selections
-- Download retry logic with automatic error recovery
+- Comprehensive logging with rotation
 - XDG Base Directory Specification compliance
+- Download retry logic with error recovery
+- Dry-run mode for preview installations
 
-#### Tools Included (37+ tools)
+#### Tools Included
+- **Build Tools & Runtimes (5):** CMake, GitHub CLI, Go, Node.js, Rust
+- **Python Tools (12):** sherlock, holehe, theHarvester, sublist3r, spiderfoot, photon, h8mail, shodan, censys, yara, wappalyzer, socialscan
+- **Go Tools (8):** gobuster, ffuf, httprobe, waybackurls, assetfinder, subfinder, nuclei, virustotal
+- **Node.js Tools (3):** trufflehog, git-hound, jwt-cracker
+- **Rust Tools (8):** feroxbuster, rustscan, ripgrep, fd, bat, sd, tokei, dog
 
-**Build Tools & Runtimes (4)**
-- CMake 3.28.1
-- Go 1.21.5
-- Node.js 20.10.0
-- Rust (latest)
-
-**Python Tools (16)**
-- sherlock - Username search across social networks
-- holehe - Email verification
-- socialscan - Username/email availability checker
-- theHarvester - Multi-source OSINT gathering
-- spiderfoot - Automated OSINT collection
-- sublist3r - Subdomain enumeration
-- photon - Web crawler
-- h8mail - Email OSINT and breach hunting
-- shodan - Internet device search engine CLI
-- censys - Internet-wide scanning data
-- yara - Malware pattern matching
-- wappalyzer - Technology profiler
-
-**Go Tools (8)**
-- gobuster - Directory/DNS/vhost bruteforcing
-- ffuf - Fast web fuzzer
-- httprobe - HTTP/HTTPS service probe
-- waybackurls - Wayback Machine URL fetcher
-- assetfinder - Domain/subdomain finder
-- subfinder - Subdomain discovery
-- nuclei - Vulnerability scanner
-- virustotal - VirusTotal CLI
-
-**Node.js Tools (3)**
-- trufflehog - Secret scanning
-- git-hound - GitHub reconnaissance
-- jwt-cracker - JWT token analysis
-
-**Rust Tools (8)**
-- feroxbuster - Content discovery
-- rustscan - Fast port scanner
-- ripgrep - Fast recursive grep
-- fd - Fast file finder
-- bat - Cat with syntax highlighting
-- sd - Intuitive find & replace
-- tokei - Code statistics analyzer
-- dog - Modern DNS client
+For complete tool descriptions, see 📖 **[Security Tools Reference](docs/TOOLS_REFERENCE.md)**.
 
 #### Installation System
 - User-space only (no sudo required)
-- Automatic environment variable configuration
+- Automatic environment configuration
 - Virtual environment management for Python tools
-- Wrapper script creation for seamless tool execution
+- Wrapper script creation for seamless execution
 - Robust error handling with retry logic
-- Detailed logging with automatic log rotation
 
 #### Documentation
-- Comprehensive README with usage examples
-- Script extension guide (EXTENDING_THE_SCRIPT.md)
-- User-space compatibility analysis (USER_SPACE_COMPATIBILITY.md)
-- Detailed tool documentation (script_usage.md, xdg_setup.md)
-- Developer guide (CLAUDE.md)
+- Comprehensive README and usage guides
+- Developer guide (CLAUDE.md, EXTENDING_THE_SCRIPT.md)
+- Compatibility analysis (USER_SPACE_COMPATIBILITY.md)
 
 ---

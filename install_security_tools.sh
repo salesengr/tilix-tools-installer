@@ -19,16 +19,32 @@ set +e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ===== COLOR CODES =====
+# Base colors for status
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 RED='\033[0;31m'
+YELLOW='\033[1;33m'
 BLUE='\033[0;36m'
 CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
-NC='\033[0m'
+
+# Semantic colors for UI (accessibility-enhanced)
+BOLD='\033[1m'
+HEADER='\033[1;36m'      # Bold cyan - header separator
+CATEGORY='\033[1;34m'    # Bold blue - category headers (replaces MAGENTA)
+INFO='\033[1;36m'        # Bold cyan - info/reminders (replaces YELLOW)
+SUCCESS='\033[1;32m'     # Bold green - success messages
+WARNING='\033[1;33m'     # Bold yellow - warnings
+ERROR='\033[1;31m'       # Bold red - errors
+NC='\033[0m'             # Reset
+
+# Unicode symbols for redundant encoding (accessibility)
+CHECK='\u2713'           # ✓
+CROSS='\u2717'           # ✗
+WARN='\u26a0'            # ⚠
+INFOSYM='\u2139'         # ℹ
 
 # ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.3.2"
+SCRIPT_VERSION="1.3.3"
 DRY_RUN=false
 CHECK_UPDATES=false
 SUCCESSFUL_INSTALLS=()

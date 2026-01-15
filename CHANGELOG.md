@@ -5,6 +5,25 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-01-15
+
+### Changed
+- **Menu Polish & Accessibility:** Improved visual clarity and accessibility
+  - Removed "(python_venv required)" annotation - dependency handled automatically by `check_dependencies()`
+  - Changed "Exit" to "Quit" with [q] option for single-keystroke exit (case-insensitive)
+  - Replaced MAGENTA category headers with Bold Blue (`\033[1;34m`) for better contrast
+  - Replaced YELLOW reminders with Bold Cyan (`\033[1;36m`) for light mode compatibility
+  - Added Unicode symbols (✓ ✗ ⚠ ℹ) to all status messages for color-blind accessibility
+  - Menu reduced from 23 lines to 22 lines
+
+### Benefits
+- **Better accessibility:** Color-blind friendly with redundant symbol encoding
+- **Light/dark mode support:** Bold Cyan works well on both terminal backgrounds
+- **Cleaner interface:** Removed confusing prerequisite annotation
+- **Better UX:** Single keystroke quit (q) instead of typing 52
+- **Professional appearance:** High-contrast bold colors and clear status symbols
+- **WCAG AA compliance:** Bold colors pass accessibility contrast ratios
+
 ## [1.3.2] - 2026-01-15
 
 ### Changed

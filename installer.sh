@@ -13,7 +13,7 @@ echo ""
 # Detect if we're already in the repository
 if [ ! -f "xdg_setup.sh" ] || [ ! -f "install_security_tools.sh" ]; then
     echo "Repository files not found. Cloning..."
-    REPO_URL="https://github.com/YOUR_USERNAME/tilix-tools-installer.git"
+    REPO_URL="https://github.com/salesengr/tilix-tools-installer.git"
     INSTALL_DIR="${HOME}/tilix-tools-installer"
 
     if [ -d "$INSTALL_DIR" ]; then

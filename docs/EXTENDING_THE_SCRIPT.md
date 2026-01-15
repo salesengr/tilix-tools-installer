@@ -1,6 +1,8 @@
 # Extending `install_security_tools.sh`
 
-The installer is intentionally data-driven: every tool is described once inside `define_tools()`, and the rest of the script consumes that metadata. Follow the checklist below to add or adjust tools without duplicating work.
+**Version:** 1.3.0 (Modular Architecture)
+
+The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.3.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 
 ## What Already Exists
 
@@ -11,30 +13,50 @@ The installer is intentionally data-driven: every tool is described once inside 
 - **Node.js apps (3):** trufflehog, git-hound, jwt-cracker
 - **Rust apps (8):** feroxbuster, rustscan, ripgrep, fd, bat, sd, tokei, dog
 
-## Add or Modify a Tool
+## Add or Modify a Tool (v1.3.0 Modular Process)
 
-1. **Describe it once**
+### File Locations
+
+With the modular architecture, you'll work with these specific files:
+
+| Task | File Location |
+|------|---------------|
+| **Define tool metadata** | `lib/data/tool-definitions.sh` |
+| **Add installation check** | `lib/core/verification.sh` |
+| **Create wrapper function** | `lib/installers/tools.sh` |
+| **Add to dispatcher** | `lib/ui/orchestration.sh` |
+| **Update menu** | `lib/ui/menu.sh` |
+| **Add test** | `scripts/test_installation.sh` |
+
+### Step-by-Step Process
+
+1. **Describe it once** (`lib/data/tool-definitions.sh`)
    - Inside `define_tools()` add entries to `TOOL_INFO`, `TOOL_SIZES`, `TOOL_DEPENDENCIES`, and `TOOL_INSTALL_LOCATION`.
    - Use the canonical command name as the key (e.g. `TOOL_INFO[feroxbuster]=...`).
 
-2. **Place it in a category**
+2. **Place it in a category** (`lib/data/tool-definitions.sh`)
    - Append the tool name to the relevant array (`PYTHON_RECON_PASSIVE`, `GO_RECON_ACTIVE`, `NODE_TOOLS`, etc.).
    - Categories power the bulk options (`--python-tools`, menu option 12, etc.).
 
-3. **Explain how to detect it**
+3. **Explain how to detect it** (`lib/core/verification.sh`)
    - Update `is_installed()` with the proper file location or `command -v` check.
    - Reference the actual binary name (`vt` for VirusTotal, wrappers in `~/.local/bin/<tool>` for Python/Node.js).
 
-4. **Provide the installer**
-   - Prefer the generic helpers shown below; only write custom logic when a tool needs bespoke build flags.
+4. **Provide the installer** (`lib/installers/tools.sh`)
+   - Prefer the generic helpers from `lib/installers/generic.sh`; only write custom logic when a tool needs bespoke build flags.
    - Keep installers idempotent—rerunning them should safely upgrade or no-op.
+   - Example: `install_newtool() { install_python_tool "newtool" "newtool-package"; }`
 
-5. **Register it**
-   - Add a `case` entry for the tool in `install_tool()`.
-   - Extend the interactive menu (`show_menu` and `process_menu_selection`) if you want the tool selectable by number.
-   - Add a test function in `scripts/test_installation.sh` (or reuse `test_python_tool`, `test_go_tool`, etc.) and wire it into `run_all_tests`/`run_specific_test`.
+5. **Register it** (`lib/ui/orchestration.sh` and `lib/ui/menu.sh`)
+   - Add a `case` entry for the tool in `install_tool()` function in `lib/ui/orchestration.sh`.
+   - Extend the interactive menu (`show_menu` and `process_menu_selection` in `lib/ui/menu.sh`) if you want the tool selectable by number.
+
+6. **Add test** (`scripts/test_installation.sh`)
+   - Add a test function (or reuse `test_python_tool`, `test_go_tool`, etc.) and wire it into `run_all_tests`/`run_specific_test`.
 
 ## Generic Installers
+
+The modular architecture provides reusable generic installers in `lib/installers/generic.sh`:
 
 | Stack | Helper | Example |
 |-------|--------|---------|
@@ -43,10 +65,11 @@ The installer is intentionally data-driven: every tool is described once inside 
 | Node.js | `install_node_tool "tool" "npm-package"` | `install_trufflehog() { install_node_tool "trufflehog" "@trufflesecurity/trufflehog"; }` |
 | Rust | `install_rust_tool "tool" "crate"` | `install_ripgrep() { install_rust_tool "ripgrep" "ripgrep"; }` |
 
-These helpers automatically:
+These helpers (defined in `lib/installers/generic.sh`) automatically:
 - Set the proper environment variables (GOROOT/GOPATH, PATH, npm prefix, CARGO_HOME).
-- Create per-tool log files under `~/.local/state/install_tools/logs`.
+- Create per-tool log files under `~/.local/state/install_tools/logs` (via `lib/core/logging.sh`).
 - Append success/failure lines to the installation history.
+- Handle errors and return appropriate exit codes.
 
 ## Testing Your Changes
 

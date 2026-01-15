@@ -5,6 +5,62 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-15
+
+### Changed
+- **Architecture:** Modularized monolithic installer into focused library modules
+  - Restructured `install_security_tools.sh` from 1,581 lines into 11 focused modules (87.6% reduction)
+  - Main script reduced to 196 lines - now a thin orchestration layer
+  - Created `lib/` directory structure with 4 subdirectories (core, data, installers, ui)
+  - Separated concerns: logging, downloads, verification, dependencies, tool definitions, installers, UI
+  - All functionality preserved - 100% backward compatible
+
+### Added
+- **lib/core/** - Core utilities (4 modules, 221 lines total)
+  - `logging.sh` - Log management functions (53 lines)
+  - `download.sh` - Download with retry logic (57 lines)
+  - `verification.sh` - Installation status checks (80 lines)
+  - `dependencies.sh` - Dependency resolution (31 lines)
+- **lib/data/** - Data definitions (1 module, 222 lines)
+  - `tool-definitions.sh` - All tool metadata and 14 category arrays
+- **lib/installers/** - Installation functions (3 modules, 652 lines total)
+  - `generic.sh` - Generic installers for Python, Go, Node.js, Rust (219 lines)
+  - `runtimes.sh` - Language runtime installers (310 lines)
+  - `tools.sh` - 25 tool wrapper functions + YARA (123 lines)
+- **lib/ui/** - User interface (3 modules, 483 lines total)
+  - `menu.sh` - Interactive menu system (156 lines)
+  - `display.sh` - Status and information display (137 lines)
+  - `orchestration.sh` - Installation coordination (190 lines)
+- **installer.sh** - One-command bootstrap script for fresh installations
+  - Auto-clones repository if needed
+  - Executes `xdg_setup.sh` automatically
+  - Detects and sources appropriate shell config (.bashrc or .zshrc)
+  - Launches interactive installation menu
+  - Supports both bash and zsh
+- **lib/README.md** - Comprehensive library documentation (400+ lines)
+- **MODULARIZATION_SUMMARY.md** - Detailed summary of changes and patterns
+
+### Benefits
+- **Improved Maintainability:** Focused 50-310 line modules vs single 1,581-line script
+- **Enhanced Testability:** Each module can be tested independently
+- **Better Collaboration:** Clear module ownership, easier code reviews
+- **Easier Debugging:** Clear separation of concerns simplifies troubleshooting
+- **Simplified Extensions:** Adding new tools requires changes to only 3-4 files
+- **Industry Standard:** Follows common patterns (lib/core, lib/ui, lib/data)
+
+### Documentation
+- Updated README.md with three installation methods (bootstrap, manual, step-by-step)
+- Updated CLAUDE.md with complete architecture documentation
+- Updated docs/EXTENDING_THE_SCRIPT.md with modular file locations
+- Created lib/README.md with comprehensive module documentation
+
+### Technical Details
+- Module sourcing order carefully designed for dependency management
+- Global variables remain in main script for cross-module access
+- All 38 tools supported with no functional changes
+- Syntax validation: All 13 files pass bash -n checks
+- Version headers: All modules labeled 1.3.0
+
 ## [1.2.0] - 2026-01-15
 
 ### Changed

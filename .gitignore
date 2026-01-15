@@ -53,8 +53,8 @@ local.config
 # Shell session files
 .bash_sessions/
 
-# Core dumps
-core
+# Core dumps (exclude lib/core directory)
+/core
 core.*
 *.core
 

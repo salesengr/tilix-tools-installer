@@ -11,28 +11,28 @@
 show_menu() {
     clear
     print_shell_reload_reminder
-    echo -e "${BLUE}=========================================="
+    echo -e "${HEADER}=========================================="
     echo "Security Tools Installer v${SCRIPT_VERSION}"
     echo -e "==========================================${NC}"
     echo ""
-    echo -e "${MAGENTA}BUILD & LANGUAGES:${NC} [1] CMake [2] GitHub CLI [3] Node.js [4] Rust"
+    echo -e "${CATEGORY}BUILD & LANGUAGES:${NC} [1] CMake [2] GitHub CLI [3] Node.js [4] Rust"
     echo ""
-    echo -e "${MAGENTA}PYTHON TOOLS${NC} (python_venv required):"
+    echo -e "${CATEGORY}PYTHON TOOLS:${NC}"
     echo "  [5] sherlock      [6] holehe        [7] socialscan    [8] theHarvester"
     echo "  [9] spiderfoot    [10] sublist3r    [11] photon       [12] wappalyzer"
     echo "  [13] shodan       [14] censys       [15] yara         [16] h8mail"
     echo ""
-    echo -e "${MAGENTA}GO TOOLS${NC} (system Go required):"
+    echo -e "${CATEGORY}GO TOOLS (system Go required):${NC}"
     echo "  [17] gobuster     [18] ffuf         [19] httprobe     [20] waybackurls"
     echo "  [21] assetfinder  [22] subfinder    [23] nuclei       [24] virustotal"
     echo ""
-    echo -e "${MAGENTA}NODE.JS:${NC} [25] trufflehog [26] git-hound [27] jwt-cracker"
+    echo -e "${CATEGORY}NODE.JS:${NC} [25] trufflehog [26] git-hound [27] jwt-cracker"
     echo ""
-    echo -e "${MAGENTA}RUST:${NC} [28] feroxbuster [29] rustscan [30] ripgrep [31] fd [32] bat"
+    echo -e "${CATEGORY}RUST:${NC} [28] feroxbuster [29] rustscan [30] ripgrep [31] fd [32] bat"
     echo ""
-    echo -e "${MAGENTA}BULK INSTALL:${NC} [33] All Python [34] All Go [35] All Node [36] All Rust"
+    echo -e "${CATEGORY}BULK INSTALL:${NC} [33] All Python [34] All Go [35] All Node [36] All Rust"
     echo ""
-    echo -e "${MAGENTA}INFO:${NC} [50] Show installed [51] Show logs [52] Exit"
+    echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools [L] Show Logs [Q] Quit"
     echo ""
     echo -n "Enter selection (comma-separated): "
 }
@@ -97,9 +97,9 @@ process_menu_selection() {
             ;;
         34)
             # All Go tools
-            echo -e "${YELLOW}Installing all Go tools (using system Go)...${NC}"
+            echo -e "${WARNING}${WARN} Installing all Go tools (using system Go)...${NC}"
             if ! verify_system_go; then
-                echo -e "${RED}✗ System Go not found. Cannot install Go tools.${NC}"
+                echo -e "${ERROR}${CROSS} System Go not found. Cannot install Go tools.${NC}"
                 read -p "Press Enter to continue..."
                 return 1
             fi
@@ -116,7 +116,7 @@ process_menu_selection() {
             ;;
         36)
             # All Rust tools
-            echo -e "${YELLOW}Warning: Rust tools take 15-30 minutes to compile${NC}"
+            echo -e "${WARNING}${WARN} Warning: Rust tools take 15-30 minutes to compile${NC}"
             read -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then
                 install_tool "rust"
@@ -126,13 +126,13 @@ process_menu_selection() {
             fi
             ;;
 
-        # INFO OPTIONS (50-52)
-        50) show_installed ;;
-        51) show_logs ;;
-        52) exit 0 ;;
+        # INFO OPTIONS (T, L, Q)
+        T|t) show_installed ;;
+        L|l) show_logs ;;
+        Q|q) exit 0 ;;
 
         *)
-            echo -e "${RED}Invalid selection: $selection${NC}"
+            echo -e "${ERROR}${CROSS} Invalid selection: $selection${NC}"
             ;;
     esac
 }
@@ -141,5 +141,5 @@ process_menu_selection() {
 # Purpose: Remind user to reload shell configuration
 # Returns: Always succeeds
 print_shell_reload_reminder() {
-    echo -e "${YELLOW}Reminder:${NC} Run 'source ~/.bashrc' or open a new shell so newly installed tools are on your PATH."
+    echo -e "${INFO}${INFOSYM} Reminder:${NC} Run 'source ~/.bashrc' or open a new shell so newly installed tools are on your PATH."
 }

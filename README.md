@@ -81,19 +81,26 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 Choose your preferred installation method:
 
-### Method 1: One-Command Bootstrap (Recommended)
+### Method 1: One-Command Bootstrap
 
+**Two-Step (Recommended for interactive menu):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/salesengr/tilix-tools-installer/main/installer.sh -o installer.sh
+bash installer.sh
+```
+
+**One-Step (Note: interactive menu not available when piped):**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/salesengr/tilix-tools-installer/main/installer.sh | bash
 ```
 
-This single command will:
+This will:
 1. Clone the repository (if needed)
 2. Set up XDG environment
 3. Reload shell configuration
-4. Launch interactive installation menu
+4. Launch interactive installation menu (two-step only)
 
-**Note:** Requires `git` and `curl` to be installed.
+**Note:** Requires `git` and `curl` to be installed. For the interactive menu, use the two-step approach.
 
 ---
 

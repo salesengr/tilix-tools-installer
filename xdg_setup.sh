@@ -206,7 +206,7 @@ echo ""
 
 # Source the new configuration
 echo -e "${YELLOW}Loading new environment...${NC}"
-if source ~/.bashrc 2>/dev/null; then
+if source ~/.bashrc </dev/null 2>/dev/null; then
     echo -e "${GREEN}[OK] Environment loaded${NC}"
 else
     echo -e "${YELLOW}Could not reload shell automatically.${NC}"

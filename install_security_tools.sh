@@ -171,6 +171,12 @@ WGETRC_EOF
         # Interactive menu mode
         # Verify stdin is connected to a terminal
         if [ ! -t 0 ]; then
+            # Try to reconnect to /dev/tty
+            if [ -c /dev/tty ]; then
+                echo -e "${YELLOW}Note: Reconnecting stdin to /dev/tty for interactive menu${NC}"
+                exec bash "$0" < /dev/tty
+            fi
+
             echo -e "${RED}Error: stdin is not connected to a terminal${NC}"
             echo ""
             echo "This script requires an interactive terminal to run the menu."

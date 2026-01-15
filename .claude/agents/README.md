@@ -289,7 +289,7 @@ code-reviewer and bash-script-developer are aware of shellcheck rules:
 
 ```bash
 # Run shellcheck before committing
-shellcheck install_security_tools.sh test_installation.sh xdg_setup.sh
+shellcheck install_security_tools.sh scripts/test_installation.sh xdg_setup.sh
 ```
 
 ### Test Execution
@@ -298,10 +298,10 @@ test-automation-engineer creates tests compatible with:
 
 ```bash
 # Run all tests
-bash test_installation.sh
+bash scripts/test_installation.sh
 
 # Run specific test
-bash test_installation.sh toolname
+bash scripts/test_installation.sh toolname
 ```
 
 ### Security Scanning

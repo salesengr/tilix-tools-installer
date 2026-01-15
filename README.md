@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Release Date:** January 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
@@ -121,23 +121,23 @@ bash install_security_tools.sh --dry-run sherlock gobuster
 ### 3. Verify Installation
 
 ```bash
-bash test_installation.sh
+bash scripts/test_installation.sh
 ```
 
 ### 4. Analyze & Optimize Installation (Optional)
 
 ```bash
 # Generate comprehensive diagnostic report
-bash diagnose_installation.sh
+bash scripts/diagnose_installation.sh
 
 # View specific sections
-bash diagnose_installation.sh --inventory        # List installed tools
-bash diagnose_installation.sh --disk-usage       # Analyze disk space
-bash diagnose_installation.sh --build-artifacts  # Find cleanable files
-bash diagnose_installation.sh --cleanup-plan     # Show safe cleanup commands
+bash scripts/diagnose_installation.sh --inventory        # List installed tools
+bash scripts/diagnose_installation.sh --disk-usage       # Analyze disk space
+bash scripts/diagnose_installation.sh --build-artifacts  # Find cleanable files
+bash scripts/diagnose_installation.sh --cleanup-plan     # Show safe cleanup commands
 
 # Execute safe cleanup to recover disk space
-bash diagnose_installation.sh --cleanup
+bash scripts/diagnose_installation.sh --cleanup
 ```
 
 The diagnostic script helps you:
@@ -379,7 +379,7 @@ Built for user-space security tool installation without requiring root privilege
 
 - Check the documentation in `docs/`
 - Review installation logs for errors
-- Run `bash test_installation.sh` to verify setup
+- Run `bash scripts/test_installation.sh` to verify setup
 - Use `--dry-run` to preview installations
 
 ---

@@ -58,14 +58,14 @@ Important behaviors:
 - Go tools land in `~/opt/gopath/bin`, Node.js tools in `~/.local/bin`, Rust tools in `~/.local/share/cargo/bin`, and Python tools inside the shared virtualenv (`~/.local/share/virtualenvs/tools`)
 - The installer/menu prints a reminder to run `source ~/.bashrc`; be sure to do that (or open a new shell) after installing anything.
 
-## 3. Verify Installations (`test_installation.sh`)
+## 3. Verify Installations (`scripts/test_installation.sh`)
 
 ```bash
 # Test everything that is currently in PATH
-bash test_installation.sh
+bash scripts/test_installation.sh
 
 # Test a single tool
-bash test_installation.sh sherlock
+bash scripts/test_installation.sh sherlock
 ```
 
 What gets checked:

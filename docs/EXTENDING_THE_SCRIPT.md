@@ -32,7 +32,7 @@ The installer is intentionally data-driven: every tool is described once inside 
 5. **Register it**
    - Add a `case` entry for the tool in `install_tool()`.
    - Extend the interactive menu (`show_menu` and `process_menu_selection`) if you want the tool selectable by number.
-   - Add a test function in `test_installation.sh` (or reuse `test_python_tool`, `test_go_tool`, etc.) and wire it into `run_all_tests`/`run_specific_test`.
+   - Add a test function in `scripts/test_installation.sh` (or reuse `test_python_tool`, `test_go_tool`, etc.) and wire it into `run_all_tests`/`run_specific_test`.
 
 ## Generic Installers
 
@@ -58,8 +58,8 @@ bash install_security_tools.sh --dry-run newtool
 bash install_security_tools.sh newtool
 
 # Run the verification suite
-bash test_installation.sh newtool
-bash test_installation.sh               # Everything
+bash scripts/test_installation.sh newtool
+bash scripts/test_installation.sh               # Everything
 ```
 
 ## Tips and Troubleshooting

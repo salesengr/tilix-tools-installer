@@ -5,6 +5,25 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-15
+
+### Changed
+- **Project Organization:** Reorganized scripts into logical directory structure
+  - Moved `test_installation.sh` → `scripts/test_installation.sh`
+  - Moved `diagnose_installation.sh` → `scripts/diagnose_installation.sh`
+  - Core installation scripts remain in root: `xdg_setup.sh`, `install_security_tools.sh`
+  - Updated all documentation with new script paths (11 files)
+
+### Migration Guide
+Update any scripts or aliases to use new paths:
+- `bash test_installation.sh` → `bash scripts/test_installation.sh`
+- `bash diagnose_installation.sh` → `bash scripts/diagnose_installation.sh`
+
+### Benefits
+- Cleaner root directory with clear separation between core and supporting scripts
+- Establishes pattern for future script additions (supporting tools go in `scripts/`)
+- Improved project organization following industry standards
+
 ## [1.1.0] - 2025-12-16
 
 ### Changed

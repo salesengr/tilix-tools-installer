@@ -1,6 +1,6 @@
 #!/bin/bash
 # XDG Base Directory Setup Script
-# Version: 1.1.0
+# Version: 1.2.0
 # For Ubuntu 20.04+ container without sudo access
 # 
 # This script creates a fully XDG Base Directory Specification compliant

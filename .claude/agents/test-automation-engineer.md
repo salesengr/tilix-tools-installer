@@ -28,17 +28,17 @@ cat CLAUDE.md 2>/dev/null | grep -A 20 "test"
 cat README.md 2>/dev/null | grep -i "test"
 
 # 3. Examine existing test functions
-grep -n "^test_.*() {" test_installation.sh | head -30
+grep -n "^test_.*() {" scripts/test_installation.sh | head -30
 
 # 4. Find generic test patterns
-grep -A 20 "^test_python_tool()" test_installation.sh
-grep -A 20 "^test_go_tool()" test_installation.sh
+grep -A 20 "^test_python_tool()" scripts/test_installation.sh
+grep -A 20 "^test_go_tool()" scripts/test_installation.sh
 
 # 5. Check test result tracking
-grep -A 10 "^test_result()" test_installation.sh
+grep -A 10 "^test_result()" scripts/test_installation.sh
 
 # 6. See how tools are categorized
-grep "^declare -a.*=" test_installation.sh
+grep "^declare -a.*=" scripts/test_installation.sh
 ```
 
 ### Project Testing Discovery Output
@@ -309,10 +309,10 @@ Validate your test function:
 
 ```bash
 # 1. Syntax check
-bash -n test_installation.sh
+bash -n scripts/test_installation.sh
 
 # 2. Run specific test
-bash test_installation.sh newtool
+bash scripts/test_installation.sh newtool
 
 # 3. Verify output format matches
 # - Should show cyan "Testing Tool..." header
@@ -597,11 +597,11 @@ Identify gaps in test coverage:
 grep "^install_.*() {" install_security_tools.sh | sed 's/install_//' | sed 's/() {//'
 
 # Get list of all test functions
-grep "^test_.*() {" test_installation.sh | sed 's/test_//' | sed 's/() {//'
+grep "^test_.*() {" scripts/test_installation.sh | sed 's/test_//' | sed 's/() {//'
 
 # Compare to find missing tests
 comm -23 <(grep "^install_" install_security_tools.sh | sed 's/install_//' | sed 's/() {//' | sort) \
-         <(grep "^test_" test_installation.sh | sed 's/test_//' | sed 's/() {//' | sort)
+         <(grep "^test_" scripts/test_installation.sh | sed 's/test_//' | sed 's/() {//' | sort)
 ```
 
 ## Integration Notes
@@ -633,25 +633,25 @@ Before marking tests complete:
 
 ```bash
 # Run all tests
-bash test_installation.sh
+bash scripts/test_installation.sh
 
 # Run specific tool test
-bash test_installation.sh toolname
+bash scripts/test_installation.sh toolname
 
 # Check test syntax
-bash -n test_installation.sh
+bash -n scripts/test_installation.sh
 
 # Find existing tests
-grep -n "^test_.*() {" test_installation.sh
+grep -n "^test_.*() {" scripts/test_installation.sh
 
 # See generic test patterns
-grep -A 20 "^test_python_tool()" test_installation.sh
-grep -A 20 "^test_go_tool()" test_installation.sh
+grep -A 20 "^test_python_tool()" scripts/test_installation.sh
+grep -A 20 "^test_go_tool()" scripts/test_installation.sh
 
 # Count tests
-grep "test_result" test_installation.sh | wc -l
+grep "test_result" scripts/test_installation.sh | wc -l
 
 # Find tools without tests
 comm -23 <(grep "^install_" install_security_tools.sh | sed 's/install_//' | sed 's/() {//' | sort) \
-         <(grep "^test_" test_installation.sh | sed 's/test_//' | sed 's/() {//' | sort)
+         <(grep "^test_" scripts/test_installation.sh | sed 's/test_//' | sed 's/() {//' | sort)
 ```

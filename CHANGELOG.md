@@ -5,6 +5,60 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-01-15
+
+### Changed
+- **Menu Organization:** Streamlined menu with continuous numbering and automatic dependency handling
+  - Consolidated all "All [Category]" options into BULK INSTALL section
+  - Continuous numbering scheme for better UX:
+    - BUILD & LANGUAGES: 1-4
+    - PYTHON TOOLS: 5-16
+    - GO TOOLS: 17-24
+    - NODE.JS: 25-27
+    - RUST: 28-32
+    - BULK INSTALL: 33-36 (All Python, All Go, All Node, All Rust)
+    - INFO: 50-52
+  - Menu reduced from 27 lines to 23 lines (15% reduction)
+
+### Removed
+- **Redundant Manual Options:** Removed menu options that are handled automatically
+  - Removed [40] "Install Everything" - users can install all via CLI or select multiple bulk options
+  - Removed [45] "Python venv" prerequisite - automatically installed when any Python tool is selected
+  - System now handles all prerequisites via automatic dependency resolution
+
+### Benefits
+- **Simplified UX:** Users don't need to manually install prerequisites first
+- **Continuous numbering:** Individual tools (1-32) flow directly into bulk operations (33-36)
+- **Automatic dependency handling:** Python venv installed automatically when needed
+- **Cleaner menu:** Removed redundant options that confused users
+- **Professional design:** Follows package manager conventions (apt, yum, npm)
+
+## [1.3.1] - 2026-01-15
+
+### Changed
+- **Menu Redesign:** Condensed interactive menu to fit standard 24-line terminals
+  - Reduced menu from 54-60 lines to 25 lines (58% reduction)
+  - Multi-column layout for tool listings
+  - Removed excessive blank line separators
+  - Consolidated category headers for space efficiency
+  - All tools now visible without scrolling
+
+### Added
+- **Tool Discoverability:** Exposed 13 previously hidden tools in interactive menu
+  - Python: `sublist3r`, `photon`, `wappalyzer`, `h8mail` (4 tools)
+  - Go: `httprobe`, `waybackurls`, `assetfinder` (3 tools)
+  - Node.js: `git-hound`, `jwt-cracker` (2 tools)
+  - Rust: `fd`, `bat` (2 tools)
+  - Added "Python venv only" quick install option [41]
+- **Improved Numbering:** Continuous numbering scheme (1-36 for tools, 40-41 for bulk, 50-52 for info)
+
+### Fixed
+- **stdin Connection Issues:** Enhanced terminal detection and reconnection
+  - Added `/dev/tty` reconnection fallback in both `installer.sh` and `install_security_tools.sh`
+  - Protected stdin during `source ~/.bashrc` operations (`</dev/null`)
+  - Added clear error messages when stdin unavailable (e.g., piped from curl)
+  - Documented two-step installation method for interactive menu
+
 ## [1.3.0] - 2026-01-15
 
 ### Changed

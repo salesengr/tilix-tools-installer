@@ -9,7 +9,7 @@ The installer keeps everything inside your home directory:
 - `~/.local/bin` – user executables and Python/Node wrappers
 - `~/.local/share` – Python virtual environments, shared data, Cargo metadata
 - `~/.local/state/install_tools` – installer logs and history
-- `~/opt/go` – Go toolchain (`GOROOT`)
+- `/usr/local/go` – System Go installation (GOROOT)
 - `~/opt/gopath/bin` – compiled Go tools
 - `~/opt/node` – Node.js runtime
 - `~/opt/src` – temporary build artifacts and downloaded archives
@@ -18,11 +18,13 @@ Logs for every tool live in `~/.local/state/install_tools/logs/<tool>-<timestamp
 
 ## Build Tools and Runtimes
 
+**Note:** As of v1.1.0, Go is expected to be pre-installed system-wide at `/usr/local/go`. The installer no longer installs Go itself, only uses it to build Go-based tools.
+
 | Component | How it is installed | Resulting files |
 |-----------|---------------------|-----------------|
 | CMake 3.28.1 | GitHub tarball is downloaded to `~/opt/src`, extracted, and binaries copied into `~/.local/bin` with supporting files in `~/.local/share`. | `~/.local/bin/cmake`, shared modules in `~/.local/share/cmake-*`, man pages in `~/.local/share/man`. |
 | GitHub CLI 2.53.0 | Release tarball pulled into `~/opt/src` and extracted. Binary plus man pages are copied into `~/.local/bin` and `~/.local/share/man`. | `~/.local/bin/gh`, docs under `~/.local/share/doc/gh`. |
-| Go 1.21.5 | Official archive expanded directly into `~/opt/go`; `GOPATH` is set to `~/opt/gopath`. | Toolchain in `~/opt/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
+| Go 1.21.5 | System-wide installation expected at `/usr/local/go`; `GOPATH` is set to `~/opt/gopath` for user workspace. | System toolchain at `/usr/local/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
 | Node.js 20.10.0 | Node tarball extracted to `~/opt/node`. npm global prefix points to `~/.local`, so binaries are linked in `~/.local/bin` and packages in `~/.local/lib/node_modules`. | `~/opt/node/bin/node`, `~/.local/bin/*` for npm-installed CLIs. |
 | Rust (rustup) | `rustup` installer runs with `$CARGO_HOME=$HOME/.local/share/cargo`. | Toolchains and registry caches in `~/.local/share/rustup`/`cargo`, binaries in `~/.local/share/cargo/bin`. |
 | Python virtual environment | `python3 -m venv $XDG_DATA_HOME/virtualenvs/tools`, pip upgraded, wrapper alias `tools-venv` provided by `xdg_setup.sh`. | Virtual environment at `~/.local/share/virtualenvs/tools`, activation script plus site-packages. |
@@ -89,7 +91,7 @@ Cargo installs place binaries in `~/.local/share/cargo/bin`. The installer sets 
 ## Re-running or Cleaning Up
 
 - Reinstall any component with `bash install_security_tools.sh <tool-name>`; it reuses the same log locations above.
-- Remove a single language stack by deleting its directory (`~/opt/go`, `~/.local/share/cargo`, etc.) and rerunning the installer for that runtime.
+- Remove a single language stack by deleting its directory (`~/.local/share/cargo`, `~/opt/node`, etc.) and rerunning the installer for that runtime. Note: Go is system-installed and should not be removed.
 - Inspect `~/.local/state/install_tools/installation_history.log` to see when a tool was last touched and which log file captured the output.
 
 Use `README.md` and `docs/xdg_setup.md` for usage workflows and environment bootstrap details.

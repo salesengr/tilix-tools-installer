@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer (OSINT/CTI/PenTest)
-# Version: 1.0.1
+# Version: 1.1.0
 # For Ubuntu 20.04+ container without sudo access
 #
 # PREREQUISITE: Run xdg_setup.sh first

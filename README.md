@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.0.1
+**Version:** 1.1.0
 **Release Date:** January 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.

@@ -84,7 +84,7 @@ Choose your preferred installation method:
 ### Method 1: One-Command Bootstrap (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/tilix-tools-installer/main/installer.sh | bash
+curl -fsSL https://raw.githubusercontent.com/salesengr/tilix-tools-installer/main/installer.sh | bash
 ```
 
 This single command will:
@@ -101,7 +101,7 @@ This single command will:
 
 #### 1. Clone Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/tilix-tools-installer.git
+git clone https://github.com/salesengr/tilix-tools-installer.git
 cd tilix-tools-installer
 ```
 

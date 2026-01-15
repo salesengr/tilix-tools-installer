@@ -25,7 +25,9 @@ install_tool() {
     fi
 
     # Install the tool
-    echo -e "${CYAN}Installing $tool...${NC}"
+    echo ""
+    echo -e "${INFO}${INFOSYM} Installing $tool...${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
     case "$tool" in
         cmake) install_cmake ;;

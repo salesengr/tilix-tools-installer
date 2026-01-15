@@ -34,6 +34,8 @@ install_python_tool() {
     local pip_package=$2
     local logfile=$(create_tool_log "$tool")
 
+    echo -e "${INFO}⚙ Activating Python environment...${NC}"
+
     {
         echo "=========================================="
         echo "Installing $tool"
@@ -56,13 +58,13 @@ install_python_tool() {
     } > "$logfile" 2>&1
 
     if is_installed "$tool"; then
-        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
+        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}[FAIL] $tool installation failed${NC}"
+        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -85,10 +87,12 @@ install_go_tool() {
 
     # Verify system Go is available
     if ! verify_system_go; then
-        echo -e "${RED}✗ Cannot install $tool: System Go not found${NC}"
+        echo -e "${ERROR}${CROSS} Cannot install $tool: System Go not found${NC}"
         FAILED_INSTALLS+=("$tool")
         return 1
     fi
+
+    echo -e "${INFO}🔨 Compiling from Go source...${NC}"
 
     {
         echo "=========================================="
@@ -113,13 +117,13 @@ install_go_tool() {
     } > "$logfile" 2>&1
 
     if is_installed "$tool"; then
-        echo -e "${GREEN}✓ $tool installed successfully${NC}"
+        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}✗ $tool installation failed${NC}"
+        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -139,6 +143,8 @@ install_node_tool() {
     local npm_package=$2
     local logfile=$(create_tool_log "$tool")
 
+    echo -e "${INFO}📦 Installing via npm...${NC}"
+
     {
         echo "=========================================="
         echo "Installing $tool"
@@ -156,13 +162,13 @@ install_node_tool() {
     } > "$logfile" 2>&1
 
     if is_installed "$tool"; then
-        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
+        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}[FAIL] $tool installation failed${NC}"
+        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
@@ -182,7 +188,8 @@ install_rust_tool() {
     local crate=$2
     local logfile=$(create_tool_log "$tool")
 
-    echo -e "${YELLOW}Compiling $tool (may take 5-10 minutes)...${NC}"
+    echo -e "${WARNING}${WARN} Compiling $tool from Rust source (may take 5-10 minutes)...${NC}"
+    echo -e "${INFO}🦀 This is normal - Rust compiles from source for optimization${NC}"
 
     {
         echo "=========================================="
@@ -203,13 +210,13 @@ install_rust_tool() {
     } > "$logfile" 2>&1
 
     if is_installed "$tool"; then
-        echo -e "${GREEN}[OK] $tool installed successfully${NC}"
+        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("$tool")
         log_installation "$tool" "success" "$logfile"
         cleanup_old_logs "$tool"
         return 0
     else
-        echo -e "${RED}[FAIL] $tool installation failed${NC}"
+        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"

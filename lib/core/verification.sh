@@ -33,7 +33,7 @@ is_installed() {
             [ -f "$HOME/opt/gopath/bin/vt" ] && return 0 ;;
         # Node tools
         trufflehog|git-hound|jwt-cracker)
-            [ -f "$HOME/.local/bin/$tool" ] && return 0 ;;
+            [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
         # Rust tools
         feroxbuster|rustscan|sd|tokei|dog)
             command -v "$tool" &>/dev/null && return 0 ;;

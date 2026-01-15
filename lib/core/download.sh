@@ -18,23 +18,24 @@ download_file() {
     local retry=0
 
     while [ $retry -lt $max_retries ]; do
-        echo "Attempting download (try $((retry + 1))/$max_retries)..."
+        echo -e "${INFO}⬇ Downloading... (attempt $((retry + 1))/$max_retries)${NC}"
 
         if wget --progress=bar:force --show-progress "$url" -O "$output" 2>&1; then
             if [ -f "$output" ]; then
-                echo "Download successful"
+                echo -e "${SUCCESS}${CHECK} Download complete${NC}"
                 return 0
             fi
         fi
 
         retry=$((retry + 1))
         if [ $retry -lt $max_retries ]; then
-            echo "Download failed, retrying in 2 seconds..."
+            echo -e "${WARNING}${WARN} Download failed, retrying in 2 seconds...${NC}"
             sleep 2
         fi
     done
 
-    echo "ERROR: Failed to download after $max_retries attempts: $url"
+    echo -e "${ERROR}${CROSS} Failed to download after $max_retries attempts${NC}"
+    echo "  URL: $url"
     return 1
 }
 

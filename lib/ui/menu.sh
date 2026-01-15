@@ -15,58 +15,26 @@ show_menu() {
     echo "Security Tools Installer v${SCRIPT_VERSION}"
     echo -e "==========================================${NC}"
     echo ""
-    echo -e "${MAGENTA}BUILD TOOLS${NC}"
-    echo "  [1] CMake"
-    echo "  [2] GitHub CLI"
+    echo -e "${MAGENTA}BUILD & LANGUAGES:${NC} [1] CMake [2] GitHub CLI [3] Node.js [4] Rust"
     echo ""
-    echo -e "${MAGENTA}LANGUAGES & RUNTIMES${NC}"
-    echo "  [3] Node.js"
-    echo "  [4] Rust (compile time: 5-10 min)"
+    echo -e "${MAGENTA}PYTHON TOOLS${NC} (python_venv required):"
+    echo "  [5] sherlock      [6] holehe        [7] socialscan    [8] theHarvester"
+    echo "  [9] spiderfoot    [10] sublist3r    [11] photon       [12] wappalyzer"
+    echo "  [13] shodan       [14] censys       [15] yara         [16] h8mail"
     echo ""
-    echo -e "${MAGENTA}PYTHON TOOLS - OSINT${NC}"
-    echo "  [5] Python Virtual Environment (required)"
-    echo "  [6] sherlock - Username search"
-    echo "  [7] holehe - Email verification"
-    echo "  [8] socialscan - Username/email availability"
-    echo "  [9] theHarvester - Multi-source OSINT"
-    echo "  [10] spiderfoot - Automated OSINT"
-    echo "  [11] All Python OSINT Tools"
+    echo -e "${MAGENTA}GO TOOLS${NC} (system Go required):"
+    echo "  [17] gobuster     [18] ffuf         [19] httprobe     [20] waybackurls"
+    echo "  [21] assetfinder  [22] subfinder    [23] nuclei       [24] virustotal"
     echo ""
-    echo -e "${MAGENTA}PYTHON TOOLS - CTI${NC}"
-    echo "  [12] shodan - Internet device intelligence"
-    echo "  [13] censys - Certificate/service intelligence"
-    echo "  [14] yara - Malware pattern matching"
-    echo "  [15] All Python CTI Tools"
+    echo -e "${MAGENTA}NODE.JS:${NC} [25] trufflehog [26] git-hound [27] jwt-cracker"
     echo ""
-    echo -e "${MAGENTA}GO TOOLS - ACTIVE RECON${NC}"
-    echo "  [16] gobuster - Directory/DNS bruteforcing"
-    echo "  [17] ffuf - Fast web fuzzer"
-    echo "  [18] subfinder - Subdomain discovery"
-    echo "  [19] nuclei - Vulnerability scanner"
-    echo "  [20] All Go Tools"
+    echo -e "${MAGENTA}RUST:${NC} [28] feroxbuster [29] rustscan [30] ripgrep [31] fd [32] bat"
     echo ""
-    echo -e "${MAGENTA}GO TOOLS - CTI${NC}"
-    echo "  [21] virustotal - VirusTotal CLI"
+    echo -e "${MAGENTA}BULK INSTALL:${NC} [33] All Python [34] All Go [35] All Node [36] All Rust"
     echo ""
-    echo -e "${MAGENTA}NODE.JS TOOLS${NC}"
-    echo "  [22] trufflehog - Secret scanning"
-    echo "  [23] All Node.js Tools"
+    echo -e "${MAGENTA}INFO:${NC} [50] Show installed [51] Show logs [52] Exit"
     echo ""
-    echo -e "${MAGENTA}RUST TOOLS${NC}"
-    echo "  [24] feroxbuster - Content discovery"
-    echo "  [25] rustscan - Fast port scanner"
-    echo "  [26] ripgrep - Fast grep"
-    echo "  [27] All Rust Tools (long compile time)"
-    echo ""
-    echo -e "${MAGENTA}BULK OPTIONS${NC}"
-    echo "  [30] Install Everything"
-    echo ""
-    echo -e "${MAGENTA}OTHER OPTIONS${NC}"
-    echo "  [40] Show installed tools"
-    echo "  [41] Show installation logs"
-    echo "  [42] Exit"
-    echo ""
-    echo -n "Enter selection (comma-separated for multiple): "
+    echo -n "Enter selection (comma-separated): "
 }
 
 # Function: process_menu_selection
@@ -77,36 +45,58 @@ process_menu_selection() {
     local selection=$1
 
     case "$selection" in
+        # BUILD & LANGUAGES (1-4)
         1) install_tool "cmake" ;;
         2) install_tool "github_cli" ;;
         3) install_tool "nodejs" ;;
         4) install_tool "rust" ;;
-        5) install_tool "python_venv" ;;
-        6) install_tool "sherlock" ;;
-        7) install_tool "holehe" ;;
-        8) install_tool "socialscan" ;;
-        9) install_tool "theHarvester" ;;
-        10) install_tool "spiderfoot" ;;
-        11)
+
+        # PYTHON TOOLS (5-16)
+        5) install_tool "sherlock" ;;
+        6) install_tool "holehe" ;;
+        7) install_tool "socialscan" ;;
+        8) install_tool "theHarvester" ;;
+        9) install_tool "spiderfoot" ;;
+        10) install_tool "sublist3r" ;;
+        11) install_tool "photon" ;;
+        12) install_tool "wappalyzer" ;;
+        13) install_tool "shodan" ;;
+        14) install_tool "censys" ;;
+        15) install_tool "yara" ;;
+        16) install_tool "h8mail" ;;
+
+        # GO TOOLS (17-24)
+        17) install_tool "gobuster" ;;
+        18) install_tool "ffuf" ;;
+        19) install_tool "httprobe" ;;
+        20) install_tool "waybackurls" ;;
+        21) install_tool "assetfinder" ;;
+        22) install_tool "subfinder" ;;
+        23) install_tool "nuclei" ;;
+        24) install_tool "virustotal" ;;
+
+        # NODE.JS TOOLS (25-27)
+        25) install_tool "trufflehog" ;;
+        26) install_tool "git-hound" ;;
+        27) install_tool "jwt-cracker" ;;
+
+        # RUST TOOLS (28-32)
+        28) install_tool "feroxbuster" ;;
+        29) install_tool "rustscan" ;;
+        30) install_tool "ripgrep" ;;
+        31) install_tool "fd" ;;
+        32) install_tool "bat" ;;
+
+        # BULK INSTALL (33-36)
+        33)
+            # All Python tools
             install_tool "python_venv"
             for tool in "${ALL_PYTHON_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        12) install_tool "shodan" ;;
-        13) install_tool "censys" ;;
-        14) install_tool "yara" ;;
-        15)
-            install_tool "python_venv"
-            for tool in shodan censys yara; do
-                install_tool "$tool"
-            done
-            ;;
-        16) install_tool "gobuster" ;;
-        17) install_tool "ffuf" ;;
-        18) install_tool "subfinder" ;;
-        19) install_tool "nuclei" ;;
-        20)
+        34)
+            # All Go tools
             echo -e "${YELLOW}Installing all Go tools (using system Go)...${NC}"
             if ! verify_system_go; then
                 echo -e "${RED}✗ System Go not found. Cannot install Go tools.${NC}"
@@ -117,18 +107,15 @@ process_menu_selection() {
                 install_tool "$tool"
             done
             ;;
-        21) install_tool "virustotal" ;;
-        22) install_tool "trufflehog" ;;
-        23)
+        35)
+            # All Node.js tools
             install_tool "nodejs"
             for tool in "${NODE_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        24) install_tool "feroxbuster" ;;
-        25) install_tool "rustscan" ;;
-        26) install_tool "ripgrep" ;;
-        27)
+        36)
+            # All Rust tools
             echo -e "${YELLOW}Warning: Rust tools take 15-30 minutes to compile${NC}"
             read -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then
@@ -138,10 +125,12 @@ process_menu_selection() {
                 done
             fi
             ;;
-        30) install_all ;;
-        40) show_installed ;;
-        41) show_logs ;;
-        42) exit 0 ;;
+
+        # INFO OPTIONS (50-52)
+        50) show_installed ;;
+        51) show_logs ;;
+        52) exit 0 ;;
+
         *)
             echo -e "${RED}Invalid selection: $selection${NC}"
             ;;

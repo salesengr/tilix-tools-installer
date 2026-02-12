@@ -16,7 +16,91 @@ install_shodan() { install_python_tool "shodan" "shodan"; }
 install_censys() { install_python_tool "censys" "censys"; }
 install_theHarvester() { install_python_tool "theHarvester" "theHarvester"; }
 install_spiderfoot() { install_python_tool "spiderfoot" "spiderfoot"; }
-install_wappalyzer() { install_python_tool "wappalyzer" "python-Wappalyzer"; }
+# Function: install_wappalyzer
+# Purpose: Install python-Wappalyzer and provide a usable CLI wrapper
+# Returns: 0 on success, 1 on failure
+install_wappalyzer() {
+    local logfile=$(create_tool_log "wappalyzer")
+
+    echo -e "${INFO}⚙ Activating Python environment...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing wappalyzer"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+
+        echo "Installing python-Wappalyzer..."
+        pip install --quiet "python-Wappalyzer" || return 1
+
+        deactivate
+
+        echo "Creating wrapper script..."
+        cat > "$HOME/.local/bin/wappalyzer" << 'WRAPPER_EOF'
+#!/bin/bash
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+
+if [ ! -x "$TOOL_PY" ]; then
+    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2
+    exit 1
+fi
+
+exec "$TOOL_PY" - "$@" << 'PY_EOF'
+import argparse
+import json
+import sys
+
+parser = argparse.ArgumentParser(
+    prog="wappalyzer",
+    description="Detect web technologies for a target URL using python-Wappalyzer"
+)
+parser.add_argument("url", nargs="?", help="Target URL (e.g. https://example.com)")
+parser.add_argument("--json", action="store_true", help="Output as JSON")
+args = parser.parse_args()
+
+if not args.url:
+    parser.print_help()
+    sys.exit(0)
+
+from Wappalyzer import Wappalyzer, WebPage  # pylint: disable=import-error
+
+webpage = WebPage.new_from_url(args.url)
+wappalyzer = Wappalyzer.latest()
+tech = sorted(wappalyzer.analyze(webpage))
+
+if args.json:
+    print(json.dumps(tech))
+else:
+    for item in tech:
+        print(item)
+PY_EOF
+WRAPPER_EOF
+        chmod +x "$HOME/.local/bin/wappalyzer"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if is_installed "wappalyzer"; then
+        echo -e "${SUCCESS}${CHECK} wappalyzer installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("wappalyzer")
+        log_installation "wappalyzer" "success" "$logfile"
+        cleanup_old_logs "wappalyzer"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} wappalyzer installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("wappalyzer")
+        FAILED_INSTALL_LOGS["wappalyzer"]="$logfile"
+        log_installation "wappalyzer" "failure" "$logfile"
+        return 1
+    fi
+}
 
 # ===== YARA (Special Python Tool with Fallback) =====
 

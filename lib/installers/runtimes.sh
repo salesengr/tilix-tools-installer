@@ -283,8 +283,9 @@ install_python_venv() {
         echo "Activating venv..."
         source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
 
-        echo "Upgrading pip, wheel, setuptools..."
-        pip install --upgrade pip wheel setuptools || return 1
+        echo "Upgrading pip, wheel, and compatible setuptools..."
+        # python-Wappalyzer still imports pkg_resources, which was removed from setuptools 81+
+        pip install --upgrade pip wheel "setuptools<81" || return 1
 
         deactivate
 

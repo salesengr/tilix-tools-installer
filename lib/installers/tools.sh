@@ -132,7 +132,92 @@ install_theHarvester() {
         return 1
     fi
 }
-install_spiderfoot() { install_python_tool "spiderfoot" "spiderfoot"; }
+# Function: install_spiderfoot
+# Purpose: Install SpiderFoot from upstream source and use Python 3.13-friendly deps
+# Returns: 0 on success, 1 on failure
+install_spiderfoot() {
+    local logfile=$(create_tool_log "spiderfoot")
+
+    echo -e "${INFO}⚙ Activating Python environment...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing spiderfoot"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+
+        mkdir -p "$HOME/opt/src"
+
+        if [ -d "$HOME/opt/src/spiderfoot/.git" ]; then
+            echo "Updating existing SpiderFoot checkout..."
+            git -C "$HOME/opt/src/spiderfoot" pull --ff-only || return 1
+        else
+            echo "Cloning SpiderFoot from GitHub..."
+            rm -rf "$HOME/opt/src/spiderfoot"
+            git clone --depth 1 "https://github.com/smicallef/spiderfoot.git" "$HOME/opt/src/spiderfoot" || return 1
+        fi
+
+        # SpiderFoot pins many upper bounds for older Python; strip only the
+        # '<x' constraints to avoid source builds/incompatibilities on Python 3.13.
+        awk '{
+            line=$0
+            sub(/#.*/, "", line)
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+            if (line=="") next
+            sub(/,[[:space:]]*<[^,]+/, "", line)
+            print line
+        }' "$HOME/opt/src/spiderfoot/requirements.txt" > "$HOME/opt/src/spiderfoot/requirements.py313.txt"
+
+        echo "Installing SpiderFoot dependencies..."
+        pip install --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
+
+        deactivate
+
+        echo "Creating wrapper script..."
+        cat > "$HOME/.local/bin/spiderfoot" << 'WRAPPER_EOF'
+#!/bin/bash
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_SCRIPT="$HOME/opt/src/spiderfoot/sf.py"
+
+if [ ! -x "$TOOL_PY" ]; then
+    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2
+    exit 1
+fi
+
+if [ ! -f "$TOOL_SCRIPT" ]; then
+    echo "Error: SpiderFoot script not found at $TOOL_SCRIPT" >&2
+    echo "Run: bash install_security_tools.sh spiderfoot" >&2
+    exit 1
+fi
+
+exec "$TOOL_PY" "$TOOL_SCRIPT" "$@"
+WRAPPER_EOF
+        chmod +x "$HOME/.local/bin/spiderfoot"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if is_installed "spiderfoot"; then
+        echo -e "${SUCCESS}${CHECK} spiderfoot installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("spiderfoot")
+        log_installation "spiderfoot" "success" "$logfile"
+        cleanup_old_logs "spiderfoot"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} spiderfoot installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("spiderfoot")
+        FAILED_INSTALL_LOGS["spiderfoot"]="$logfile"
+        log_installation "spiderfoot" "failure" "$logfile"
+        return 1
+    fi
+}
 # Function: install_wappalyzer
 # Purpose: Install python-Wappalyzer and provide a usable CLI wrapper
 # Returns: 0 on success, 1 on failure

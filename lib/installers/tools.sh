@@ -304,10 +304,10 @@ WRAPPER_EOF
     fi
 }
 
-# ===== YARA (Special Python Tool with Fallback) =====
+# ===== YARA (Special Python Tool with CLI Build/Wrapping Fallback) =====
 
 # Function: install_yara
-# Purpose: Install YARA with fallback to building C library if needed
+# Purpose: Install yara-python and provide a usable yara CLI in user-space
 # Returns: 0 on success, 1 on failure
 install_yara() {
     local logfile=$(create_tool_log "yara")
@@ -320,41 +320,117 @@ install_yara() {
 
         source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
 
-        echo "Attempting to install yara-python..."
-        pip install --quiet yara-python
+        echo "Installing yara-python..."
+        pip install --quiet yara-python || return 1
 
-        # Test if it works
-        if ! python3 -c "import yara" 2>/dev/null; then
-            echo "yara-python failed, building YARA C library..."
-
-            mkdir -p "$HOME/opt/src"
-            cd "$HOME/opt/src" || return 1
-
-            local filename="v4.5.0.tar.gz"
-            local url="https://github.com/VirusTotal/yara/archive/${filename}"
-
-            if ! download_file "$url" "$filename"; then
-                echo "ERROR: Failed to download YARA source"
-                return 1
-            fi
-
-            tar -xzf "$filename" || return 1
-            cd yara-4.5.0 || return 1
-            ./bootstrap.sh || return 1
-            ./configure --prefix="$HOME/.local" || return 1
-            make || return 1
-            make install || return 1
-
-            cd "$HOME/opt/src" || return 1
-            rm -rf yara-4.5.0 v4.5.0.tar.gz
-
-            pip install --quiet yara-python || return 1
-        fi
+        # Confirm Python module availability.
+        python3 -c "import yara" >/dev/null 2>&1 || return 1
 
         deactivate
 
-        echo "Creating wrapper script..."
-        create_python_wrapper "yara"
+        # yara-python does not provide a native yara CLI binary.
+        # Try native build first (if autotools are available), otherwise create
+        # a lightweight CLI wrapper backed by yara-python.
+        if [ ! -x "$HOME/.local/bin/yara" ]; then
+            echo "YARA CLI not found, attempting native source build..."
+
+            if command -v autoreconf >/dev/null 2>&1; then
+                mkdir -p "$HOME/opt/src"
+                cd "$HOME/opt/src" || return 1
+
+                local filename="v4.5.0.tar.gz"
+                local url="https://github.com/VirusTotal/yara/archive/${filename}"
+
+                rm -rf yara-4.5.0 "$filename"
+
+                if download_file "$url" "$filename"; then
+                    tar -xzf "$filename" || true
+                    cd yara-4.5.0 || true
+                    ./bootstrap.sh || true
+                    ./configure --prefix="$HOME/.local" || true
+                    make -j"$(nproc)" || true
+                    make install || true
+                    cd "$HOME/opt/src" || true
+                    rm -rf yara-4.5.0 "$filename"
+                fi
+            else
+                echo "autoreconf not found; skipping native YARA build"
+            fi
+        fi
+
+        if [ ! -x "$HOME/.local/bin/yara" ]; then
+            echo "Creating yara CLI wrapper backed by yara-python..."
+            cat > "$HOME/.local/bin/yara" << 'WRAPPER_EOF'
+#!/bin/bash
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+
+if [ ! -x "$TOOL_PY" ]; then
+    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2
+    exit 1
+fi
+
+exec "$TOOL_PY" - "$@" << 'PY_EOF'
+import argparse
+import os
+import sys
+import yara  # pylint: disable=import-error
+
+parser = argparse.ArgumentParser(
+    prog="yara",
+    description="Minimal yara CLI compatibility wrapper (yara-python backend)",
+)
+parser.add_argument("rule_file", nargs="?", help="Path to YARA rules file")
+parser.add_argument("targets", nargs="*", help="Files or directories to scan")
+parser.add_argument("-r", "--recursive", action="store_true", help="Recurse into directories")
+args = parser.parse_args()
+
+if not args.rule_file or not args.targets:
+    parser.print_help()
+    sys.exit(0)
+
+rules = yara.compile(filepath=args.rule_file)
+
+
+def iter_targets(paths, recursive):
+    for path in paths:
+        if os.path.isdir(path):
+            if recursive:
+                for root, _, files in os.walk(path):
+                    for name in files:
+                        yield os.path.join(root, name)
+            else:
+                for name in os.listdir(path):
+                    full = os.path.join(path, name)
+                    if os.path.isfile(full):
+                        yield full
+        else:
+            yield path
+
+
+exit_code = 0
+for target in iter_targets(args.targets, args.recursive):
+    try:
+        matches = rules.match(target)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(f"error scanning {target}: {exc}", file=sys.stderr)
+        exit_code = 2
+        continue
+
+    if matches:
+        print(f"{target}: " + " ".join(match.rule for match in matches))
+
+sys.exit(exit_code)
+PY_EOF
+WRAPPER_EOF
+            chmod +x "$HOME/.local/bin/yara"
+        fi
+
+        if [ ! -x "$HOME/.local/bin/yara" ]; then
+            echo "ERROR: YARA CLI is still unavailable at $HOME/.local/bin/yara"
+            return 1
+        fi
 
         echo "=========================================="
         echo "Completed: $(date)"
@@ -362,13 +438,13 @@ install_yara() {
     } > "$logfile" 2>&1
 
     if is_installed "yara"; then
-        echo -e "${GREEN}[OK] YARA installed successfully${NC}"
+        echo -e "${SUCCESS}${CHECK} YARA installed successfully${NC}"
         SUCCESSFUL_INSTALLS+=("yara")
         log_installation "yara" "success" "$logfile"
         cleanup_old_logs "yara"
         return 0
     else
-        echo -e "${RED}[FAIL] YARA installation failed${NC}"
+        echo -e "${ERROR}${CROSS} YARA installation failed${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("yara")
         FAILED_INSTALL_LOGS["yara"]="$logfile"

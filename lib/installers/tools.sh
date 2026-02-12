@@ -14,7 +14,50 @@ install_photon() { install_python_tool "photon" "photon-python"; }
 install_sublist3r() { install_python_tool "sublist3r" "sublist3r"; }
 install_shodan() { install_python_tool "shodan" "shodan"; }
 install_censys() { install_python_tool "censys" "censys"; }
-install_theHarvester() { install_python_tool "theHarvester" "theHarvester"; }
+# Function: install_theHarvester
+# Purpose: Install active theHarvester release from GitHub (PyPI package is stale)
+# Returns: 0 on success, 1 on failure
+install_theHarvester() {
+    local logfile=$(create_tool_log "theHarvester")
+
+    echo -e "${INFO}⚙ Activating Python environment...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing theHarvester"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+
+        echo "Installing latest theHarvester from GitHub..."
+        pip install --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
+
+        deactivate
+
+        echo "Creating wrapper script..."
+        create_python_wrapper "theHarvester"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if is_installed "theHarvester"; then
+        echo -e "${SUCCESS}${CHECK} theHarvester installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("theHarvester")
+        log_installation "theHarvester" "success" "$logfile"
+        cleanup_old_logs "theHarvester"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} theHarvester installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("theHarvester")
+        FAILED_INSTALL_LOGS["theHarvester"]="$logfile"
+        log_installation "theHarvester" "failure" "$logfile"
+        return 1
+    fi
+}
 install_spiderfoot() { install_python_tool "spiderfoot" "spiderfoot"; }
 # Function: install_wappalyzer
 # Purpose: Install python-Wappalyzer and provide a usable CLI wrapper

@@ -1,241 +1,171 @@
-#!/bin/bash
-# Security Tools Installer (OSINT/CTI/PenTest)
-# Version: 1.3.0
-# For Ubuntu 20.04+ container without sudo access
-#
-# PREREQUISITE: Run xdg_setup.sh first
-#
-# Usage:
-#   bash install_security_tools.sh                    # Interactive menu
-#   bash install_security_tools.sh sherlock gobuster  # Install specific tools
-#   bash install_security_tools.sh --python-tools     # Install category
-#   bash install_security_tools.sh all                # Install everything
-#   bash install_security_tools.sh --dry-run sherlock # Preview installation
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Disable exit on error for better error handling
-set +e
+SCRIPT_VERSION="2.1.0"
+TOOLS_PREFIX="${TOOLS_PREFIX:-$HOME/.local}"
+BIN_DIR="${TOOLS_PREFIX}/bin"
+DRY_RUN=0
 
-# ===== SCRIPT DIRECTORY =====
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Add/override tool install functions in scripts/tools.d/*.sh
+TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts/tools.d"
 
-# ===== COLOR CODES =====
-# Base colors for status
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;36m'
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
+log() { printf '[%s] %s\n' "$1" "$2"; }
+info() { log INFO "$1"; }
+ok() { log OK "$1"; }
+err() { log ERROR "$1" >&2; }
 
-# Semantic colors for UI (accessibility-enhanced)
-BOLD='\033[1m'
-HEADER='\033[1;36m'      # Bold cyan - header separator
-CATEGORY='\033[1;34m'    # Bold blue - category headers (replaces MAGENTA)
-INFO='\033[1;36m'        # Bold cyan - info/reminders (replaces YELLOW)
-SUCCESS='\033[1;32m'     # Bold green - success messages
-WARNING='\033[1;33m'     # Bold yellow - warnings
-ERROR='\033[1;31m'       # Bold red - errors
-NC='\033[0m'             # Reset
-
-# Unicode symbols for redundant encoding (accessibility)
-CHECK='\u2713'           # ✓
-CROSS='\u2717'           # ✗
-WARN='\u26a0'            # ⚠
-INFOSYM='\u2139'         # ℹ
-
-# ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.3.3"
-DRY_RUN=false
-CHECK_UPDATES=false
-SUCCESSFUL_INSTALLS=()
-FAILED_INSTALLS=()
-declare -A FAILED_INSTALL_LOGS
-declare -A INSTALLED_STATUS
-declare -A TOOL_DEPENDENCIES
-declare -A TOOL_INFO
-declare -A TOOL_SIZES
-declare -A TOOL_INSTALL_LOCATION
-
-# ===== LOGGING SETUP =====
-LOG_DIR="$HOME/.local/state/install_tools/logs"
-HISTORY_LOG="$HOME/.local/state/install_tools/installation_history.log"
-
-# ===== SOURCE LIBRARY MODULES =====
-
-# Source in dependency order
-source "${SCRIPT_DIR}/lib/core/logging.sh"
-source "${SCRIPT_DIR}/lib/core/download.sh"
-source "${SCRIPT_DIR}/lib/core/verification.sh"
-source "${SCRIPT_DIR}/lib/core/dependencies.sh"
-source "${SCRIPT_DIR}/lib/data/tool-definitions.sh"
-source "${SCRIPT_DIR}/lib/installers/generic.sh"
-source "${SCRIPT_DIR}/lib/installers/runtimes.sh"
-source "${SCRIPT_DIR}/lib/installers/tools.sh"
-source "${SCRIPT_DIR}/lib/ui/display.sh"
-source "${SCRIPT_DIR}/lib/ui/menu.sh"
-source "${SCRIPT_DIR}/lib/ui/orchestration.sh"
-
-# ===== SIGNAL HANDLERS =====
-
-# Function: handle_interrupt
-# Purpose: Handle Ctrl+C gracefully
-handle_interrupt() {
-    echo ""
-    print_shell_reload_reminder
-    echo -e "${RED}Installation interrupted by user.${NC}"
-    exit 130
+need_cmd() {
+  command -v "$1" >/dev/null 2>&1 || {
+    err "missing required command: $1"
+    return 1
+  }
 }
 
-# ===== MAIN ENTRY POINT =====
+run() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf 'DRY_RUN: %q ' "$@"; printf '\n'
+    return 0
+  fi
+  "$@"
+}
+
+print_help() {
+  cat <<'EOF'
+install_security_tools.sh v2.1.0
+
+Usage:
+  bash install_security_tools.sh [--list] [--dry-run] [all|tool1 tool2 ...]
+
+Environment:
+  TOOLS_PREFIX   Install prefix (default: $HOME/.local)
+
+Examples:
+  bash install_security_tools.sh --list
+  bash install_security_tools.sh waybackurls assetfinder
+  TOOLS_PREFIX=$HOME/.local bash install_security_tools.sh all
+EOF
+}
+
+preflight() {
+  need_cmd uname
+  need_cmd mkdir
+  need_cmd chmod
+  need_cmd grep
+
+  mkdir -p "$BIN_DIR"
+  [[ -w "$BIN_DIR" ]] || {
+    err "install directory is not writable: $BIN_DIR"
+    exit 1
+  }
+
+  if command -v curl >/dev/null 2>&1; then
+    DOWNLOADER="curl -fsSL"
+  elif command -v wget >/dev/null 2>&1; then
+    DOWNLOADER="wget -qO-"
+  else
+    err "curl or wget is required"
+    exit 1
+  fi
+
+  export DOWNLOADER BIN_DIR TOOLS_PREFIX
+}
+
+verify_path_hint() {
+  if ! echo ":$PATH:" | grep -q ":${BIN_DIR}:"; then
+    info "${BIN_DIR} is not on PATH in this shell"
+    info "Add it with: export PATH=\"${BIN_DIR}:\$PATH\""
+  fi
+}
+
+install_waybackurls() {
+  if [[ "$DRY_RUN" -ne 1 ]]; then
+    need_cmd go || return 1
+  fi
+  run env GOBIN="$BIN_DIR" go install github.com/tomnomnom/waybackurls@latest
+  [[ "$DRY_RUN" -eq 1 ]] && return 0
+  [[ -x "${BIN_DIR}/waybackurls" ]]
+}
+
+install_assetfinder() {
+  if [[ "$DRY_RUN" -ne 1 ]]; then
+    need_cmd go || return 1
+  fi
+  run env GOBIN="$BIN_DIR" go install github.com/tomnomnom/assetfinder@latest
+  [[ "$DRY_RUN" -eq 1 ]] && return 0
+  [[ -x "${BIN_DIR}/assetfinder" ]]
+}
+
+TOOL_LIST=(
+  waybackurls
+  assetfinder
+)
+
+load_custom_tools() {
+  if [[ -d "$TOOLS_DIR" ]]; then
+    # shellcheck disable=SC1090
+    for f in "$TOOLS_DIR"/*.sh; do
+      [[ -e "$f" ]] || continue
+      source "$f"
+    done
+  fi
+}
+
+list_tools() {
+  printf '%s\n' "${TOOL_LIST[@]}"
+}
+
+install_tool() {
+  local tool="$1"
+  local fn="install_${tool}"
+
+  if ! declare -F "$fn" >/dev/null 2>&1; then
+    err "unknown tool: $tool"
+    return 1
+  fi
+
+  info "installing ${tool}..."
+  if "$fn"; then
+    ok "${tool} installed"
+    return 0
+  fi
+
+  err "${tool} install failed"
+  return 1
+}
 
 main() {
-    trap handle_interrupt INT
+  local requested=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --list) list_tools; exit 0 ;;
+      --dry-run) DRY_RUN=1 ;;
+      -h|--help) print_help; exit 0 ;;
+      all) requested=("${TOOL_LIST[@]}") ;;
+      *) requested+=("$1") ;;
+    esac
+    shift
+  done
 
-    # Parse flags
-    for arg in "$@"; do
-        case "$arg" in
-            --dry-run)
-                DRY_RUN=true
-                shift
-                ;;
-            --check-updates)
-                CHECK_UPDATES=true
-                shift
-                ;;
-        esac
-    done
+  [[ ${#requested[@]} -gt 0 ]] || requested=("${TOOL_LIST[@]}")
 
-    # Remove flags from arguments
-    args=()
-    for arg in "$@"; do
-        if [[ "$arg" != "--dry-run" ]] && [[ "$arg" != "--check-updates" ]]; then
-            args+=("$arg")
-        fi
-    done
+  preflight
+  load_custom_tools
 
-    # Prerequisites check
-    echo -e "${YELLOW}Checking prerequisites...${NC}"
-
-    if [ ! -d "$HOME/.local/share" ] || [ ! -d "$HOME/.config" ] || [ ! -d "$HOME/.cache" ]; then
-        echo -e "${RED}[FAIL] XDG directories not found!${NC}"
-        echo ""
-        echo "Please run the XDG setup script first:"
-        echo "  bash xdg_setup.sh"
-        echo "  source ~/.bashrc"
-        echo ""
-        exit 1
+  local failures=0
+  for t in "${requested[@]}"; do
+    if ! install_tool "$t"; then
+      failures=$((failures + 1))
     fi
+  done
 
-    if [ -z "$XDG_DATA_HOME" ] || [ -z "$XDG_CONFIG_HOME" ] || [ -z "$XDG_CACHE_HOME" ]; then
-        echo -e "${YELLOW}[WARN] XDG environment variables not set${NC}"
-        echo "Loading from defaults..."
-        echo -e "${YELLOW}Note: Run 'source ~/.bashrc' after xdg_setup.sh${NC}"
-        echo ""
-    fi
+  verify_path_hint
 
-    # Ensure sane runtime defaults for non-interactive shells too
-    export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-    export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-    export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-    export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+  if [[ "$failures" -gt 0 ]]; then
+    err "completed with ${failures} failure(s)"
+    exit 1
+  fi
 
-    export GOPATH="${GOPATH:-$HOME/opt/gopath}"
-    export CARGO_HOME="${CARGO_HOME:-$XDG_DATA_HOME/cargo}"
-    export RUSTUP_HOME="${RUSTUP_HOME:-$XDG_DATA_HOME/rustup}"
-    export WGETRC="${WGETRC:-$XDG_CONFIG_HOME/wget/wgetrc}"
-
-    export PATH="$HOME/.local/bin:$HOME/opt/node/bin:$GOPATH/bin:$CARGO_HOME/bin:$PATH"
-
-    echo -e "${GREEN}[OK] Prerequisites met${NC}"
-    echo ""
-
-    # Fix wget config if missing
-    if [ -n "$WGETRC" ] && [ ! -f "$WGETRC" ]; then
-        echo -e "${YELLOW}Creating missing wget config...${NC}"
-        mkdir -p "$(dirname "$WGETRC")"
-        cat > "$WGETRC" << 'WGETRC_EOF'
-# XDG-compliant wget configuration
-dir_prefix = ~/Downloads
-timestamping = on
-tries = 3
-retry_connrefused = on
-max_redirect = 5
-WGETRC_EOF
-        echo -e "${GREEN}[OK] wget config created${NC}"
-        echo ""
-    fi
-
-    # Create necessary directories
-    mkdir -p "$HOME/opt/src"
-    mkdir -p "$HOME/opt/gopath"
-
-    # Initialize
-    init_logging
-    define_tools
-    scan_installed_tools
-
-    # Dry run mode
-    if [[ "$DRY_RUN" == "true" ]]; then
-        echo -e "${CYAN}DRY RUN MODE${NC}"
-        echo ""
-        for tool in "${args[@]}"; do
-            dry_run_install "$tool"
-        done
-        exit 0
-    fi
-
-    # Check updates mode
-    if [[ "$CHECK_UPDATES" == "true" ]]; then
-        echo -e "${CYAN}Checking for updates...${NC}"
-        echo "This feature is coming soon!"
-        exit 0
-    fi
-
-    # Determine mode
-    if [ ${#args[@]} -eq 0 ]; then
-        # Interactive menu mode
-        # Verify stdin is connected to a terminal
-        if [ ! -t 0 ]; then
-            # Try to reconnect to /dev/tty
-            if [ -c /dev/tty ]; then
-                echo -e "${YELLOW}Note: Reconnecting stdin to /dev/tty for interactive menu${NC}"
-                exec bash "$0" < /dev/tty
-            fi
-
-            echo -e "${RED}Error: stdin is not connected to a terminal${NC}"
-            echo ""
-            echo "This script requires an interactive terminal to run the menu."
-            echo ""
-            echo "Solutions:"
-            echo "  1. Run directly: bash install_security_tools.sh"
-            echo "  2. Use CLI mode: bash install_security_tools.sh <tool-name>"
-            echo "  3. If piping via curl, save and run: curl -O URL && bash install_security_tools.sh"
-            echo ""
-            exit 1
-        fi
-
-        while true; do
-            show_menu
-            read -r selection
-
-            # Handle comma-separated selections
-            IFS=',' read -ra SELECTIONS <<< "$selection"
-            for sel in "${SELECTIONS[@]}"; do
-                sel=$(echo "$sel" | xargs)  # Trim whitespace
-                process_menu_selection "$sel"
-            done
-
-            show_installation_summary
-
-            echo ""
-            read -p "Press Enter to continue..."
-        done
-    else
-        # CLI parameter mode
-        process_cli_args "${args[@]}"
-        show_installation_summary
-        print_shell_reload_reminder
-    fi
+  ok "all requested tools installed (script ${SCRIPT_VERSION})"
 }
 
 main "$@"

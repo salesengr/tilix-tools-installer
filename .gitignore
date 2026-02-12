@@ -1,354 +1,62 @@
-# Security Tools Installer - .gitignore
-# Generated: 2025-12-12
-
-# =============================================================================
-# Claude Code (Private - not included in public repo)
-# =============================================================================
-
-# All Claude Code files (agent configs, plans, MCP setup, validation)
-.claude/
-CLAUDE.md
-
-# Note: These files contain development workflows and AI assistant context
-# that are specific to the maintainer's setup and should not be public
-# =============================================================================
-# Installation & Testing Artifacts
-# =============================================================================
-
-# Log files (if generated in repo directory)
-*.log
-logs/
-*.log.*
-
-# Download cache (if you add caching to the scripts)
-downloads/
-cache/
-*.tar.gz.tmp
-*.tar.gz.download
-*.zip.tmp
-
-# Test output directories
-test-results/
-test-output/
-coverage/
-
-# Temporary installation directories (if testing locally)
-tmp/
-temp/
-.tmp/
-
-# User-specific test configurations
-test.config
-local.config
-
-# =============================================================================
-# Bash/Shell Script Artifacts
-# =============================================================================
-
-# Bash history (shouldn't be here, but just in case)
-.bash_history
-.zsh_history
-.sh_history
-
-# Shell session files
-.bash_sessions/
-
-# Core dumps (exclude lib/core directory)
-/core
-core.*
-*.core
-
-# =============================================================================
-# OS-Specific Files
-# =============================================================================
-
-# macOS
+# OS/editor noise
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
-
-# Windows
 Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
-[Dd]esktop.ini
-$RECYCLE.BIN/
-*.lnk
-
-# =============================================================================
-# IDEs and Editors
-# =============================================================================
-
-# Visual Studio Code
-.vscode/
-*.code-workspace
-
-# Vim
-[._]*.s[a-v][a-z]
-[._]*.sw[a-p]
-[._]s[a-rt-v][a-z]
-[._]ss[a-gi-z]
-[._]sw[a-p]
-Session.vim
-Sessionx.vim
-.netrwhist
-*~
-tags
-[._]*.un~
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
-.org-id-locations
-*_archive
-*_flymake.*
-/eshell/history
-/eshell/lastdir
-/elpa/
-*.rel
-/auto/
-.cask/
-dist/
-flycheck_*.el
-/server/
-.projectile
-.dir-locals.el
-/network-security.data
-
-# JetBrains IDEs (IntelliJ, PyCharm, etc.)
-.idea/
-*.iml
-*.iws
-*.ipr
-out/
-.idea_modules/
-atlassian-ide-plugin.xml
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
-
-# Sublime Text
-*.sublime-workspace
-*.sublime-project
-.sublime-gulp.cache
-.sublime/
-
-# Atom
-.atom/
-
-# TextMate
-*.tmproj
-*.tmproject
-tmtags
-
-# Eclipse
-.settings/
-.project
-.classpath
-.buildpath
-
-# =============================================================================
-# Backup and Temporary Files
-# =============================================================================
-
-# Backup files
-*.bak
-*.backup
-*.old
-*.orig
 *.swp
 *.swo
+*~
+.vscode/
+.idea/
 
-# Patch files
-*.patch
-*.diff
-*.rej
-
-# Temporary files
-*.tmp
-*.temp
-~*
-
-# =============================================================================
-# Security & Credentials (Extra caution)
-# =============================================================================
-
-# Environment files
-.env
-.env.local
-.env.*.local
-.envrc
-
-# Credentials
-credentials.json
-credentials.yml
-credentials.yaml
-secrets.json
-secrets.yml
-secrets.yaml
-*.pem
-*.key
-*.p12
-*.pfx
-
-# API keys (in case someone accidentally creates these)
-api_keys.txt
-apikeys.txt
-tokens.txt
-
-# SSH keys
-id_rsa
-id_dsa
-id_ecdsa
-id_ed25519
-
-# =============================================================================
-# Documentation Build Artifacts
-# =============================================================================
-
-# Sphinx documentation
-docs/_build/
-docs/_static/
-docs/_templates/
-
-# MkDocs
-site/
-
-# Jekyll
-_site/
-.sass-cache/
-.jekyll-cache/
-.jekyll-metadata
-
-# =============================================================================
-# Version Control
-# =============================================================================
-
-# Git
-*.orig
-*.BACKUP.*
-*.BASE.*
-*.LOCAL.*
-*.REMOTE.*
-*_BACKUP_*.txt
-*_BASE_*.txt
-*_LOCAL_*.txt
-*_REMOTE_*.txt
-
-# SVN
-.svn/
-
-# Mercurial
-.hg/
-.hgignore
-.hgtags
-
-# =============================================================================
-# Package Manager Artifacts (if you add any)
-# =============================================================================
-
-# Python (in case you add Python scripts)
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
 venv/
-ENV/
-env/
-.venv
 
-# Node.js (in case you add Node tooling)
+# Node
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.npm
-.yarn-integrity
+.npm/
+.pnpm-store/
 
-# Go (in case you add Go tooling)
-vendor/
-Godeps/
-
-# =============================================================================
-# CI/CD
-# =============================================================================
-
-# GitHub Actions artifacts (if you add CI)
-.github/workflows/*.log
-
-# GitLab CI
-.gitlab-ci-local/
-
-# =============================================================================
-# Project-Specific
-# =============================================================================
-
-# Test installations (if testing in repo directory - shouldn't happen but just in case)
-opt/
-.local/
-.config/
+# Build/dist artifacts
+build/
+dist/
+out/
+coverage/
+*.log
+logs/
+tmp/
+.tmp/
 .cache/
-.state/
 
-# Shellcheck output
-shellcheck.log
-shellcheck-*.log
+# Local environment / secrets
+.env
+.env.*
+*.local
+*.secret
+secrets/
 
-# Security scan results (if you add automated scanning)
-security-scan.log
-audit-*.log
-vulnerability-report.txt
+# Archives / generated binaries
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.gz
+*.bz2
+*.xz
+*.bin
 
-# Performance profiling
-*.prof
-
-# =============================================================================
-# Keep These Files (Exceptions)
-# =============================================================================
-
-# Keep example configuration files
-!example.config
-!*.example
-!.env.example
-
-# Keep documentation (specific files/directories)
-!docs/
-!docs/**
-!README.md
-!CHANGELOG.md
-!LICENSE
-!docs/*.md
-
-# Keep test scripts
-!test_*.sh
-!*_test.sh
+# OpenClaw workspace/session-local files (not customer repo assets)
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+memory/
+MEMORY.md
+.internal/

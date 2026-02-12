@@ -78,14 +78,20 @@ verify_path_hint() {
 }
 
 install_waybackurls() {
-  need_cmd go || return 1
+  if [[ "$DRY_RUN" -ne 1 ]]; then
+    need_cmd go || return 1
+  fi
   run env GOBIN="$BIN_DIR" go install github.com/tomnomnom/waybackurls@latest
+  [[ "$DRY_RUN" -eq 1 ]] && return 0
   [[ -x "${BIN_DIR}/waybackurls" ]]
 }
 
 install_assetfinder() {
-  need_cmd go || return 1
+  if [[ "$DRY_RUN" -ne 1 ]]; then
+    need_cmd go || return 1
+  fi
   run env GOBIN="$BIN_DIR" go install github.com/tomnomnom/assetfinder@latest
+  [[ "$DRY_RUN" -eq 1 ]] && return 0
   [[ -x "${BIN_DIR}/assetfinder" ]]
 }
 

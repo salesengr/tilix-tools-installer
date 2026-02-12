@@ -1,0 +1,50 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+.npm/
+.pnpm-store/
+
+# Build/dist artifacts
+build/
+dist/
+out/
+coverage/
+*.log
+logs/
+tmp/
+.tmp/
+.cache/
+
+# Local environment / secrets
+.env
+.env.*
+*.local
+*.secret
+secrets/
+
+# Archives / generated binaries
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.gz
+*.bz2
+*.xz
+*.bin

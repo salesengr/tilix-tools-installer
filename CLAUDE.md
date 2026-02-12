@@ -73,6 +73,34 @@ PR/commit should mention docs impacted.
 
 ---
 
+## Collaboration Mode: Sub-Agent-First (Authoritative)
+
+This repository is operated in **sub-agent-first mode** by default.
+
+### Default behavior
+- Delegate non-trivial implementation, audits, and documentation passes to sub-agents.
+- Keep the main session focused on coordination, prioritization, and user interaction.
+- Use parallel sub-agents for independent workstreams when beneficial.
+
+### Main-session coordinator checklist
+Before delegating:
+1. Define scope, acceptance criteria, and constraints.
+2. Specify required validations (syntax checks, smoke tests, link checks).
+3. Require commit(s) with clear messages.
+
+After completion:
+1. Review outputs for correctness and customer-facing quality.
+2. Confirm docs-sync and changelog impact.
+3. Return concise summary with files changed + commit hash(es).
+
+### Exceptions
+Main session may execute directly only for:
+- tiny/surgical edits,
+- quick status/inspection commands,
+- fast clarifications that are cheaper than delegation.
+
+If direct work grows beyond a short task, switch back to sub-agent execution.
+
 ## Reusable Agent/Skill/Rule Patterns that would help
 If automation agents are used for this repo, reusable capabilities should include:
 - **preflight-check skill**: standardized dependency and environment checks.

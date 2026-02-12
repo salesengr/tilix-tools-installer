@@ -10,7 +10,81 @@ install_sherlock() { install_python_tool "sherlock" "sherlock-project"; }
 install_holehe() { install_python_tool "holehe" "holehe"; }
 install_socialscan() { install_python_tool "socialscan" "socialscan"; }
 install_h8mail() { install_python_tool "h8mail" "h8mail"; }
-install_photon() { install_python_tool "photon" "photon-python"; }
+# Function: install_photon
+# Purpose: Install Photon from upstream GitHub (no maintained PyPI package)
+# Returns: 0 on success, 1 on failure
+install_photon() {
+    local logfile=$(create_tool_log "photon")
+
+    echo -e "${INFO}⚙ Activating Python environment...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing photon"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+
+        mkdir -p "$HOME/opt/src"
+
+        if [ -d "$HOME/opt/src/Photon/.git" ]; then
+            echo "Updating existing Photon checkout..."
+            git -C "$HOME/opt/src/Photon" pull --ff-only || return 1
+        else
+            echo "Cloning Photon from GitHub..."
+            rm -rf "$HOME/opt/src/Photon"
+            git clone --depth 1 "https://github.com/s0md3v/Photon.git" "$HOME/opt/src/Photon" || return 1
+        fi
+
+        echo "Installing Photon dependencies..."
+        pip install --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
+
+        deactivate
+
+        echo "Creating wrapper script..."
+        cat > "$HOME/.local/bin/photon" << 'WRAPPER_EOF'
+#!/bin/bash
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_SCRIPT="$HOME/opt/src/Photon/photon.py"
+
+if [ ! -x "$TOOL_PY" ]; then
+    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2
+    exit 1
+fi
+
+if [ ! -f "$TOOL_SCRIPT" ]; then
+    echo "Error: Photon script not found at $TOOL_SCRIPT" >&2
+    echo "Run: bash install_security_tools.sh photon" >&2
+    exit 1
+fi
+
+exec "$TOOL_PY" "$TOOL_SCRIPT" "$@"
+WRAPPER_EOF
+        chmod +x "$HOME/.local/bin/photon"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if is_installed "photon"; then
+        echo -e "${SUCCESS}${CHECK} photon installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("photon")
+        log_installation "photon" "success" "$logfile"
+        cleanup_old_logs "photon"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} photon installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("photon")
+        FAILED_INSTALL_LOGS["photon"]="$logfile"
+        log_installation "photon" "failure" "$logfile"
+        return 1
+    fi
+}
 install_sublist3r() { install_python_tool "sublist3r" "sublist3r"; }
 install_shodan() { install_python_tool "shodan" "shodan"; }
 install_censys() { install_python_tool "censys" "censys"; }

@@ -14,8 +14,16 @@ create_python_wrapper() {
 
     cat > "$HOME/.local/bin/$tool" << WRAPPER_EOF
 #!/bin/bash
-source \$XDG_DATA_HOME/virtualenvs/tools/bin/activate
-$tool "\$@"
+XDG_DATA_HOME="\${XDG_DATA_HOME:-\$HOME/.local/share}"
+TOOL_BIN="\$XDG_DATA_HOME/virtualenvs/tools/bin/$tool"
+
+if [ ! -x "\$TOOL_BIN" ]; then
+    echo "Error: $tool is not installed in \$XDG_DATA_HOME/virtualenvs/tools/bin" >&2
+    echo "Run: bash install_security_tools.sh $tool" >&2
+    exit 1
+fi
+
+exec "\$TOOL_BIN" "\$@"
 WRAPPER_EOF
 
     chmod +x "$HOME/.local/bin/$tool"

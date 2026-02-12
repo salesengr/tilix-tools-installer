@@ -129,13 +129,22 @@ main() {
     if [ -z "$XDG_DATA_HOME" ] || [ -z "$XDG_CONFIG_HOME" ] || [ -z "$XDG_CACHE_HOME" ]; then
         echo -e "${YELLOW}[WARN] XDG environment variables not set${NC}"
         echo "Loading from defaults..."
-        export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-        export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-        export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-        export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
         echo -e "${YELLOW}Note: Run 'source ~/.bashrc' after xdg_setup.sh${NC}"
         echo ""
     fi
+
+    # Ensure sane runtime defaults for non-interactive shells too
+    export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+    export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+    export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+    export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+
+    export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+    export CARGO_HOME="${CARGO_HOME:-$XDG_DATA_HOME/cargo}"
+    export RUSTUP_HOME="${RUSTUP_HOME:-$XDG_DATA_HOME/rustup}"
+    export WGETRC="${WGETRC:-$XDG_CONFIG_HOME/wget/wgetrc}"
+
+    export PATH="$HOME/.local/bin:$HOME/opt/node/bin:$GOPATH/bin:$CARGO_HOME/bin:$PATH"
 
     echo -e "${GREEN}[OK] Prerequisites met${NC}"
     echo ""

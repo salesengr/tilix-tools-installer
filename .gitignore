@@ -48,3 +48,14 @@ secrets/
 *.bz2
 *.xz
 *.bin
+
+# OpenClaw workspace/session-local files (not customer repo assets)
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+memory/
+MEMORY.md

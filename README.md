@@ -1,38 +1,60 @@
 # Tilix Tools Installer
 
-Practical scripts and guidance for installing developer tools in Linux environments, with a **user-space first** approach (no required sudo).
+User-space-first installer for common security/developer tooling in locked-down Linux environments (no sudo required for default flow).
+
+## What this repo gives customers
+
+- Safe default install location: `~/.local/bin`
+- Repeatable installer entrypoint (`installer.sh`)
+- Tool install script with preflight checks (`install_security_tools.sh`)
+- Guidance for extending with custom tools (`scripts/tools.d/`)
+- Troubleshooting + environment checks for non-root images
 
 ## Quick start
 
-1. Review user-space setup guide: [`docs/USER_SPACE_INSTALLS.md`](docs/USER_SPACE_INSTALLS.md)
-2. Choose/install tools using project scripts (when present).
-3. Verify PATH and tool resolution with:
-
 ```bash
-command -v <tool>
-<tool> --version
+# list supported tools
+bash installer.sh --list
+
+# install defaults (or pass tool names)
+bash installer.sh all
+bash installer.sh waybackurls assetfinder
+
+# preview without changes
+bash installer.sh --dry-run all
 ```
 
-## Principles
+Verify:
 
-- Default installation target should be `${HOME}/.local` unless explicitly overridden.
-- Installer behavior should be idempotent and safe to rerun.
-- Documentation and script behavior must stay in sync.
+```bash
+command -v waybackurls assetfinder
+waybackurls --help
+assetfinder --help
+```
 
-## Add a custom tool installer
+If tools are not found, add:
 
-Use the extension template: [`docs/CUSTOM_TOOL_TEMPLATE.md`](docs/CUSTOM_TOOL_TEMPLATE.md)
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
 
-It includes:
-- preflight checks,
-- user-space install defaults,
-- PATH/wrapper validation,
-- version pinning hooks.
+## Extend with your own tools
 
-## Troubleshooting
+1. Copy `scripts/tools.d/example_custom_tool.sh`
+2. Add `install_<toolname>()`
+3. Append the name into `TOOL_LIST+=(toolname)`
+4. Run `bash installer.sh --list` to confirm registration
 
-See: [`docs/USER_SPACE_INSTALLS.md#troubleshooting`](docs/USER_SPACE_INSTALLS.md#troubleshooting)
+Detailed guidance: [`docs/CUSTOM_TOOL_TEMPLATE.md`](docs/CUSTOM_TOOL_TEMPLATE.md)
 
-## Maintainer rules
+## Customer docs
 
-Project maintenance and contribution guardrails are in [`CLAUDE.md`](CLAUDE.md).
+- User-space installation and troubleshooting: [`docs/USER_SPACE_INSTALLS.md`](docs/USER_SPACE_INSTALLS.md)
+- Maintainer/release rules: [`CLAUDE.md`](CLAUDE.md)
+
+## Version summary
+
+- **2.1.0**: Public-release prep with installer entrypoints, extension scaffolding, and customer install/troubleshooting flow.
+- **2.0.0**: Major documentation refresh and release framing for user-space-first operation.
+
+For full release details, see [`CHANGELOG.md`](CHANGELOG.md).

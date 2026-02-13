@@ -208,6 +208,108 @@
 - **Supply-chain checks:** prefer official project downloads, verify checksums/signatures, pin versions for investigations.
 - **Network policy:** coordinate with SOC network controls (proxy, TLS inspection, Tor restrictions) before operational use.
 
+## 6) Malware reversing tooling
+
+### [High] Ghidra
+- **Why useful:** Mature interactive reverse-engineering suite (disassembly/decompilation/scripting) suitable for malware triage and static analysis.
+- **Install method (user-space):** Download official release archive and extract under user directory (for example `~/tools/ghidra`).
+- **User-space suitability:** Good. Runs fully from extracted directory; no root install required.
+- **Java requirement:** Current releases require Java/OpenJDK 17+ at runtime.
+- **Official URLs:**
+  - https://ghidra-sre.org/
+  - https://github.com/NationalSecurityAgency/ghidra
+- **Quick starter:**
+  ```bash
+  mkdir -p ~/tools && cd ~/tools
+  # download ghidra_<ver>_PUBLIC_*.zip from official release page
+  unzip ghidra_*_PUBLIC_*.zip
+  ~/tools/ghidra_*/ghidraRun
+  ```
+- **Caveats:**
+  - Java mismatch/missing JRE is the most common startup failure.
+  - Treat third-party Ghidra extensions/scripts as untrusted code; pin and review before loading.
+
+---
+
+## 7) Local email / phishing analysis clients
+
+### [High] Thunderbird
+- **Why useful:** Safe-ish local client workflow for inspecting suspicious email content/headers without opening directly in webmail UI.
+- **Install method:** Official packages or portable/user-space distribution methods depending on environment.
+- **User-space suitability:** Medium-good. Runtime is user-space; package install path varies by distro policy.
+- **Official URLs:**
+  - https://www.thunderbird.net/
+  - https://support.mozilla.org/en-US/products/thunderbird
+- **Quick starter:**
+  ```bash
+  thunderbird /path/to/message.eml
+  ```
+- **Archive format notes:**
+  - `.eml`: directly openable.
+  - `mbox`/maildir: usually import workflow required first (native import path or add-on tooling).
+  - Compressed archives (`.zip`, `.7z`) should be unpacked in isolated workspace before import.
+- **Caveats:**
+  - Email client rendering is not equivalent to malware detonation isolation.
+  - Disable/avoid remote content auto-loading when doing phishing review.
+
+---
+
+## 8) Lightweight local file sandbox options
+
+> Goal: practical containment for suspicious files when full VM detonation is unavailable.
+
+### [High] Firejail
+- **Why useful:** Practical default on many Linux desktops; simple CLI, profiles, namespaces/seccomp support.
+- **Install method:** Usually distro package; can be used user-side once present.
+- **User-space suitability:** Runtime invocation is user-level; relies on kernel features and host install.
+- **Official URLs:**
+  - https://firejail.wordpress.com/
+  - https://github.com/netblue30/firejail
+- **Quick starter:** `firejail --private --net=none xdg-open suspicious.pdf`
+- **Caveats:** setuid/userns and distro hardening choices can affect behavior.
+
+### [High] Bubblewrap (`bwrap`)
+- **Why useful:** Minimal namespace sandbox primitive, widely used under Flatpak model.
+- **Install method:** Distro package commonly available as `bubblewrap`.
+- **User-space suitability:** Good when unprivileged user namespaces are enabled.
+- **Official URL:** https://github.com/containers/bubblewrap
+- **Quick starter:**
+  ```bash
+  bwrap --unshare-all --ro-bind /usr /usr --dev /dev --proc /proc --tmpfs /tmp /bin/sh
+  ```
+- **Caveats:** low-level tool; safer wrappers/profiles recommended for non-expert users.
+
+### [Medium] nsjail
+- **Why useful:** Fine-grained sandboxing (namespaces, rlimits, seccomp, cgroups) for process-level containment.
+- **Install method:** Build or package depending on distro.
+- **User-space suitability:** Medium; some features depend on kernel/cgroup configuration.
+- **Official URL:** https://github.com/google/nsjail
+- **Quick starter:** `nsjail -Mo --disable_proc --iface_no_lo -- /usr/bin/file suspicious.bin`
+- **Caveats:** configuration complexity is higher than Firejail/bwrap.
+
+### [High] `systemd-run --user` hardening profile
+- **Why useful:** Ubiquitous on systemd desktops/servers; no extra sandbox package required.
+- **Install method:** built into systemd environments.
+- **User-space suitability:** High for transient process isolation under user manager.
+- **Official URL:** https://www.freedesktop.org/software/systemd/man/systemd-run.html
+- **Quick starter:**
+  ```bash
+  systemd-run --user --pty \
+    -p PrivateTmp=yes \
+    -p ProtectHome=yes \
+    -p NoNewPrivileges=yes \
+    -p RestrictAddressFamilies=AF_UNIX \
+    /usr/bin/less suspicious.txt
+  ```
+- **Caveats:** not a complete container boundary; combine with network/file restrictions and disposable paths.
+
+### Practical default recommendation (for docs/support)
+
+1. **Preferred day-to-day:** Firejail with `--private` and `--net=none` for suspicious document/link opening.
+2. **If Firejail unavailable:** use `systemd-run --user` hardening knobs for quick containment.
+3. **For scripted/minimal environments:** use `bwrap` (or nsjail where already standardized).
+4. **For high-risk malware:** escalate to disposable VM/snapshot workflow; process sandboxes are defense-in-depth only.
+
 ## Confidence rubric
 
 - **High:** active project + clear install path documented in official repo/docs.

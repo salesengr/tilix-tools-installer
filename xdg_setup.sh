@@ -8,6 +8,7 @@
 # configuration files. It does NOT install tools - use install_security_tools.sh for that.
 #
 # Usage: bash xdg_setup.sh
+# Note: Legacy compatibility script; default customer flow is scripts/preflight_env.sh + installer.sh.
 # Note: Run from anywhere - uses absolute paths
 
 set -e  # Exit on error

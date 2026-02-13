@@ -13,6 +13,9 @@ User-space-first installer for common security/developer tooling in locked-down 
 ## Quick start
 
 ```bash
+# optional: run explicit preflight checks first
+bash scripts/preflight_env.sh
+
 # list supported tools
 bash installer.sh --list
 
@@ -50,6 +53,7 @@ Detailed guidance: [`docs/CUSTOM_TOOL_TEMPLATE.md`](docs/CUSTOM_TOOL_TEMPLATE.md
 ## Customer docs
 
 - User-space installation and troubleshooting: [`docs/USER_SPACE_INSTALLS.md`](docs/USER_SPACE_INSTALLS.md)
+- Preflight vs legacy environment bootstrap comparison: [`docs/PREFLIGHT_VS_XDG_SETUP.md`](docs/PREFLIGHT_VS_XDG_SETUP.md)
 - Maintainer/release rules: [`CLAUDE.md`](CLAUDE.md)
 
 ## Version summary

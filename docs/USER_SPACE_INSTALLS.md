@@ -41,11 +41,19 @@ Check versions:
 
 ## 3) Preflight checklist
 
-- Architecture and OS supported.
+Run the preflight helper (safe to run repeatedly):
+
+```bash
+bash scripts/preflight_env.sh
+# preview only
+bash scripts/preflight_env.sh --dry-run --verbose
+```
+
+What it checks:
+- Required shell commands are present.
 - Downloader available (`curl` or `wget`).
-- Archive tools available (`tar`, `unzip` if needed).
-- Destination is writable (`$HOME/.local` by default).
-- Network access to source URLs.
+- User-space destination directories exist (or are created).
+- Destination directories are writable (`$HOME/.local` by default).
 
 ## 4) Validate install success
 

@@ -47,16 +47,27 @@ EOF
 }
 
 preflight() {
-  need_cmd uname
-  need_cmd mkdir
-  need_cmd chmod
-  need_cmd grep
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-  mkdir -p "$BIN_DIR"
-  [[ -w "$BIN_DIR" ]] || {
-    err "install directory is not writable: $BIN_DIR"
-    exit 1
-  }
+  if [[ -x "${script_dir}/scripts/preflight_env.sh" ]]; then
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      bash "${script_dir}/scripts/preflight_env.sh" --dry-run
+    else
+      bash "${script_dir}/scripts/preflight_env.sh"
+    fi
+  else
+    need_cmd uname
+    need_cmd mkdir
+    need_cmd chmod
+    need_cmd grep
+
+    mkdir -p "$BIN_DIR"
+    [[ -w "$BIN_DIR" ]] || {
+      err "install directory is not writable: $BIN_DIR"
+      exit 1
+    }
+  fi
 
   if command -v curl >/dev/null 2>&1; then
     DOWNLOADER="curl -fsSL"

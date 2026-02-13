@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Added
+- New idempotent user-space preflight script: `scripts/preflight_env.sh` (`--dry-run`, `--verbose`).
+- Comparison guide: `docs/PREFLIGHT_VS_XDG_SETUP.md`.
+
+### Changed
+- `install_security_tools.sh` now runs `scripts/preflight_env.sh` during preflight when available.
+- README and user-space docs now point to explicit preflight usage.
+
+### Removed / Relocated
+- Legacy modular framework moved from `lib/` to `.internal/legacy/lib/`.
+- Legacy diagnostics moved from `scripts/diagnose_installation.sh` and `scripts/test_installation.sh` to `.internal/legacy/`.
+
 ## [2.1.0] - 2026-02-12
 
 ### Added

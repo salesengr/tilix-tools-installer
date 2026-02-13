@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git reset:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(echo \"To delete remote branches, you would run:\ngit push origin --delete tender-gates\ngit push origin --delete dev\n\nDo you want me to delete these remote branches?\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(git mv:*)",
+      "Bash(for file in lib/core/*.sh lib/data/*.sh lib/installers/*.sh lib/ui/*.sh)",
+      "Bash(do echo \"Checking $file...\")",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(git restore:*)"
+    ]
+  }
+}

@@ -21,7 +21,7 @@ bash installer.sh --list
 
 # install defaults (or pass tool names)
 bash installer.sh all
-bash installer.sh waybackurls assetfinder
+bash installer.sh waybackurls assetfinder seleniumbase
 
 # preview without changes
 bash installer.sh --dry-run all
@@ -30,14 +30,16 @@ bash installer.sh --dry-run all
 Verify:
 
 ```bash
-command -v waybackurls assetfinder
+command -v waybackurls assetfinder sbase
 waybackurls --help
 assetfinder --help
+sbase --help
 ```
 
 Tool sources (current built-ins):
 - `waybackurls`: [GitHub](https://github.com/tomnomnom/waybackurls)
 - `assetfinder`: [GitHub](https://github.com/tomnomnom/assetfinder)
+- `seleniumbase`: [GitHub](https://github.com/seleniumbase/SeleniumBase) · [PyPI](https://pypi.org/project/seleniumbase/)
 
 If tools are not found, add:
 

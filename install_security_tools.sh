@@ -41,7 +41,7 @@ Environment:
 
 Examples:
   bash install_security_tools.sh --list
-  bash install_security_tools.sh waybackurls assetfinder
+  bash install_security_tools.sh waybackurls assetfinder seleniumbase
   TOOLS_PREFIX=$HOME/.local bash install_security_tools.sh all
 EOF
 }
@@ -106,9 +106,22 @@ install_assetfinder() {
   [[ -x "${BIN_DIR}/assetfinder" ]]
 }
 
+install_seleniumbase() {
+  if [[ "$DRY_RUN" -ne 1 ]]; then
+    need_cmd python3 || return 1
+    need_cmd pip3 || return 1
+  fi
+
+  run python3 -m pip install --upgrade --prefix "$TOOLS_PREFIX" seleniumbase
+
+  [[ "$DRY_RUN" -eq 1 ]] && return 0
+  [[ -x "${BIN_DIR}/sbase" ]]
+}
+
 TOOL_LIST=(
   waybackurls
   assetfinder
+  seleniumbase
 )
 
 load_custom_tools() {

@@ -73,6 +73,7 @@ Docker/desktop related (host tooling):
 Current installer script (`install_security_tools.sh`) supports these user-space tools:
 - `waybackurls` (via `go install github.com/tomnomnom/waybackurls@latest`)
 - `assetfinder` (via `go install github.com/tomnomnom/assetfinder@latest`)
+- `seleniumbase` (via `python3 -m pip install --prefix "$TOOLS_PREFIX" seleniumbase`)
 
 These are **available for installation**, but not preinstalled in this session by default.
 
@@ -88,6 +89,11 @@ Checked and not found on PATH:
 - `python` (unversioned alias), `pip` (unversioned alias)
 
 Python package checks (`pip list`) did **not** show selenium/playwright/webdriver packages in the active Linuxbrew Python environment.
+
+SeleniumBase compatibility notes:
+- PyPI metadata indicates SeleniumBase requires Python `>=3.9`; current Python is `3.14.3` (compatible by version range).
+- Chrome is already present (`google-chrome 145.x`), so no additional browser install is needed for SeleniumBase onboarding.
+- Missing local `chromedriver` is acceptable for most SeleniumBase flows because Selenium Manager can acquire/manage driver versions at runtime.
 
 Repo-level Docker manifests:
 - No Dockerfile/compose manifests found in this repository, so base-image contents cannot be corroborated from repo build definitions.

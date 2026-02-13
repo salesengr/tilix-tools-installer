@@ -93,6 +93,29 @@ assetfinder example.com > assets.txt
 
 - Docs: project README + package docs: [pkg.go.dev](https://pkg.go.dev/github.com/tomnomnom/assetfinder)
 
+### `seleniumbase`
+- Source: [GitHub](https://github.com/seleniumbase/SeleniumBase) · [PyPI](https://pypi.org/project/seleniumbase/)
+- Install (user space):
+
+```bash
+bash installer.sh seleniumbase
+```
+
+- Quick use:
+
+```bash
+sbase --help
+sbase get https://example.com --headless
+```
+
+- Docs: [Official docs/wiki](https://seleniumbase.io/help_docs/install/)
+
+### SeleniumBase compatibility (current environment)
+- Browser present: Google Chrome 145.x (confirmed).
+- Selenium/driver binaries preinstalled: not confirmed (`selenium-server`, `chromedriver` absent).
+- Recommended path: use SeleniumBase with Chrome; it can use Selenium Manager to resolve driver needs at runtime.
+- Additional browser install: **not required** for the current environment.
+
 ## 5) Validate install success
 
 ```bash
@@ -104,6 +127,16 @@ If tool is not found:
 - re-check PATH in current shell (`echo "$PATH"`),
 - confirm binary permissions (`chmod +x ...`),
 - reopen shell or source profile file.
+
+SeleniumBase prerequisites (user space):
+
+```bash
+python3 --version
+pip3 --version
+python3 -m pip install --upgrade --prefix "$HOME/.local" seleniumbase
+command -v sbase
+sbase --version
+```
 
 ## Troubleshooting
 

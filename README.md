@@ -59,6 +59,7 @@ Detailed guidance: [`docs/CUSTOM_TOOL_TEMPLATE.md`](docs/CUSTOM_TOOL_TEMPLATE.md
 ## Customer docs
 
 - User-space installation and troubleshooting: [`docs/USER_SPACE_INSTALLS.md`](docs/USER_SPACE_INSTALLS.md)
+- Suggested user-space security tools (OSINT/SOC/CTI/IR): [`docs/SUGGESTED_USER_SPACE_TOOLS.md`](docs/SUGGESTED_USER_SPACE_TOOLS.md)
 - Preflight vs legacy environment bootstrap comparison: [`docs/PREFLIGHT_VS_XDG_SETUP.md`](docs/PREFLIGHT_VS_XDG_SETUP.md)
 - Maintainer/release rules: [`CLAUDE.md`](CLAUDE.md)
 

@@ -150,6 +150,64 @@
 - **Privilege boundaries:**
   - User-space install is possible for most tools, but some live-response actions (kernel memory/device access, endpoint services) may still require elevated rights at execution time.
 
+## 5) Analyst communication/collaboration (P2P / alt-network)
+
+> Added per user request. Focus: user-space installability + operational fit for SOC/CTI teams.
+
+### [High] Element Desktop (Matrix)
+- **Why useful:** Strong team collaboration, E2EE support, bridges/integrations available; good for distributed analyst cells.
+- **Install method:** Official Linux packages and downloadable desktop builds; can also run user-space unpacked builds.
+- **User-space suitability:** Good (no-root execution possible if using portable unpack/extracted build).
+- **Official URL:** https://github.com/element-hq/element-desktop
+- **Quick starter:** `element-desktop` (or run extracted binary from user dir)
+
+### [High] Signal Desktop
+- **Why useful:** Widely used secure messaging; useful out-of-band coordination channel.
+- **Install method:** Official desktop releases/packages.
+- **User-space suitability:** Medium-good (portable/user-space execution possible depending on packaging policy/environment).
+- **Official URL:** https://github.com/signalapp/Signal-Desktop
+- **Quick starter:** `signal-desktop`
+
+### [Medium] Session Desktop
+- **Why useful:** Alt-network private messenger model (onion-routed architecture); useful where metadata resistance is prioritized.
+- **Install method:** Official download page provides desktop binaries; verify signatures before use.
+- **User-space suitability:** Good for non-root execution from user directories.
+- **Official URL:** https://getsession.org/download
+- **Quick starter:** launch downloaded desktop binary/app bundle
+
+### [Medium] qTox (TokTok fork)
+- **Why useful:** Encrypted P2P Tox communications; no central account model.
+- **Install method:** Use TokTok-maintained fork releases/flatpak/build instructions.
+- **User-space suitability:** Good for portable/flatpak/user-local execution.
+- **Official URL:** https://github.com/TokTok/qTox
+- **Quick starter:** `qtox`
+- **Maintenance note:** Original `qTox/qTox` repo states unmaintained and points to TokTok fork.
+
+### [Medium] Briar (primarily mobile, crisis/offline-friendly)
+- **Why useful:** Resilient sync model (Tor/Bluetooth/Wi-Fi) valuable for degraded-network scenarios.
+- **Install method:** Official app distributions (Android-focused); desktop analyst workflows are limited.
+- **User-space suitability:** Primarily relevant on mobile endpoints rather than Linux SOC workstations.
+- **Official URL:** https://github.com/briar/briar
+- **Quick starter:** Install Briar on supported mobile platform
+
+## User-space packaging patterns (portable deployment)
+
+- **AppImage (Linux):** single executable artifact, no root install required.
+  - Typical run flow: `chmod +x tool.AppImage && ./tool.AppImage`
+  - References: https://appimage.org/ and https://docs.appimage.org/introduction/quickstart.html
+- **Standalone static binaries:** place in `~/.local/bin`, set executable bit.
+- **Portable tar/zip builds:** unpack under `~/tools/<name>` and run binary directly.
+- **Language user-space package managers:** `pipx`, `pip --user`, `go install`, `cargo install`, `npm --prefix ~/.local`.
+
+## Security/operational caveats for SOC/CTI teams
+
+- **Evidence handling:** do not discuss case-sensitive IOCs or victim identifiers in uncontrolled external networks.
+- **Retention/governance:** decentralized or P2P tools may not satisfy enterprise retention/eDiscovery requirements.
+- **Identity assurance:** some alt-network systems are pseudonymous; enforce analyst identity verification out-of-band.
+- **Endpoint hardening:** run portable apps with least privilege; restrict plugin loading and uncontrolled auto-updates.
+- **Supply-chain checks:** prefer official project downloads, verify checksums/signatures, pin versions for investigations.
+- **Network policy:** coordinate with SOC network controls (proxy, TLS inspection, Tor restrictions) before operational use.
+
 ## Confidence rubric
 
 - **High:** active project + clear install path documented in official repo/docs.

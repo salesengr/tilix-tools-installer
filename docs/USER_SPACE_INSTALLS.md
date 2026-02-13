@@ -55,7 +55,45 @@ What it checks:
 - User-space destination directories exist (or are created).
 - Destination directories are writable (`$HOME/.local` by default).
 
-## 4) Validate install success
+## 4) Built-in tools in this installer (current)
+
+The current `install_security_tools.sh` ships with these tool installers:
+
+### `waybackurls`
+- Source: [GitHub](https://github.com/tomnomnom/waybackurls)
+- Install (user space):
+
+```bash
+bash installer.sh waybackurls
+```
+
+- Quick use:
+
+```bash
+echo example.com | waybackurls
+cat domains.txt | waybackurls > urls.txt
+```
+
+- Docs: project README + package docs: [pkg.go.dev](https://pkg.go.dev/github.com/tomnomnom/waybackurls)
+
+### `assetfinder`
+- Source: [GitHub](https://github.com/tomnomnom/assetfinder)
+- Install (user space):
+
+```bash
+bash installer.sh assetfinder
+```
+
+- Quick use:
+
+```bash
+assetfinder --subs-only example.com
+assetfinder example.com > assets.txt
+```
+
+- Docs: project README + package docs: [pkg.go.dev](https://pkg.go.dev/github.com/tomnomnom/assetfinder)
+
+## 5) Validate install success
 
 ```bash
 command -v <tool>

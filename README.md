@@ -35,6 +35,10 @@ waybackurls --help
 assetfinder --help
 ```
 
+Tool sources (current built-ins):
+- `waybackurls`: [GitHub](https://github.com/tomnomnom/waybackurls)
+- `assetfinder`: [GitHub](https://github.com/tomnomnom/assetfinder)
+
 If tools are not found, add:
 
 ```bash

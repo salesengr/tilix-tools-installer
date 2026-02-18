@@ -75,6 +75,105 @@ source "${SCRIPT_DIR}/lib/ui/display.sh"
 source "${SCRIPT_DIR}/lib/ui/menu.sh"
 source "${SCRIPT_DIR}/lib/ui/orchestration.sh"
 
+# ===== TARGETED FALLBACKS (legacy tool compatibility) =====
+
+install_release_binary_with_log() {
+    local tool="$1"
+    local url="$2"
+    local archive_name="$3"
+    local extract_cmd="$4"
+    local extracted_binary="$5"
+    local output_binary="$6"
+
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    {
+        echo "=========================================="
+        echo "Installing $tool (release fallback)"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        local tmpdir
+        tmpdir=$(mktemp -d)
+
+        cd "$tmpdir" || return 1
+        echo "Downloading: $url"
+        download_file "$url" "$archive_name" || return 1
+        verify_file_exists "$archive_name" "$tool archive" || return 1
+
+        echo "Extracting..."
+        eval "$extract_cmd" || return 1
+        verify_file_exists "$extracted_binary" "$tool binary" || return 1
+
+        mkdir -p "$HOME/.local/bin"
+        install -m 0755 "$extracted_binary" "$HOME/.local/bin/$output_binary" || return 1
+
+        rm -rf "$tmpdir"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if command -v "$output_binary" >/dev/null 2>&1 || [ -x "$HOME/.local/bin/$output_binary" ]; then
+        echo -e "${SUCCESS}${CHECK} $tool installed successfully (fallback)${NC}"
+        SUCCESSFUL_INSTALLS+=("$tool")
+        log_installation "$tool" "success" "$logfile"
+        cleanup_old_logs "$tool"
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool fallback installation failed${NC}"
+    echo "  See log: $logfile"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    log_installation "$tool" "failure" "$logfile"
+    return 1
+}
+
+install_trufflehog() {
+    # Preserve existing behavior first.
+    install_node_tool "trufflehog" "@trufflesecurity/trufflehog" && return 0
+
+    echo -e "${WARNING}${WARN} npm install failed for trufflehog; using release fallback${NC}"
+    install_release_binary_with_log \
+        "trufflehog" \
+        "https://github.com/trufflesecurity/trufflehog/releases/download/v3.93.3/trufflehog_3.93.3_linux_amd64.tar.gz" \
+        "trufflehog.tar.gz" \
+        "tar -xzf trufflehog.tar.gz" \
+        "trufflehog" \
+        "trufflehog"
+}
+
+install_git-hound() {
+    # Preserve existing behavior first.
+    install_node_tool "git-hound" "git-hound" && return 0
+
+    echo -e "${WARNING}${WARN} npm install failed for git-hound; using release fallback${NC}"
+    install_release_binary_with_log \
+        "git-hound" \
+        "https://github.com/tillson/git-hound/releases/download/v3.2/git-hound_linux_amd64.zip" \
+        "git-hound.zip" \
+        "unzip -o git-hound.zip" \
+        "git-hound" \
+        "git-hound"
+}
+
+install_dog() {
+    # Preserve existing behavior first.
+    install_rust_tool "dog" "dog" && return 0
+
+    echo -e "${WARNING}${WARN} cargo install failed for dog; using release fallback${NC}"
+    install_release_binary_with_log \
+        "dog" \
+        "https://github.com/ogham/dog/releases/download/v0.1.0/dog-v0.1.0-x86_64-unknown-linux-gnu.zip" \
+        "dog.zip" \
+        "unzip -o dog.zip" \
+        "bin/dog" \
+        "dog"
+}
+
 # ===== SIGNAL HANDLERS =====
 
 # Function: handle_interrupt

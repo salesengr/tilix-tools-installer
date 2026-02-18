@@ -320,6 +320,9 @@ opt/
 .cache/
 .state/
 
+# Local/internal working artifacts
+.internal/
+
 # Shellcheck output
 shellcheck.log
 shellcheck-*.log

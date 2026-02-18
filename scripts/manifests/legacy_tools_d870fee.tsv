@@ -1,0 +1,37 @@
+tool	category	install_location	smoke_type	smoke_target
+cmake	Build Tool	~/.local/bin/cmake	command	cmake
+github_cli	Build Tool	~/.local/bin/gh	command	gh
+nodejs	Language	~/opt/node/	command	node
+rust	Language	\$CARGO_HOME/	command	cargo
+python_venv	Python Environment	\$XDG_DATA_HOME/virtualenvs/tools/	path	~/.local/share/virtualenvs/tools/bin/python
+sherlock	OSINT	~/.local/bin/sherlock	command	sherlock
+holehe	OSINT	~/.local/bin/holehe	command	holehe
+socialscan	OSINT	~/.local/bin/socialscan	command	socialscan
+theHarvester	OSINT/CTI	~/.local/bin/theHarvester	command	theHarvester
+spiderfoot	OSINT/CTI	~/.local/bin/spiderfoot	command	spiderfoot
+sublist3r	OSINT	~/.local/bin/sublist3r	command	sublist3r
+photon	OSINT	~/.local/bin/photon	command	photon
+wappalyzer	OSINT	~/.local/bin/wappalyzer	command	wappalyzer
+shodan	CTI	~/.local/bin/shodan	command	shodan
+censys	CTI	~/.local/bin/censys	command	censys
+yara	CTI	~/.local/bin/yara	command	yara
+h8mail	OSINT/CTI	~/.local/bin/h8mail	command	h8mail
+gobuster	Active Recon	\$GOPATH/bin/gobuster	command	gobuster
+ffuf	Active Recon	\$GOPATH/bin/ffuf	command	ffuf
+httprobe	Active Recon	\$GOPATH/bin/httprobe	command	httprobe
+waybackurls	OSINT	\$GOPATH/bin/waybackurls	command	waybackurls
+assetfinder	OSINT	\$GOPATH/bin/assetfinder	command	assetfinder
+subfinder	OSINT	\$GOPATH/bin/subfinder	command	subfinder
+nuclei	Vuln Scan	\$GOPATH/bin/nuclei	command	nuclei
+virustotal	CTI	\$GOPATH/bin/vt	command	vt
+trufflehog	CTI	~/.local/bin/trufflehog	command	trufflehog
+git-hound	OSINT	~/.local/bin/git-hound	command	git-hound
+jwt-cracker	Security Testing	~/.local/bin/jwt-cracker	command	jwt-cracker
+feroxbuster	Active Recon	\$CARGO_HOME/bin/feroxbuster	command	feroxbuster
+rustscan	Active Recon	\$CARGO_HOME/bin/rustscan	command	rustscan
+ripgrep	Utility	\$CARGO_HOME/bin/rg	command	rg
+fd	Utility	\$CARGO_HOME/bin/fd	command	fd
+bat	Utility	\$CARGO_HOME/bin/bat	command	bat
+sd	Utility	\$CARGO_HOME/bin/sd	command	sd
+tokei	Utility	\$CARGO_HOME/bin/tokei	command	tokei
+dog	Utility	\$CARGO_HOME/bin/dog	command	dog

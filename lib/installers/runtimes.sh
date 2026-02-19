@@ -3,13 +3,17 @@
 # Version: 1.3.0
 # Purpose: Language runtime and build tool installation
 
+# shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
+# shellcheck disable=SC1091  # Source files in virtualenvs (dynamic paths)
+
 # ===== BUILD TOOLS =====
 
 # Function: install_cmake
 # Purpose: Install CMake from GitHub releases
 # Returns: 0 on success, 1 on failure
 install_cmake() {
-    local logfile=$(create_tool_log "cmake")
+    local logfile
+    logfile=$(create_tool_log "cmake")
 
     {
         echo "=========================================="
@@ -76,7 +80,8 @@ install_cmake() {
 # Purpose: Install GitHub CLI from releases
 # Returns: 0 on success, 1 on failure
 install_github_cli() {
-    local logfile=$(create_tool_log "github_cli")
+    local logfile
+    logfile=$(create_tool_log "github_cli")
 
     {
         echo "=========================================="
@@ -156,7 +161,8 @@ install_github_cli() {
 # Purpose: Install Node.js from official tarball
 # Returns: 0 on success, 1 on failure
 install_nodejs() {
-    local logfile=$(create_tool_log "nodejs")
+    local logfile
+    logfile=$(create_tool_log "nodejs")
 
     {
         echo "=========================================="
@@ -220,7 +226,8 @@ install_nodejs() {
 # Purpose: Install Rust via rustup
 # Returns: 0 on success, 1 on failure
 install_rust() {
-    local logfile=$(create_tool_log "rust")
+    local logfile
+    logfile=$(create_tool_log "rust")
 
     echo -e "${YELLOW}Rust compilation takes 5-10 minutes...${NC}"
 
@@ -269,7 +276,8 @@ install_rust() {
 # Purpose: Create Python virtual environment for tools
 # Returns: 0 on success, 1 on failure
 install_python_venv() {
-    local logfile=$(create_tool_log "python_venv")
+    local logfile
+    logfile=$(create_tool_log "python_venv")
 
     {
         echo "=========================================="

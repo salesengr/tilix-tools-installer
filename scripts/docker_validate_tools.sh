@@ -101,6 +101,7 @@ PASS=0
 FAIL=0
 SKIP=0
 
+# shellcheck disable=SC2034  # install_location read for structure but not used
 while IFS=$'\t' read -r tool category install_location smoke_type smoke_target; do
   [[ "$tool" == "tool" ]] && continue
 

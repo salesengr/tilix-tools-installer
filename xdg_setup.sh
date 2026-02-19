@@ -2,13 +2,16 @@
 # XDG Base Directory Setup Script
 # Version: 1.2.0
 # For Ubuntu 20.04+ container without sudo access
-# 
+#
 # This script creates a fully XDG Base Directory Specification compliant
 # environment with proper directory structure, environment variables, and
 # configuration files. It does NOT install tools - use install_security_tools.sh for that.
 #
 # Usage: bash xdg_setup.sh
 # Note: Run from anywhere - uses absolute paths
+
+# shellcheck disable=SC2034  # Color codes used in conditional branches
+# shellcheck disable=SC1090  # .bashrc is user-specific, can't follow
 
 set -e  # Exit on error
 
@@ -75,7 +78,7 @@ echo ""
 
 # Backup existing .bashrc
 echo -e "${YELLOW}Backing up .bashrc...${NC}"
-cp ~/.bashrc ~/.bashrc.backup.$(date +%Y%m%d_%H%M%S)
+cp ~/.bashrc ~/.bashrc.backup."$(date +%Y%m%d_%H%M%S)"
 echo -e "${GREEN}[OK] Backup created${NC}"
 echo ""
 

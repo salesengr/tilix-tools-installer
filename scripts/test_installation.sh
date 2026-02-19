@@ -7,6 +7,9 @@
 #        bash test_installation.sh              # Test all installed
 #        bash test_installation.sh sherlock     # Test specific tool
 
+# shellcheck disable=SC2034  # FAILED_TOOLS, go_output used conditionally
+# shellcheck disable=SC1091  # Source virtualenv (dynamic path)
+
 # ===== COLOR CODES =====
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -29,7 +32,7 @@ test_result() {
     
     TOTAL_TESTS=$((TOTAL_TESTS + 1))
     
-    if [ $result -eq 0 ]; then
+    if [ "$result" -eq 0 ]; then
         echo -e "${GREEN}  [OK]${NC} $test_name"
         PASSED_TESTS=$((PASSED_TESTS + 1))
         return 0
@@ -573,7 +576,7 @@ show_summary() {
     if [ $FAILED_TESTS -gt 0 ]; then
         echo -e "${RED}Failed tools:${NC}"
         # Remove duplicates
-        printf '%s\n' "${FAILED_TOOLS[@]}" | sort -u | while read tool; do
+        printf '%s\n' "${FAILED_TOOLS[@]}" | sort -u | while read -r tool; do
             echo -e "  ${RED}[FAIL]${NC} $tool"
         done
         echo ""

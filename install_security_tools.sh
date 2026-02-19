@@ -163,10 +163,11 @@ install_release_binary_with_log() {
 # To update checksums:
 #   curl -sL <release-url> | sha256sum
 #
-# NOTE: Replace these placeholder values with actual checksums from official releases
-CHECKSUM_TRUFFLEHOG="VERIFY_FROM_OFFICIAL_RELEASE"
-CHECKSUM_GIT_HOUND="VERIFY_FROM_OFFICIAL_RELEASE"
-CHECKSUM_DOG="VERIFY_FROM_OFFICIAL_RELEASE"
+# SHA256 checksums for release binary fallbacks (verified 2026-02-19)
+# Generated from official GitHub releases - verify before updating versions
+CHECKSUM_TRUFFLEHOG="62af52009a462a50421ca723424e41e0b3a1c8725d74b56de10e49d215ce8545"
+CHECKSUM_GIT_HOUND="8d4ed7284d072af6b54953cbd840752a288d6b115f7be25a03776a62d0345281"
+CHECKSUM_DOG="6093525fccf5de5b7ed66f920c9b6d2d16221adde8a44589dc3e4c47245039a0"
 
 install_trufflehog() {
     # Preserve existing behavior first.

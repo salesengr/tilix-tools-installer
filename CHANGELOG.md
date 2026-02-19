@@ -5,6 +5,37 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Supply-Chain Security:** SHA256 checksum verification for release binary fallbacks
+  - Added checksum verification to `install_release_binary_with_log()` function
+  - Checksums configured for trufflehog, git-hound, and dog release binaries
+  - Aborts installation on checksum mismatch to prevent compromised downloads
+  - Created `docs/CHECKSUM_VERIFICATION.md` with instructions to update checksums
+- **AI Assistant Documentation:** Created comprehensive `CLAUDE.md` with full project context
+  - Complete architecture overview and modular library structure
+  - Code patterns, conventions, and error handling guidelines
+  - Development workflows for adding tools, debugging, and validation
+  - Security requirements and XDG compliance documentation
+  - Agent usage guidelines and quick reference
+
+### Changed
+- **Documentation Reorganization:** Improved clarity and accuracy
+  - Renamed `AGENTS.md` → `VALIDATION_GUIDELINES.md` (better reflects content)
+  - Removed `MODULARIZATION_SUMMARY.md` (historical documentation from v1.3.0)
+  - Removed `.claude/` agent configurations from version control (workspace-specific)
+- **AI Skills:** Refactored Claude Code skills for bash project
+  - Removed 7 Python-specific skills (quality, run-tests, coverage, etc.)
+  - Added 5 bash-focused skills (shellcheck, validate-install, diagnose, docker-validate, lint-bash)
+  - Updated status skill to show bash-relevant metrics
+
+### Security
+- **Enhanced Download Security:** Checksum verification prevents supply-chain attacks
+  - Detects man-in-the-middle (MITM) attacks on binary downloads
+  - Verifies integrity of GitHub release downloads before installation
+  - Clear error messages indicate potential compromise
+
 ## [1.3.3] - 2026-01-15
 
 ### Changed

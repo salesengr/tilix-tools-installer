@@ -84,6 +84,7 @@ install_release_binary_with_log() {
     local extract_cmd="$4"
     local extracted_binary="$5"
     local output_binary="$6"
+    local expected_sha256="${7:-}"  # Optional checksum parameter
 
     local logfile
     logfile=$(create_tool_log "$tool")
@@ -101,6 +102,25 @@ install_release_binary_with_log() {
         echo "Downloading: $url"
         download_file "$url" "$archive_name" || return 1
         verify_file_exists "$archive_name" "$tool archive" || return 1
+
+        # Verify checksum if provided (supply-chain security)
+        if [ -n "$expected_sha256" ]; then
+            echo "Verifying SHA256 checksum for supply-chain security..."
+            local actual_sha256
+            actual_sha256=$(sha256sum "$archive_name" | awk '{print $1}')
+
+            if [ "$actual_sha256" != "$expected_sha256" ]; then
+                echo "ERROR: Checksum mismatch!"
+                echo "  Expected: $expected_sha256"
+                echo "  Actual:   $actual_sha256"
+                echo "  This may indicate a compromised download."
+                rm -rf "$tmpdir"
+                return 1
+            fi
+            echo "Checksum verified: ${expected_sha256:0:16}..."
+        else
+            echo "WARNING: No checksum provided - supply-chain verification skipped"
+        fi
 
         echo "Extracting..."
         eval "$extract_cmd" || return 1
@@ -132,6 +152,19 @@ install_release_binary_with_log() {
     return 1
 }
 
+# CHECKSUMS: Verify these SHA256 hashes against official release pages before deployment
+# trufflehog v3.93.3:  https://github.com/trufflesecurity/trufflehog/releases/tag/v3.93.3
+# git-hound v3.2:      https://github.com/tillson/git-hound/releases/tag/v3.2
+# dog v0.1.0:          https://github.com/ogham/dog/releases/tag/v0.1.0
+#
+# To update checksums:
+#   curl -sL <release-url> | sha256sum
+#
+# NOTE: Replace these placeholder values with actual checksums from official releases
+CHECKSUM_TRUFFLEHOG="VERIFY_FROM_OFFICIAL_RELEASE"
+CHECKSUM_GIT_HOUND="VERIFY_FROM_OFFICIAL_RELEASE"
+CHECKSUM_DOG="VERIFY_FROM_OFFICIAL_RELEASE"
+
 install_trufflehog() {
     # Preserve existing behavior first.
     install_node_tool "trufflehog" "@trufflesecurity/trufflehog" && return 0
@@ -143,7 +176,8 @@ install_trufflehog() {
         "trufflehog.tar.gz" \
         "tar -xzf trufflehog.tar.gz" \
         "trufflehog" \
-        "trufflehog"
+        "trufflehog" \
+        "$CHECKSUM_TRUFFLEHOG"
 }
 
 install_git-hound() {
@@ -157,7 +191,8 @@ install_git-hound() {
         "git-hound.zip" \
         "unzip -o git-hound.zip" \
         "git-hound" \
-        "git-hound"
+        "git-hound" \
+        "$CHECKSUM_GIT_HOUND"
 }
 
 install_dog() {
@@ -171,7 +206,8 @@ install_dog() {
         "dog.zip" \
         "unzip -o dog.zip" \
         "bin/dog" \
-        "dog"
+        "dog" \
+        "$CHECKSUM_DOG"
 }
 
 # ===== SIGNAL HANDLERS =====

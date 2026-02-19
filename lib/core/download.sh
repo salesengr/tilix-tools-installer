@@ -22,7 +22,24 @@ download_file() {
 
         if wget --progress=bar:force --show-progress "$url" -O "$output" 2>&1; then
             if [ -f "$output" ]; then
-                echo -e "${SUCCESS}${CHECK} Download complete${NC}"
+                # Verify file size (detect truncated/failed downloads)
+                local filesize
+                filesize=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null || echo "0")
+
+                if [ "$filesize" -eq 0 ]; then
+                    echo -e "${ERROR}${CROSS} Downloaded file is empty${NC}"
+                    rm -f "$output"
+                    retry=$((retry + 1))
+                    continue
+                elif [ "$filesize" -lt 100 ]; then
+                    echo -e "${WARNING}${WARN} Downloaded file suspiciously small: $filesize bytes${NC}"
+                    echo -e "${WARNING}This may indicate an error page or failed download${NC}"
+                    rm -f "$output"
+                    retry=$((retry + 1))
+                    continue
+                fi
+
+                echo -e "${SUCCESS}${CHECK} Download complete ($filesize bytes)${NC}"
                 return 0
             fi
         fi
@@ -40,17 +57,29 @@ download_file() {
 }
 
 # Function: verify_file_exists
-# Purpose: Verify file exists before processing
+# Purpose: Verify file exists and has valid size before processing
 # Parameters:
 #   $1 - filepath to check
 #   $2 - description (for error message)
-# Returns: 0 if file exists, 1 otherwise
+#   $3 - minimum size in bytes (optional, default: 1)
+# Returns: 0 if file exists and meets size requirement, 1 otherwise
 verify_file_exists() {
     local filepath=$1
     local description=$2
+    local min_size=${3:-1}  # Default minimum size: 1 byte (not empty)
 
     if [ ! -f "$filepath" ]; then
         echo "ERROR: $description not found: $filepath"
+        return 1
+    fi
+
+    # Check file size
+    local filesize
+    filesize=$(stat -f%z "$filepath" 2>/dev/null || stat -c%s "$filepath" 2>/dev/null || echo "0")
+
+    if [ "$filesize" -lt "$min_size" ]; then
+        echo "ERROR: $description is too small: $filesize bytes (minimum: $min_size bytes)"
+        echo "  File: $filepath"
         return 1
     fi
 

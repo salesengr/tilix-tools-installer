@@ -46,16 +46,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved installation success rate on diverse platform configurations
 
 ### Security
-- **Enhanced Download Security:** Checksum verification prevents supply-chain attacks
-  - ✅ **COMPLETE:** All SHA256 checksums verified from official GitHub releases (2026-02-19)
-  - Detects man-in-the-middle (MITM) attacks on binary downloads
-  - Verifies integrity of GitHub release downloads before installation
-  - Clear error messages indicate potential compromise
-  - Checksums documented in `docs/CHECKSUM_VERIFICATION.md`
-  - Verified checksums:
-    - trufflehog v3.93.3: `62af520...ce8545`
-    - git-hound v3.2: `8d4ed72...345281`
-    - dog v0.1.0: `6093525...5039a0`
+- **Enhanced Download Security:** Comprehensive supply-chain protection
+  - ✅ **SHA256 Checksum Verification:** All release binaries verified from official sources (2026-02-19)
+    - Prevents man-in-the-middle (MITM) attacks on binary downloads
+    - Detects compromised or tampered GitHub releases
+    - Installation aborts on checksum mismatch
+    - Checksums documented in `docs/CHECKSUM_VERIFICATION.md`
+    - Verified checksums:
+      - trufflehog v3.93.3: `62af520...ce8545`
+      - git-hound v3.2: `8d4ed72...345281`
+      - dog v0.1.0: `6093525...5039a0`
+  - ✅ **Download Size Validation:** Detects truncated and failed downloads (2026-02-19)
+    - Rejects empty files (0 bytes)
+    - Warns on suspiciously small files (<100 bytes)
+    - Automatic retry on size validation failure
+    - File size reported in download completion messages
+  - ✅ **Security Documentation:** Risky patterns documented and justified (2026-02-19)
+    - Rustup curl-to-bash pattern documented with mitigations (lib/installers/runtimes.sh:241)
+    - eval usage documented as safe (hardcoded strings only) (install_security_tools.sh:129)
+    - Security decisions explained inline for future maintainers
+  - ✅ **Enhanced File Verification:** verify_file_exists() now checks minimum size
+    - Prevents extraction of corrupted/truncated downloads
+    - Configurable minimum size parameter (default: 1 byte)
 
 ### Validation
 - **Complete Intel Architecture Validation:** All 36 tools passing on Intel/amd64

@@ -47,9 +47,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - **Enhanced Download Security:** Checksum verification prevents supply-chain attacks
+  - ✅ **COMPLETE:** All SHA256 checksums verified from official GitHub releases (2026-02-19)
   - Detects man-in-the-middle (MITM) attacks on binary downloads
   - Verifies integrity of GitHub release downloads before installation
   - Clear error messages indicate potential compromise
+  - Checksums documented in `docs/CHECKSUM_VERIFICATION.md`
+  - Verified checksums:
+    - trufflehog v3.93.3: `62af520...ce8545`
+    - git-hound v3.2: `8d4ed72...345281`
+    - dog v0.1.0: `6093525...5039a0`
 
 ### Validation
 - **Complete Intel Architecture Validation:** All 36 tools passing on Intel/amd64

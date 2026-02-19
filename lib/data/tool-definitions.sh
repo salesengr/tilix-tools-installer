@@ -36,18 +36,18 @@ define_tools() {
     TOOL_INFO[cmake]="CMake|Build system generator|Build Tool"
     TOOL_SIZES[cmake]="50MB"
     TOOL_DEPENDENCIES[cmake]=""
-    TOOL_INSTALL_LOCATION[cmake]="~/.local/bin/cmake"
+    TOOL_INSTALL_LOCATION[cmake]="$HOME/.local/bin/cmake"
 
     TOOL_INFO[github_cli]="GitHub CLI|GitHub workflow automation|Build Tool"
     TOOL_SIZES[github_cli]="90MB"
     TOOL_DEPENDENCIES[github_cli]=""
-    TOOL_INSTALL_LOCATION[github_cli]="~/.local/bin/gh"
+    TOOL_INSTALL_LOCATION[github_cli]="$HOME/.local/bin/gh"
 
     # Languages
     TOOL_INFO[nodejs]="Node.js|JavaScript runtime|Language"
     TOOL_SIZES[nodejs]="50MB"
     TOOL_DEPENDENCIES[nodejs]=""
-    TOOL_INSTALL_LOCATION[nodejs]="~/opt/node/"
+    TOOL_INSTALL_LOCATION[nodejs]="$HOME/opt/node/"
 
     TOOL_INFO[rust]="Rust|Systems programming language|Language"
     TOOL_SIZES[rust]="800MB"
@@ -64,63 +64,63 @@ define_tools() {
     TOOL_INFO[sherlock]="Sherlock|Username search across social networks|OSINT"
     TOOL_SIZES[sherlock]="30MB"
     TOOL_DEPENDENCIES[sherlock]="python_venv"
-    TOOL_INSTALL_LOCATION[sherlock]="~/.local/bin/sherlock"
+    TOOL_INSTALL_LOCATION[sherlock]="$HOME/.local/bin/sherlock"
 
     TOOL_INFO[holehe]="Holehe|Email verification across sites|OSINT"
     TOOL_SIZES[holehe]="25MB"
     TOOL_DEPENDENCIES[holehe]="python_venv"
-    TOOL_INSTALL_LOCATION[holehe]="~/.local/bin/holehe"
+    TOOL_INSTALL_LOCATION[holehe]="$HOME/.local/bin/holehe"
 
     TOOL_INFO[socialscan]="Socialscan|Username/email availability checker|OSINT"
     TOOL_SIZES[socialscan]="20MB"
     TOOL_DEPENDENCIES[socialscan]="python_venv"
-    TOOL_INSTALL_LOCATION[socialscan]="~/.local/bin/socialscan"
+    TOOL_INSTALL_LOCATION[socialscan]="$HOME/.local/bin/socialscan"
 
     TOOL_INFO[h8mail]="h8mail|Email OSINT and breach hunting|OSINT/CTI"
     TOOL_SIZES[h8mail]="25MB"
     TOOL_DEPENDENCIES[h8mail]="python_venv"
-    TOOL_INSTALL_LOCATION[h8mail]="~/.local/bin/h8mail"
+    TOOL_INSTALL_LOCATION[h8mail]="$HOME/.local/bin/h8mail"
 
     TOOL_INFO[photon]="Photon|Fast web crawler and OSINT tool|OSINT"
     TOOL_SIZES[photon]="30MB"
     TOOL_DEPENDENCIES[photon]="python_venv"
-    TOOL_INSTALL_LOCATION[photon]="~/.local/bin/photon"
+    TOOL_INSTALL_LOCATION[photon]="$HOME/.local/bin/photon"
 
     TOOL_INFO[sublist3r]="Sublist3r|Subdomain enumeration tool|OSINT"
     TOOL_SIZES[sublist3r]="25MB"
     TOOL_DEPENDENCIES[sublist3r]="python_venv"
-    TOOL_INSTALL_LOCATION[sublist3r]="~/.local/bin/sublist3r"
+    TOOL_INSTALL_LOCATION[sublist3r]="$HOME/.local/bin/sublist3r"
 
     # Python CTI Tools
     TOOL_INFO[shodan]="Shodan CLI|Search engine for Internet-connected devices|CTI"
     TOOL_SIZES[shodan]="10MB"
     TOOL_DEPENDENCIES[shodan]="python_venv"
-    TOOL_INSTALL_LOCATION[shodan]="~/.local/bin/shodan"
+    TOOL_INSTALL_LOCATION[shodan]="$HOME/.local/bin/shodan"
 
     TOOL_INFO[censys]="Censys|Internet-wide scanning data|CTI"
     TOOL_SIZES[censys]="5MB"
     TOOL_DEPENDENCIES[censys]="python_venv"
-    TOOL_INSTALL_LOCATION[censys]="~/.local/bin/censys"
+    TOOL_INSTALL_LOCATION[censys]="$HOME/.local/bin/censys"
 
     TOOL_INFO[theHarvester]="theHarvester|Email/subdomain/host gathering|OSINT/CTI"
     TOOL_SIZES[theHarvester]="15MB"
     TOOL_DEPENDENCIES[theHarvester]="python_venv"
-    TOOL_INSTALL_LOCATION[theHarvester]="~/.local/bin/theHarvester"
+    TOOL_INSTALL_LOCATION[theHarvester]="$HOME/.local/bin/theHarvester"
 
     TOOL_INFO[spiderfoot]="SpiderFoot|Automated OSINT collection|OSINT/CTI"
     TOOL_SIZES[spiderfoot]="30MB"
     TOOL_DEPENDENCIES[spiderfoot]="python_venv"
-    TOOL_INSTALL_LOCATION[spiderfoot]="~/.local/bin/spiderfoot"
+    TOOL_INSTALL_LOCATION[spiderfoot]="$HOME/.local/bin/spiderfoot"
 
     TOOL_INFO[yara]="YARA|Pattern matching for malware research|CTI"
     TOOL_SIZES[yara]="5MB"
     TOOL_DEPENDENCIES[yara]="python_venv"
-    TOOL_INSTALL_LOCATION[yara]="~/.local/bin/yara"
+    TOOL_INSTALL_LOCATION[yara]="$HOME/.local/bin/yara"
 
     TOOL_INFO[wappalyzer]="Wappalyzer|Technology profiler|OSINT"
     TOOL_SIZES[wappalyzer]="15MB"
     TOOL_DEPENDENCIES[wappalyzer]="python_venv"
-    TOOL_INSTALL_LOCATION[wappalyzer]="~/.local/bin/wappalyzer"
+    TOOL_INSTALL_LOCATION[wappalyzer]="$HOME/.local/bin/wappalyzer"
 
     # Go Tools
     TOOL_INFO[gobuster]="Gobuster|Directory/DNS/vhost bruteforcing|Active Recon"
@@ -167,17 +167,17 @@ define_tools() {
     TOOL_INFO[trufflehog]="TruffleHog|Secret scanning in git repos|CTI"
     TOOL_SIZES[trufflehog]="15MB"
     TOOL_DEPENDENCIES[trufflehog]="nodejs"
-    TOOL_INSTALL_LOCATION[trufflehog]="~/.local/bin/trufflehog"
+    TOOL_INSTALL_LOCATION[trufflehog]="$HOME/.local/bin/trufflehog"
 
     TOOL_INFO[git-hound]="git-hound|GitHub reconnaissance|OSINT"
     TOOL_SIZES[git-hound]="10MB"
     TOOL_DEPENDENCIES[git-hound]="nodejs"
-    TOOL_INSTALL_LOCATION[git-hound]="~/.local/bin/git-hound"
+    TOOL_INSTALL_LOCATION[git-hound]="$HOME/.local/bin/git-hound"
 
     TOOL_INFO[jwt-cracker]="JWT Cracker|JWT token analysis|Security Testing"
     TOOL_SIZES[jwt-cracker]="5MB"
     TOOL_DEPENDENCIES[jwt-cracker]="nodejs"
-    TOOL_INSTALL_LOCATION[jwt-cracker]="~/.local/bin/jwt-cracker"
+    TOOL_INSTALL_LOCATION[jwt-cracker]="$HOME/.local/bin/jwt-cracker"
 
     # Rust Tools
     TOOL_INFO[feroxbuster]="feroxbuster|Fast content discovery|Active Recon"

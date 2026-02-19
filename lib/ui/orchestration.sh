@@ -3,6 +3,9 @@
 # Version: 1.3.0
 # Purpose: High-level installation coordination and workflow management
 
+# shellcheck disable=SC2034  # Variables used in display/logging
+# shellcheck disable=SC2153  # INFO defined in parent script
+
 # ===== ORCHESTRATION FUNCTIONS =====
 
 # Function: install_tool
@@ -79,7 +82,7 @@ install_tool() {
 install_all() {
     echo -e "${YELLOW}Installing ALL tools...${NC}"
     echo -e "${YELLOW}This will take 30-60 minutes and use ~2GB disk space${NC}"
-    read -p "Continue? (yes/no): " confirm
+    read -r -p "Continue? (yes/no): " confirm
 
     if [[ "$confirm" != "yes" ]]; then
         echo "Installation cancelled"

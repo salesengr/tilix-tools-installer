@@ -12,6 +12,9 @@
 #   bash install_security_tools.sh all                # Install everything
 #   bash install_security_tools.sh --dry-run sherlock # Preview installation
 
+# shellcheck disable=SC2034  # Variables used in sourced library modules
+# shellcheck disable=SC1091  # Source files not specified (modular architecture)
+
 # Disable exit on error for better error handling
 set +e
 
@@ -363,7 +366,7 @@ WGETRC_EOF
             show_installation_summary
 
             echo ""
-            read -p "Press Enter to continue..."
+            read -r -p "Press Enter to continue..."
         done
     else
         # CLI parameter mode

@@ -3,6 +3,9 @@
 # Version: 1.3.0
 # Purpose: Installation status checking and environment validation
 
+# shellcheck disable=SC2034  # INSTALLED_STATUS used in parent script
+# shellcheck disable=SC2004  # Array indices require $ for variable expansion
+
 # ===== INSTALLATION STATUS CHECKS =====
 
 # Function: is_installed

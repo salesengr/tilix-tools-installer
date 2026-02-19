@@ -3,6 +3,9 @@
 # Version: 1.3.0
 # Purpose: Centralized tool metadata and category definitions
 
+# shellcheck disable=SC2034  # Variables used in parent script and other modules
+# shellcheck disable=SC2154  # Associative array indices appear as undefined variables
+
 # ===== TOOL CATEGORIES =====
 
 # Tool category arrays

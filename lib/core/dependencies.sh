@@ -20,8 +20,7 @@ check_dependencies() {
     for dep in $deps; do
         if ! is_installed "$dep"; then
             echo -e "${YELLOW}  Installing prerequisite: $dep${NC}"
-            install_tool "$dep"
-            if [ $? -ne 0 ]; then
+            if ! install_tool "$dep"; then
                 return 1
             fi
         fi

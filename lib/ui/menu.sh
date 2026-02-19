@@ -100,7 +100,7 @@ process_menu_selection() {
             echo -e "${WARNING}${WARN} Installing all Go tools (using system Go)...${NC}"
             if ! verify_system_go; then
                 echo -e "${ERROR}${CROSS} System Go not found. Cannot install Go tools.${NC}"
-                read -p "Press Enter to continue..."
+                read -r -p "Press Enter to continue..."
                 return 1
             fi
             for tool in "${ALL_GO_TOOLS[@]}"; do
@@ -117,7 +117,7 @@ process_menu_selection() {
         36)
             # All Rust tools
             echo -e "${WARNING}${WARN} Warning: Rust tools take 15-30 minutes to compile${NC}"
-            read -p "Continue? (yes/no): " confirm
+            read -r -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then
                 install_tool "rust"
                 for tool in "${ALL_RUST_TOOLS[@]}"; do

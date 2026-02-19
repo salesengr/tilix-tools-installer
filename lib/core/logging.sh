@@ -19,7 +19,8 @@ init_logging() {
 # Returns: Path to log file
 create_tool_log() {
     local tool=$1
-    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local timestamp
+    timestamp=$(date +%Y%m%d_%H%M%S)
     echo "$LOG_DIR/${tool}-${timestamp}.log"
 }
 
@@ -30,7 +31,9 @@ create_tool_log() {
 cleanup_old_logs() {
     local tool=$1
     cd "$LOG_DIR" 2>/dev/null || return
-    ls -t ${tool}-*.log 2>/dev/null | tail -n +11 | xargs -r rm
+    # Keep only the 10 most recent logs for this tool
+    find . -maxdepth 1 -name "${tool}-*.log" -type f -printf '%T@ %p\n' 2>/dev/null | \
+        sort -rn | tail -n +11 | cut -d' ' -f2- | xargs -r rm
 }
 
 # Function: log_installation

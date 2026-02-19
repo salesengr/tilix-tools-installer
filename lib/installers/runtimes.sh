@@ -238,6 +238,14 @@ install_rust() {
         echo "=========================================="
 
         echo "Downloading rustup..."
+        # SECURITY NOTE: Piping curl to shell is generally risky, but acceptable here because:
+        # 1. Official Rust Foundation installer (https://sh.rustup.rs)
+        # 2. HTTPS enforced with TLS 1.2+ (--proto '=https' --tlsv1.2)
+        # 3. Fail on HTTP errors (-f flag)
+        # 4. Standard installation method recommended by Rust project
+        # 5. Alternative: Download, verify, then execute (see CHECKSUM_VERIFICATION.md)
+        # Mitigation: HTTPS + official domain + widespread community trust
+        # Risk Assessment: LOW (industry-standard pattern, official source)
         if ! curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path; then
             echo "ERROR: Failed to install Rust"
             return 1

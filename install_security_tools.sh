@@ -126,6 +126,10 @@ install_release_binary_with_log() {
         fi
 
         echo "Extracting..."
+        # SECURITY NOTE: Using eval for extract command execution
+        # Safety: All call sites use hardcoded string literals (never user input)
+        # Examples: "tar -xzf file.tar.gz" or "unzip -o file.zip"
+        # Risk Level: LOW (trusted internal callers only)
         eval "$extract_cmd" || return 1
         verify_file_exists "$extracted_binary" "$tool binary" || return 1
 

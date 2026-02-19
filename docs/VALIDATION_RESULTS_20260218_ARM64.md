@@ -49,3 +49,25 @@ Related run directory:
 ## Next Execution Target
 Use native Intel/amd64 Docker host and follow:
 - `docs/INTEL_VALIDATION_PLAN.md`
+
+## Addendum: Intel Native Completion (2026-02-18)
+A native Intel full-matrix validation was completed after the arm64-emulation phase.
+
+- full-matrix log directory: `.tmp/docker-validation-20260218-163121-full-matrix`
+- result: `pass: 36`, `fail: 0`, `skip: 0`
+- run return code: `0`
+
+This confirms closure of the previously failing tool set on Intel Docker for the tracked legacy manifest.
+
+## Addendum (Intel native full-matrix completion)
+Date: `2026-02-18`
+
+Intel full-matrix validation is now complete and passing.
+
+- log directory: `.tmp/docker-validation-20260218-163121-full-matrix`
+- pass: `36`
+- fail: `0`
+- skip: `0`
+
+Notable outcome:
+- Previously problematic tools (`trufflehog`, `git-hound`, `dog`) now pass via primary-or-fallback installer flow, confirming branch readiness for release.

@@ -1,5 +1,13 @@
 # Intel Validation Plan (Post-Emulation)
 
+## Status Update (2026-02-18)
+- ✅ Intel native full-matrix execution completed.
+- ✅ Result: `36/36` pass, `0` fail.
+- ✅ Run artifacts: `.tmp/docker-validation-20260218-163121-full-matrix`
+
+Remaining recommendation(s):
+- Add checksum/signature verification for release-binary fallback downloads (`trufflehog`, `git-hound`, `dog`) to strengthen supply-chain assurance.
+
 ## Goal
 Complete validation of remaining legacy tool installs on a native Intel/amd64 Docker host to avoid arm64 emulation slowness and false failures.
 
@@ -113,3 +121,18 @@ Suggested ledger file:
 - No legacy tool is removed from install paths.
 - `install all` behavior still includes legacy tool set.
 - Only then move to “add new tools” work; modular restructuring remains a later phase.
+
+## Completion Status (2026-02-18)
+Status: ✅ Completed for current validation scope.
+
+Evidence:
+- Intel full-matrix run log dir: `.tmp/docker-validation-20260218-163121-full-matrix`
+- Reported result: `pass: 36`, `fail: 0`, `skip: 0`
+- Branch includes fallback hardening for `trufflehog`, `git-hound`, and `dog` (`1ccbaa8`).
+
+Recommended next action:
+- Treat this validation phase as closed and transition to the next planned phase (new tools and/or modular improvements) in a separate scoped branch.
+
+## Completion Check (2026-02-18)
+- Criteria met for Intel validation phase.
+- Recommended follow-up is hardening-only (checksum/signature verification for fallback binaries), not functional blocker work.

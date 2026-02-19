@@ -11,6 +11,8 @@
 # Date: 2025-12-16
 ################################################################################
 
+# shellcheck disable=SC2034  # TEST_FAILURES and variables used conditionally
+
 # Error handling: Don't exit on error, handle manually
 set +e
 
@@ -424,38 +426,44 @@ generate_disk_report() {
     local categories
     categories=$(categorize_disk_usage)
 
-    local binaries=$(echo "$categories" | cut -d'|' -f1)
-    local build_artifacts=$(echo "$categories" | cut -d'|' -f2)
-    local caches=$(echo "$categories" | cut -d'|' -f3)
-    local data=$(echo "$categories" | cut -d'|' -f4)
-    local logs=$(echo "$categories" | cut -d'|' -f5)
-    local archives=$(echo "$categories" | cut -d'|' -f6)
+    local binaries
+    binaries=$(echo "$categories" | cut -d'|' -f1)
+    local build_artifacts
+    build_artifacts=$(echo "$categories" | cut -d'|' -f2)
+    local caches
+    caches=$(echo "$categories" | cut -d'|' -f3)
+    local data
+    data=$(echo "$categories" | cut -d'|' -f4)
+    local logs
+    logs=$(echo "$categories" | cut -d'|' -f5)
+    local archives
+    archives=$(echo "$categories" | cut -d'|' -f6)
 
     printf "%-25s %-15s %-12s %s\n" "Category" "Size" "% of Total" "Cleanable?"
     printf "%-25s %-15s %-12s %s\n" "$(printf -- '-%.0s' {1..25})" "$(printf -- '-%.0s' {1..15})" "$(printf -- '-%.0s' {1..12})" "$(printf -- '-%.0s' {1..10})"
 
     local percent
     percent=$((binaries * 100 / TOTAL_DISK_USAGE))
-    printf "%-25s %-15s %-12s %s\n" "Binaries" "$(format_size $binaries)" "$percent%" "No (required)"
+    printf "%-25s %-15s %-12s %s\n" "Binaries" "$(format_size "$binaries")" "$percent%" "No (required)"
 
     percent=$((build_artifacts * 100 / TOTAL_DISK_USAGE))
-    printf "%-25s ${YELLOW}%-15s${NC} %-12s ${GREEN}%s${NC}\n" "Build Artifacts" "$(format_size $build_artifacts)" "$percent%" "Yes (safe)"
+    printf "%-25s ${YELLOW}%-15s${NC} %-12s ${GREEN}%s${NC}\n" "Build Artifacts" "$(format_size "$build_artifacts")" "$percent%" "Yes (safe)"
 
     percent=$((caches * 100 / TOTAL_DISK_USAGE))
-    printf "%-25s ${YELLOW}%-15s${NC} %-12s ${GREEN}%s${NC}\n" "Caches" "$(format_size $caches)" "$percent%" "Yes (safe)"
+    printf "%-25s ${YELLOW}%-15s${NC} %-12s ${GREEN}%s${NC}\n" "Caches" "$(format_size "$caches")" "$percent%" "Yes (safe)"
 
     percent=$((data * 100 / TOTAL_DISK_USAGE))
-    printf "%-25s %-15s %-12s %s\n" "Python/Node/Go Runtime" "$(format_size $data)" "$percent%" "No (required)"
+    printf "%-25s %-15s %-12s %s\n" "Python/Node/Go Runtime" "$(format_size "$data")" "$percent%" "No (required)"
 
     percent=$((logs * 100 / TOTAL_DISK_USAGE))
-    printf "%-25s %-15s %-12s %s\n" "Logs" "$(format_size $logs)" "$percent%" "Partial"
+    printf "%-25s %-15s %-12s %s\n" "Logs" "$(format_size "$logs")" "$percent%" "Partial"
 
     percent=$((archives * 100 / TOTAL_DISK_USAGE))
-    printf "%-25s ${YELLOW}%-15s${NC} %-12s ${GREEN}%s${NC}\n" "Downloaded Archives" "$(format_size $archives)" "$percent%" "Yes (safe)"
+    printf "%-25s ${YELLOW}%-15s${NC} %-12s ${GREEN}%s${NC}\n" "Downloaded Archives" "$(format_size "$archives")" "$percent%" "Yes (safe)"
 
     printf "%-25s %-15s %-12s %s\n" "$(printf -- '-%.0s' {1..25})" "$(printf -- '-%.0s' {1..15})" "$(printf -- '-%.0s' {1..12})" "$(printf -- '-%.0s' {1..10})"
-    printf "%-25s ${CYAN}%-15s${NC} %-12s\n" "TOTAL" "$(format_size $TOTAL_DISK_USAGE)" "100%"
-    printf "%-25s ${GREEN}%-15s${NC} %-12s\n" "RECOVERABLE" "$(format_size $RECOVERABLE_SPACE)" "$((RECOVERABLE_SPACE * 100 / TOTAL_DISK_USAGE))%"
+    printf "%-25s ${CYAN}%-15s${NC} %-12s\n" "TOTAL" "$(format_size "$TOTAL_DISK_USAGE")" "100%"
+    printf "%-25s ${GREEN}%-15s${NC} %-12s\n" "RECOVERABLE" "$(format_size "$RECOVERABLE_SPACE")" "$((RECOVERABLE_SPACE * 100 / TOTAL_DISK_USAGE))%"
 }
 
 ################################################################################
@@ -463,61 +471,71 @@ generate_disk_report() {
 ################################################################################
 
 find_go_artifacts() {
-    local go_pkg_size=$(get_directory_size "$HOME/opt/gopath/pkg")
-    local go_src_size=$(get_directory_size "$HOME/opt/gopath/src")
+    local go_pkg_size
+    go_pkg_size=$(get_directory_size "$HOME/opt/gopath/pkg")
+    local go_src_size
+    go_src_size=$(get_directory_size "$HOME/opt/gopath/src")
 
     if [ -d "$HOME/opt/gopath/pkg" ]; then
-        BUILD_ARTIFACTS["go_pkg"]="$HOME/opt/gopath/pkg|$(format_size $go_pkg_size)|Safe to remove"
+        BUILD_ARTIFACTS["go_pkg"]="$HOME/opt/gopath/pkg|$(format_size "$go_pkg_size")|Safe to remove"
     fi
 
     if [ -d "$HOME/opt/gopath/src" ]; then
-        BUILD_ARTIFACTS["go_src"]="$HOME/opt/gopath/src|$(format_size $go_src_size)|Safe to remove"
+        BUILD_ARTIFACTS["go_src"]="$HOME/opt/gopath/src|$(format_size "$go_src_size")|Safe to remove"
     fi
 }
 
 find_cargo_artifacts() {
-    local cargo_reg_size=$(get_directory_size "$HOME/.local/share/cargo/registry")
-    local cargo_git_size=$(get_directory_size "$HOME/.local/share/cargo/git")
+    local cargo_reg_size
+    cargo_reg_size=$(get_directory_size "$HOME/.local/share/cargo/registry")
+    local cargo_git_size
+    cargo_git_size=$(get_directory_size "$HOME/.local/share/cargo/git")
 
     if [ -d "$HOME/.local/share/cargo/registry" ]; then
-        BUILD_ARTIFACTS["cargo_registry"]="$HOME/.local/share/cargo/registry|$(format_size $cargo_reg_size)|Safe (will re-download)"
+        BUILD_ARTIFACTS["cargo_registry"]="$HOME/.local/share/cargo/registry|$(format_size "$cargo_reg_size")|Safe (will re-download)"
     fi
 
     if [ -d "$HOME/.local/share/cargo/git" ]; then
-        BUILD_ARTIFACTS["cargo_git"]="$HOME/.local/share/cargo/git|$(format_size $cargo_git_size)|Safe (will re-download)"
+        BUILD_ARTIFACTS["cargo_git"]="$HOME/.local/share/cargo/git|$(format_size "$cargo_git_size")|Safe (will re-download)"
     fi
 }
 
 find_cache_artifacts() {
-    local pip_size=$(get_directory_size "$HOME/.cache/pip")
-    local npm_size=$(get_directory_size "$HOME/.cache/npm")
-    local go_size=$(get_directory_size "$HOME/.cache/go-build")
-    local python_size=$(get_directory_size "$HOME/.cache/python")
+    local pip_size
+    pip_size=$(get_directory_size "$HOME/.cache/pip")
+    local npm_size
+    npm_size=$(get_directory_size "$HOME/.cache/npm")
+    local go_size
+    go_size=$(get_directory_size "$HOME/.cache/go-build")
+    local python_size
+    python_size=$(get_directory_size "$HOME/.cache/python")
 
     if [ -d "$HOME/.cache/pip" ]; then
-        BUILD_ARTIFACTS["pip_cache"]="$HOME/.cache/pip|$(format_size $pip_size)|Safe to remove"
+        BUILD_ARTIFACTS["pip_cache"]="$HOME/.cache/pip|$(format_size "$pip_size")|Safe to remove"
     fi
 
     if [ -d "$HOME/.cache/npm" ]; then
-        BUILD_ARTIFACTS["npm_cache"]="$HOME/.cache/npm|$(format_size $npm_size)|Safe to remove"
+        BUILD_ARTIFACTS["npm_cache"]="$HOME/.cache/npm|$(format_size "$npm_size")|Safe to remove"
     fi
 
     if [ -d "$HOME/.cache/go-build" ]; then
-        BUILD_ARTIFACTS["go_cache"]="$HOME/.cache/go-build|$(format_size $go_size)|Safe to remove"
+        BUILD_ARTIFACTS["go_cache"]="$HOME/.cache/go-build|$(format_size "$go_size")|Safe to remove"
     fi
 
     if [ -d "$HOME/.cache/python" ]; then
-        BUILD_ARTIFACTS["python_cache"]="$HOME/.cache/python|$(format_size $python_size)|Safe to remove"
+        BUILD_ARTIFACTS["python_cache"]="$HOME/.cache/python|$(format_size "$python_size")|Safe to remove"
     fi
 }
 
 find_archive_artifacts() {
     if [ -d "$HOME/opt/src" ]; then
-        local archives_size=$(get_directory_size "$HOME/opt/src")
-        local archive_count=$(find "$HOME/opt/src" -type f \( -name "*.tar.gz" -o -name "*.tar.xz" \) 2>/dev/null | wc -l)
+        local archives_size
+        archives_size=$(get_directory_size "$HOME/opt/src")
+        local archive_count
+        archive_count=$(find "$HOME/opt/src" -type f \( -name "*.tar.gz" -o -name "*.tar.xz" \) 2>/dev/null | wc -l)
 
         if [ "$archive_count" -gt 0 ]; then
-            BUILD_ARTIFACTS["archives"]="$HOME/opt/src/*.tar.*|$(format_size $archives_size)|Safe to remove ($archive_count files)"
+            BUILD_ARTIFACTS["archives"]="$HOME/opt/src/*.tar.*|$(format_size "$archives_size")|Safe to remove ($archive_count files)"
         fi
     fi
 }
@@ -540,9 +558,12 @@ generate_artifact_report() {
 
     for artifact in "${!BUILD_ARTIFACTS[@]}"; do
         local info="${BUILD_ARTIFACTS[$artifact]}"
-        local path=$(echo "$info" | cut -d'|' -f1)
-        local size=$(echo "$info" | cut -d'|' -f2)
-        local safety=$(echo "$info" | cut -d'|' -f3)
+        local path
+        path=$(echo "$info" | cut -d'|' -f1)
+        local size
+        size=$(echo "$info" | cut -d'|' -f2)
+        local safety
+        safety=$(echo "$info" | cut -d'|' -f3)
 
         printf "%-40s ${YELLOW}%-15s${NC} ${GREEN}%s${NC}\n" "$path" "$size" "$safety"
     done
@@ -607,11 +628,11 @@ check_environment_vars() {
 
     # Check PATH components
     if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-        issues+=("~/.local/bin not in PATH")
+        issues+=("$HOME/.local/bin not in PATH")
     fi
 
     if ! echo "$PATH" | grep -q "$HOME/opt/gopath/bin"; then
-        issues+=("~/opt/gopath/bin not in PATH")
+        issues+=("$HOME/opt/gopath/bin not in PATH")
     fi
 
     if [ ${#issues[@]} -gt 0 ]; then
@@ -675,9 +696,12 @@ generate_test_diagnosis_report() {
     # Parse results
     local results
     results=$(parse_test_results "$test_output")
-    local total_tests=$(echo "$results" | cut -d'|' -f1)
-    local passed_tests=$(echo "$results" | cut -d'|' -f2)
-    local failed_tests=$(echo "$results" | cut -d'|' -f3)
+    local total_tests
+    total_tests=$(echo "$results" | cut -d'|' -f1)
+    local passed_tests
+    passed_tests=$(echo "$results" | cut -d'|' -f2)
+    local failed_tests
+    failed_tests=$(echo "$results" | cut -d'|' -f3)
 
     echo -e "${CYAN}Total Tests: ${NC}$total_tests"
     echo -e "${GREEN}Passed: ${NC}$passed_tests ($((passed_tests * 100 / total_tests))%)"
@@ -773,15 +797,15 @@ check_xdg_compliance() {
 
     # Non-compliant locations
     if [ -d "$HOME/opt/gopath" ]; then
-        XDG_VIOLATIONS["gopath"]="~/opt/gopath|Should be ~/.local/share/gopath"
+        XDG_VIOLATIONS["gopath"]="$HOME/opt/gopath|Should be $HOME/.local/share/gopath"
         ((non_compliant++))
     fi
     if [ -d "$HOME/opt/node" ]; then
-        XDG_VIOLATIONS["node"]="~/opt/node|Should be ~/.local/opt/node"
+        XDG_VIOLATIONS["node"]="$HOME/opt/node|Should be $HOME/.local/opt/node"
         ((non_compliant++))
     fi
     if [ -d "$HOME/opt/go" ]; then
-        XDG_VIOLATIONS["go"]="~/opt/go|Should be ~/.local/opt/go"
+        XDG_VIOLATIONS["go"]="$HOME/opt/go|Should be $HOME/.local/opt/go"
         ((non_compliant++))
     fi
 
@@ -793,8 +817,10 @@ generate_xdg_report() {
 
     local compliance
     compliance=$(check_xdg_compliance)
-    local compliant=$(echo "$compliance" | cut -d'|' -f1)
-    local non_compliant=$(echo "$compliance" | cut -d'|' -f2)
+    local compliant
+    compliant=$(echo "$compliance" | cut -d'|' -f1)
+    local non_compliant
+    non_compliant=$(echo "$compliance" | cut -d'|' -f2)
     local total=$((compliant + non_compliant))
 
     echo -e "${GREEN}✅ Compliant Locations: ${NC}$compliant/$total ($((compliant * 100 / total))%)"
@@ -807,16 +833,17 @@ generate_xdg_report() {
     printf "%-30s %-20s\n" "$(printf -- '-%.0s' {1..30})" "$(printf -- '-%.0s' {1..20})"
 
     # Show compliant locations
-    printf "%-30s ${GREEN}%-20s${NC}\n" "~/.local/bin/" "[COMPLIANT]"
-    printf "%-30s ${GREEN}%-20s${NC}\n" "~/.local/share/" "[COMPLIANT]"
-    printf "%-30s ${GREEN}%-20s${NC}\n" "~/.local/state/" "[COMPLIANT]"
-    printf "%-30s ${GREEN}%-20s${NC}\n" "~/.config/" "[COMPLIANT]"
-    printf "%-30s ${GREEN}%-20s${NC}\n" "~/.cache/" "[COMPLIANT]"
+    printf "%-30s ${GREEN}%-20s${NC}\n" "$HOME/.local/bin/" "[COMPLIANT]"
+    printf "%-30s ${GREEN}%-20s${NC}\n" "$HOME/.local/share/" "[COMPLIANT]"
+    printf "%-30s ${GREEN}%-20s${NC}\n" "$HOME/.local/state/" "[COMPLIANT]"
+    printf "%-30s ${GREEN}%-20s${NC}\n" "$HOME/.config/" "[COMPLIANT]"
+    printf "%-30s ${GREEN}%-20s${NC}\n" "$HOME/.cache/" "[COMPLIANT]"
 
     # Show non-compliant locations
     for violation in "${!XDG_VIOLATIONS[@]}"; do
         local info="${XDG_VIOLATIONS[$violation]}"
-        local path=$(echo "$info" | cut -d'|' -f1)
+        local path
+        path=$(echo "$info" | cut -d'|' -f1)
         printf "%-30s ${RED}%-20s${NC}\n" "$path" "[NON-COMPLIANT]"
     done
 
@@ -843,8 +870,10 @@ generate_migration_plan() {
 
     for violation in "${!XDG_VIOLATIONS[@]}"; do
         local info="${XDG_VIOLATIONS[$violation]}"
-        local current_path=$(echo "$info" | cut -d'|' -f1)
-        local recommended_path=$(echo "$info" | cut -d'|' -f2 | sed 's/Should be //')
+        local current_path
+        current_path=$(echo "$info" | cut -d'|' -f1)
+        local recommended_path
+        recommended_path=$(echo "$info" | cut -d'|' -f2 | sed 's/Should be //')
 
         echo -e "${CYAN}# Migrate $current_path${NC}"
         echo "mkdir -p $(dirname "$recommended_path")"
@@ -936,7 +965,7 @@ execute_cleanup() {
     echo ""
     echo -e "${RED}⚠ This action cannot be undone easily!${NC}"
     echo ""
-    read -p "Continue with cleanup? (yes/no): " confirm
+    read -r -p "Continue with cleanup? (yes/no): " confirm
 
     if [ "$confirm" != "yes" ]; then
         echo -e "${YELLOW}Cleanup cancelled${NC}"
@@ -1125,7 +1154,8 @@ main() {
             generate_cleanup_commands
 
             # Save report location note
-            local report_file="$HOME/.local/state/install_tools/diagnostic-$(date '+%Y%m%d-%H%M%S').txt"
+            local report_file
+            report_file="$HOME/.local/state/install_tools/diagnostic-$(date '+%Y%m%d-%H%M%S').txt"
             echo ""
             echo -e "${CYAN}Note: To save this report, redirect output to a file:${NC}"
             echo "  ./diagnose_installation.sh --full-report > \"$report_file\""

@@ -9,6 +9,7 @@ OUT_FILE="${1:-${REPO_ROOT}/scripts/manifests/legacy_tools_d870fee.tsv}"
 mkdir -p "$(dirname "${OUT_FILE}")"
 
 # shellcheck source=lib/data/tool-definitions.sh
+# shellcheck disable=SC1091  # Source file not specified as input
 source "${DEFINITIONS_FILE}"
 
 all_tools=(
@@ -68,7 +69,7 @@ extract_value() {
 
     if [[ "$tool" == "python_venv" ]]; then
       smoke_type="path"
-      smoke_target='~/.local/share/virtualenvs/tools/bin/python'
+      smoke_target="$HOME/.local/share/virtualenvs/tools/bin/python"
     fi
 
     printf '%s\t%s\t%s\t%s\t%s\n' "$tool" "$category" "$location" "$smoke_type" "$smoke_target"

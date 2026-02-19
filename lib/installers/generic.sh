@@ -3,6 +3,9 @@
 # Version: 1.3.0
 # Purpose: Reusable generic installers for each language ecosystem
 
+# shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
+# shellcheck disable=SC1091  # Source files in virtualenvs (dynamic paths)
+
 # ===== HELPER FUNCTIONS =====
 
 # Function: create_python_wrapper
@@ -40,7 +43,8 @@ WRAPPER_EOF
 install_python_tool() {
     local tool=$1
     local pip_package=$2
-    local logfile=$(create_tool_log "$tool")
+    local logfile
+    logfile=$(create_tool_log "$tool")
 
     echo -e "${INFO}⚙ Activating Python environment...${NC}"
 
@@ -91,7 +95,8 @@ install_python_tool() {
 install_go_tool() {
     local tool=$1
     local repo=$2
-    local logfile=$(create_tool_log "$tool")
+    local logfile
+    logfile=$(create_tool_log "$tool")
 
     # Verify system Go is available
     if ! verify_system_go; then
@@ -149,7 +154,8 @@ install_go_tool() {
 install_node_tool() {
     local tool=$1
     local npm_package=$2
-    local logfile=$(create_tool_log "$tool")
+    local logfile
+    logfile=$(create_tool_log "$tool")
 
     echo -e "${INFO}📦 Installing via npm...${NC}"
 
@@ -194,7 +200,8 @@ install_node_tool() {
 install_rust_tool() {
     local tool=$1
     local crate=$2
-    local logfile=$(create_tool_log "$tool")
+    local logfile
+    logfile=$(create_tool_log "$tool")
 
     echo -e "${WARNING}${WARN} Compiling $tool from Rust source (may take 5-10 minutes)...${NC}"
     echo -e "${INFO}🦀 This is normal - Rust compiles from source for optimization${NC}"

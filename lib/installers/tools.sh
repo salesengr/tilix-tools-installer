@@ -3,6 +3,9 @@
 # Version: 1.3.0
 # Purpose: Tool-specific installation logic and wrapper functions
 
+# shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
+# shellcheck disable=SC1091  # Source files in virtualenvs (dynamic paths)
+
 # ===== PYTHON TOOL WRAPPERS =====
 
 # Convenience wrappers for Python tools using generic installer
@@ -14,7 +17,8 @@ install_h8mail() { install_python_tool "h8mail" "h8mail"; }
 # Purpose: Install Photon from upstream GitHub (no maintained PyPI package)
 # Returns: 0 on success, 1 on failure
 install_photon() {
-    local logfile=$(create_tool_log "photon")
+    local logfile
+    logfile=$(create_tool_log "photon")
 
     echo -e "${INFO}⚙ Activating Python environment...${NC}"
 
@@ -92,7 +96,8 @@ install_censys() { install_python_tool "censys" "censys"; }
 # Purpose: Install active theHarvester release from GitHub (PyPI package is stale)
 # Returns: 0 on success, 1 on failure
 install_theHarvester() {
-    local logfile=$(create_tool_log "theHarvester")
+    local logfile
+    logfile=$(create_tool_log "theHarvester")
 
     echo -e "${INFO}⚙ Activating Python environment...${NC}"
 
@@ -136,7 +141,8 @@ install_theHarvester() {
 # Purpose: Install SpiderFoot from upstream source and use Python 3.13-friendly deps
 # Returns: 0 on success, 1 on failure
 install_spiderfoot() {
-    local logfile=$(create_tool_log "spiderfoot")
+    local logfile
+    logfile=$(create_tool_log "spiderfoot")
 
     echo -e "${INFO}⚙ Activating Python environment...${NC}"
 
@@ -222,7 +228,8 @@ WRAPPER_EOF
 # Purpose: Install python-Wappalyzer and provide a usable CLI wrapper
 # Returns: 0 on success, 1 on failure
 install_wappalyzer() {
-    local logfile=$(create_tool_log "wappalyzer")
+    local logfile
+    logfile=$(create_tool_log "wappalyzer")
 
     echo -e "${INFO}⚙ Activating Python environment...${NC}"
 
@@ -310,7 +317,8 @@ WRAPPER_EOF
 # Purpose: Install yara-python and provide a usable yara CLI in user-space
 # Returns: 0 on success, 1 on failure
 install_yara() {
-    local logfile=$(create_tool_log "yara")
+    local logfile
+    logfile=$(create_tool_log "yara")
 
     {
         echo "=========================================="

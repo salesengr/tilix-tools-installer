@@ -170,36 +170,6 @@ bash install_security_tools.sh --dry-run sherlock gobuster
 
 > After installations finish, run `source ~/.bashrc` (or open a new shell) so the new binaries are immediately on your PATH. The installer now prints this reminder whenever the menu refreshes or a CLI run completes.
 
-### 3. Verify Installation
-
-```bash
-bash scripts/test_installation.sh
-```
-
-### 4. Analyze & Optimize Installation (Optional)
-
-```bash
-# Generate comprehensive diagnostic report
-bash scripts/diagnose_installation.sh
-
-# View specific sections
-bash scripts/diagnose_installation.sh --inventory        # List installed tools
-bash scripts/diagnose_installation.sh --disk-usage       # Analyze disk space
-bash scripts/diagnose_installation.sh --build-artifacts  # Find cleanable files
-bash scripts/diagnose_installation.sh --cleanup-plan     # Show safe cleanup commands
-
-# Execute safe cleanup to recover disk space
-bash scripts/diagnose_installation.sh --cleanup
-```
-
-The diagnostic script helps you:
-- 📊 **Inventory:** See what's installed and tool versions
-- 💾 **Disk Analysis:** Identify space usage by category (~1-1.5 GB can be recovered)
-- 🧹 **Cleanup:** Safely remove build artifacts, caches, and archives
-- ✅ **XDG Compliance:** Verify directory structure follows standards
-- 🔍 **Troubleshooting:** Diagnose test failures and environment issues
-
-**Note:** Requires Bash 4.0+ (available in Docker environments, not macOS system bash)
 
 ## 📁 Directory Structure
 
@@ -231,11 +201,8 @@ After installation, your files will be organized as follows:
 
 Comprehensive guides are available in the `docs/` directory:
 
-- **[Script Usage](docs/script_usage.md)** - How to run the setup, installer, and tests
-- **[Diagnostic Script Guide](docs/DIAGNOSTIC_USAGE.md)** - Analyze, optimize, and troubleshoot installations
 - **[XDG Setup Guide](docs/xdg_setup.md)** - Environment configuration explained
 - **[Extending the Script](docs/EXTENDING_THE_SCRIPT.md)** - Add your own tools
-- **[Compatibility Analysis](docs/USER_SPACE_COMPATIBILITY.md)** - Technical deep-dive
 - **[Tool Installation Summary](docs/tool_installation_summary.md)** - Where each tool lands on disk
 
 ## 💾 Disk Space Requirements
@@ -400,16 +367,6 @@ To add new tools to the installer:
 4. Add to appropriate category array
 5. Test thoroughly with `--dry-run`
 
-### Agent-Assisted Development
-
-This project uses specialized AI agents for development:
-- **bash-script-developer** - Bash scripting specialist (shellcheck compliance, XDG patterns)
-- **test-automation-engineer** - Comprehensive test generation and validation
-- **security-auditor** - Security review and vulnerability scanning
-- **code-reviewer** - Quality and best practices enforcement
-
-See [CLAUDE.md](CLAUDE.md) for detailed agent workflows and integration patterns.
-
 ## 📝 Version History
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
@@ -417,15 +374,6 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 ## 📄 License
 
 This project is provided as-is for educational and professional security testing purposes. Always obtain proper authorization before using security tools on systems you don't own or have explicit permission to test.
-
-## 🙏 Credits
-
-Built for user-space security tool installation without requiring root privileges. Designed for:
-- Security researchers
-- Penetration testers
-- OSINT investigators
-- CTI analysts
-- DevOps engineers in restricted environments
 
 ## 💬 Support
 

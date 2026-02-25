@@ -1,8 +1,8 @@
 # Library Modules
 
-**Version:** 1.3.0
+**Version:** 1.3.1
 
-This directory contains 11 focused library modules that implement the core functionality of the Security Tools Installer. The modular architecture (introduced in v1.3.0) separates concerns and makes the codebase more maintainable, testable, and extensible.
+This directory contains 11 focused library modules that implement the core functionality of the Security Tools Installer. The modular architecture (introduced in v1.3.1) separates concerns and makes the codebase more maintainable, testable, and extensible.
 
 ## Directory Structure
 
@@ -27,8 +27,6 @@ lib/
     ├── display.sh            # Status displays (137 lines)
     └── orchestration.sh      # Installation coordination (190 lines)
 ```
-
-**Total:** 11 modules, 1,357 lines (down from 1,581 lines in monolithic v1.2.0)
 
 ## Module Overview
 
@@ -394,7 +392,7 @@ echo "Log directory: $LOG_DIR"
 Follow project conventions documented in `CLAUDE.md`:
 - Lowercase function names with underscores: `install_tool()`
 - Local variables lowercase: `local logfile="..."`
-- Global variables uppercase: `SCRIPT_VERSION="1.3.0"`
+- Global variables uppercase: `SCRIPT_VERSION="1.3.1"`
 - Return 0 on success, 1 on failure
 - Use `set +e` with explicit return code checks
 - Comprehensive logging for all operations
@@ -420,7 +418,7 @@ Follow project conventions documented in `CLAUDE.md`:
 
 **Comparison to v1.2.0:**
 - v1.2.0: 1,581 lines in monolithic script
-- v1.3.0: 196 lines (main) + 1,357 lines (modules) = 1,553 lines total
+- v1.3.1: 196 lines (main) + 1,357 lines (modules) = 1,553 lines total
 - **Result:** 87% reduction in main script size, improved maintainability
 
 ---
@@ -458,6 +456,6 @@ Potential improvements to the modular architecture:
 
 ---
 
-**Version:** 1.3.0
-**Last Updated:** January 15, 2026
+**Version:** 1.3.1
+**Last Updated:** February 25, 2026
 **Related Documentation:** See `docs/EXTENDING_THE_SCRIPT.md`, `CLAUDE.md`

@@ -321,7 +321,8 @@ opt/
 .state/
 
 # Local/internal working artifacts
-.internal/
+.internal/*
+validation/*
 
 # Shellcheck output
 shellcheck.log

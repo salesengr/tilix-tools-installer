@@ -30,6 +30,10 @@ jobs:
         run: |
           shfmt -d . || true
 
+      - name: Prepare XDG environment for smoke test
+        run: |
+          bash xdg_setup.sh
+
       - name: Installer dry-run smoke
         run: |
           bash install_security_tools.sh --dry-run all

@@ -9,7 +9,7 @@ The installer keeps everything inside your home directory:
 - `~/.local/bin` – user executables and Python/Node wrappers
 - `~/.local/share` – Python virtual environments, shared data, Cargo metadata
 - `~/.local/state/install_tools` – installer logs and history
-- `/usr/local/go` – System Go installation (GOROOT)
+- `/usr/local/go` – System Go prerequisite (GOROOT expected by Go tool installs)
 - `~/opt/gopath/bin` – compiled Go tools
 - `~/opt/node` – Node.js runtime
 - `~/opt/src` – temporary build artifacts and downloaded archives
@@ -24,7 +24,7 @@ Logs for every tool live in `~/.local/state/install_tools/logs/<tool>-<timestamp
 |-----------|---------------------|-----------------|
 | CMake 3.28.1 | GitHub tarball is downloaded to `~/opt/src`, extracted, and binaries copied into `~/.local/bin` with supporting files in `~/.local/share`. | `~/.local/bin/cmake`, shared modules in `~/.local/share/cmake-*`, man pages in `~/.local/share/man`. |
 | GitHub CLI 2.53.0 | Release tarball pulled into `~/opt/src` and extracted. Binary plus man pages are copied into `~/.local/bin` and `~/.local/share/man`. | `~/.local/bin/gh`, docs under `~/.local/share/doc/gh`. |
-| Go 1.21.5 | System-wide installation expected at `/usr/local/go`; `GOPATH` is set to `~/opt/gopath` for user workspace. | System toolchain at `/usr/local/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
+| Go (system prerequisite) | Expected at `/usr/local/go`; installer uses it to build Go tools and sets `GOPATH` to `~/opt/gopath`. | System toolchain at `/usr/local/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
 | Node.js 20.10.0 | Node tarball extracted to `~/opt/node`. npm global prefix points to `~/.local`, so binaries are linked in `~/.local/bin` and packages in `~/.local/lib/node_modules`. | `~/opt/node/bin/node`, `~/.local/bin/*` for npm-installed CLIs. |
 | Rust (rustup) | `rustup` installer runs with `$CARGO_HOME=$HOME/.local/share/cargo`. | Toolchains and registry caches in `~/.local/share/rustup`/`cargo`, binaries in `~/.local/share/cargo/bin`. |
 | Python virtual environment | `python3 -m venv $XDG_DATA_HOME/virtualenvs/tools`, pip upgraded, wrapper alias `tools-venv` provided by `xdg_setup.sh`. | Virtual environment at `~/.local/share/virtualenvs/tools`, activation script plus site-packages. |
@@ -39,7 +39,7 @@ All Python applications install into the shared virtual environment above. Each 
 | holehe | `holehe` | `~/.local/bin/holehe` | Same venv, package `holehe`. |
 | socialscan | `socialscan` | `~/.local/bin/socialscan` | venv package `socialscan`. |
 | h8mail | `h8mail` | `~/.local/bin/h8mail` | venv package `h8mail`. |
-| photon | `photon-python` | `~/.local/bin/photon` | venv package `photon`. |
+| photon | GitHub clone (`s0md3v/Photon`) + `requirements.txt` | `~/.local/bin/photon` | Source cloned under `~/opt/src/Photon`; wrapper points into Python venv. |
 | sublist3r | `sublist3r` | `~/.local/bin/sublist3r` | venv package `sublist3r`. |
 | shodan | `shodan` | `~/.local/bin/shodan` | venv package `shodan`. |
 | censys | `censys` | `~/.local/bin/censys` | venv package `censys`. |

@@ -1,9 +1,11 @@
 # Security Tools Installer
 
-**Version:** 1.3.1
+**Version:** 1.3.3
 **Release Date:** Feb 25 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
+
+**Python support:** Validated with Python **3.13** (matching `salesengr/tilix-app:latest`, currently Python 3.13.8).
 
 **Architecture:** Modular design with 11 focused library modules for maintainability and extensibility.
 
@@ -11,25 +13,25 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 - ✅ **No sudo required** - Complete user-space installation
 - ✅ **37+ security tools** - OSINT, CTI, reconnaissance, and pentesting
-- ✅ **4 language runtimes** - Go, Node.js, Rust, Python venv
+- ✅ **3 managed runtimes + Python venv** - Node.js, Rust, Python venv (uses system Go for Go tools)
 - ✅ **Interactive menu** - Easy point-and-click installation
 - ✅ **CLI support** - Script automation and batch installation
 - ✅ **XDG compliant** - Follows Linux filesystem standards
 - ✅ **Comprehensive logging** - Track all installations with detailed logs
 - ✅ **Dependency resolution** - Automatic prerequisite installation
 - ✅ **Error handling** - Retry logic and robust error recovery
-- ✅ **100% shellcheck compliant** - All bash scripts pass static analysis
+- ✅ **Shellcheck-ready design** - Scripts are written to be shellcheck-friendly (run locally to verify in your environment)
 
 ## 📦 What Gets Installed
 
 ### Build Tools & Runtimes
 - **CMake** 3.28.1 - Build system generator
 - **GitHub CLI** 2.53.0 - Manage GitHub from the terminal
-- **Go** 1.21.5 - Programming language runtime
+- **Go** (system prerequisite) - Used to build/install Go-based tools
 - **Node.js** 20.10.0 - JavaScript runtime
 - **Rust** (latest) - Systems programming language
 
-### Python Tools (16 tools)
+### Python Tools (12 tools)
 **OSINT/Reconnaissance:**
 - sherlock - Username search across 300+ social networks
 - holehe - Email verification across websites
@@ -148,7 +150,7 @@ bash install_security_tools.sh
 Then use the menu to select tools:
 - Individual tools by number
 - Categories (Python, Go, Node, Rust)
-- Install everything (option 30)
+- Install bulk categories from the menu (options 34-37)
 
 **Command Line Mode**
 ```bash
@@ -187,8 +189,7 @@ After installation, your files will be organized as follows:
         └── logs/           # Installation logs
 
 ~/opt/
-├── go/                     # Go installation
-├── gopath/                 # Go workspace
+├── gopath/                 # Go workspace (requires system Go)
 │   └── bin/               # Compiled Go tools
 ├── node/                   # Node.js installation
 └── src/                    # Source code downloads
@@ -204,6 +205,7 @@ Comprehensive guides are available in the `docs/` directory:
 - **[XDG Setup Guide](docs/xdg_setup.md)** - Environment configuration explained
 - **[Extending the Script](docs/EXTENDING_THE_SCRIPT.md)** - Add your own tools
 - **[Tool Installation Summary](docs/tool_installation_summary.md)** - Where each tool lands on disk
+- **[Node Audit Coverage](docs/security/node-audit.md)** - npm/fallback audit process and limitations
 
 ## 💾 Disk Space Requirements
 
@@ -379,7 +381,8 @@ This project is provided as-is for educational and professional security testing
 
 - Check the documentation in `docs/`
 - Review installation logs for errors
-- Run `bash scripts/test_installation.sh` to verify setup
+- Validate setup with dry-run: `bash install_security_tools.sh --dry-run all`
+- If installed locally, run `make lint` / `make fmt-check` for shell quality checks
 - Use `--dry-run` to preview installations
 
 ---

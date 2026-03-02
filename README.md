@@ -205,6 +205,7 @@ Comprehensive guides are available in the `docs/` directory:
 - **[XDG Setup Guide](docs/xdg_setup.md)** - Environment configuration explained
 - **[Extending the Script](docs/EXTENDING_THE_SCRIPT.md)** - Add your own tools
 - **[Tool Installation Summary](docs/tool_installation_summary.md)** - Where each tool lands on disk
+- **[Node Audit Coverage](docs/security/node-audit.md)** - npm/fallback audit process and limitations
 
 ## 💾 Disk Space Requirements
 

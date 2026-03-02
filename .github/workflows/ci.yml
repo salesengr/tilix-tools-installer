@@ -37,3 +37,17 @@ jobs:
       - name: Installer dry-run smoke
         run: |
           bash install_security_tools.sh --dry-run all
+
+      - name: Install Node for audit coverage step
+        run: |
+          sudo apt-get install -y nodejs npm
+
+      - name: Node security audit coverage (advisory)
+        run: |
+          scripts/node_security_audit.sh node-audit-report.json || true
+
+      - name: Upload node audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-audit-report
+          path: node-audit-report.json

@@ -379,6 +379,7 @@ This project is provided as-is for educational and professional security testing
 - Check the documentation in `docs/`
 - Review installation logs for errors
 - Validate setup with dry-run: `bash install_security_tools.sh --dry-run all`
+- If installed locally, run `make lint` / `make fmt-check` for shell quality checks
 - Use `--dry-run` to preview installations
 
 ---

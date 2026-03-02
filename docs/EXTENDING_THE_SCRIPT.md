@@ -87,6 +87,10 @@ bash install_security_tools.sh --dry-run newtool
 
 # Then run full dry-run for broader verification
 bash install_security_tools.sh --dry-run all
+
+# Optional quality checks
+make lint
+make fmt-check
 ```
 
 ## Tips and Troubleshooting

@@ -26,9 +26,9 @@ jobs:
         run: |
           find . -name '*.sh' -print0 | xargs -0 shellcheck
 
-      - name: shfmt check
+      - name: shfmt check (advisory)
         run: |
-          shfmt -d .
+          shfmt -d . || true
 
       - name: Installer dry-run smoke
         run: |

@@ -80,11 +80,28 @@ source "${SCRIPT_DIR}/lib/ui/orchestration.sh"
 
 # ===== TARGETED FALLBACKS (legacy tool compatibility) =====
 
+safe_extract_archive() {
+    local archive_name="$1"
+
+    case "$archive_name" in
+        *.tar.gz|*.tgz)
+            tar -xzf "$archive_name"
+            ;;
+        *.zip)
+            unzip -o "$archive_name"
+            ;;
+        *)
+            echo "ERROR: Unsupported archive format: $archive_name"
+            return 1
+            ;;
+    esac
+}
+
 install_release_binary_with_log() {
     local tool="$1"
     local url="$2"
     local archive_name="$3"
-    local extract_cmd="$4"
+    local extract_cmd="$4"  # retained for backward compatibility
     local extracted_binary="$5"
     local output_binary="$6"
     local expected_sha256="${7:-}"  # Optional checksum parameter
@@ -126,11 +143,9 @@ install_release_binary_with_log() {
         fi
 
         echo "Extracting..."
-        # SECURITY NOTE: Using eval for extract command execution
-        # Safety: All call sites use hardcoded string literals (never user input)
-        # Examples: "tar -xzf file.tar.gz" or "unzip -o file.zip"
-        # Risk Level: LOW (trusted internal callers only)
-        eval "$extract_cmd" || return 1
+        # Prefer archive-type dispatch to avoid eval execution.
+        # extract_cmd is retained in function signature for call-site compatibility.
+        safe_extract_archive "$archive_name" || return 1
         verify_file_exists "$extracted_binary" "$tool binary" || return 1
 
         mkdir -p "$HOME/.local/bin"

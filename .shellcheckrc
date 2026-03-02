@@ -1,0 +1,3 @@
+# Keep suppressions minimal and documented.
+# SC1090/SC1091: sourced files may be dynamic/non-constant in modular shell projects.
+exclude=SC1090,SC1091

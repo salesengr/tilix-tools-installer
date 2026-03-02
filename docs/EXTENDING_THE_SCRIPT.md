@@ -1,8 +1,8 @@
 # Extending `install_security_tools.sh`
 
-**Version:** 1.3.0 (Modular Architecture)
+**Version:** 1.3.3 (Modular Architecture)
 
-The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.3.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
+The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.3.3) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 
 ## What Already Exists
 
@@ -26,7 +26,7 @@ With the modular architecture, you'll work with these specific files:
 | **Create wrapper function** | `lib/installers/tools.sh` |
 | **Add to dispatcher** | `lib/ui/orchestration.sh` |
 | **Update menu** | `lib/ui/menu.sh` |
-| **Add test** | `scripts/test_installation.sh` |
+| **Add smoke check** | `install_security_tools.sh --dry-run <tool>` |
 
 ### Step-by-Step Process
 
@@ -36,7 +36,7 @@ With the modular architecture, you'll work with these specific files:
 
 2. **Place it in a category** (`lib/data/tool-definitions.sh`)
    - Append the tool name to the relevant array (`PYTHON_RECON_PASSIVE`, `GO_RECON_ACTIVE`, `NODE_TOOLS`, etc.).
-   - Categories power the bulk options (`--python-tools`, menu option 12, etc.).
+   - Categories power the bulk options (`--python-tools`, and menu bulk options 34-37).
 
 3. **Explain how to detect it** (`lib/core/verification.sh`)
    - Update `is_installed()` with the proper file location or `command -v` check.
@@ -51,8 +51,10 @@ With the modular architecture, you'll work with these specific files:
    - Add a `case` entry for the tool in `install_tool()` function in `lib/ui/orchestration.sh`.
    - Extend the interactive menu (`show_menu` and `process_menu_selection` in `lib/ui/menu.sh`) if you want the tool selectable by number.
 
-6. **Add test** (`scripts/test_installation.sh`)
-   - Add a test function (or reuse `test_python_tool`, `test_go_tool`, etc.) and wire it into `run_all_tests`/`run_specific_test`.
+6. **Add smoke validation**
+   - Validate the new tool path with dry run first:
+     - `bash install_security_tools.sh --dry-run <tool>`
+   - Then run a real install for just that tool and verify binary/wrapper resolution.
 
 ## Generic Installers
 
@@ -80,9 +82,11 @@ bash install_security_tools.sh --dry-run newtool
 # Install just the new tool (and its dependencies)
 bash install_security_tools.sh newtool
 
-# Run the verification suite
-bash scripts/test_installation.sh newtool
-bash scripts/test_installation.sh               # Everything
+# Run dry-run validation first
+bash install_security_tools.sh --dry-run newtool
+
+# Then run full dry-run for broader verification
+bash install_security_tools.sh --dry-run all
 ```
 
 ## Tips and Troubleshooting

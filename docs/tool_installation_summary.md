@@ -88,6 +88,37 @@ Cargo installs place binaries in `~/.local/share/cargo/bin`. The installer sets 
 | tokei | `tokei` | `~/.local/share/cargo/bin/tokei` |
 | dog | `dog` | `~/.local/share/cargo/bin/dog` |
 
+## Utility Tools
+
+Utility tools are installed as pre-built binaries into `~/.local/bin` via the system package manager (`apt`) or a static binary fallback. No runtime dependency (Python/Go/Node/Rust) is required.
+
+| Tool | Installation method | Binary | Symlink |
+|------|--------------------|----|---------|
+| aria2 | `apt-get install aria2` → copy to user-space | `~/.local/bin/aria2c` | `~/.local/bin/aria2 → aria2c` |
+
+**aria2** is a multi-protocol download utility supporting HTTP, HTTPS, FTP, BitTorrent, and Metalink. It was originally included in the Tilix Dockerfile but was commented out; this installer adds it to user-space without requiring root access at runtime.
+
+Common usage patterns:
+```bash
+# Basic download
+aria2c https://example.com/file.iso
+
+# Multi-connection download (8 parallel streams — significantly faster for large files)
+aria2c --split=8 --max-connection-per-server=8 https://example.com/large.iso
+
+# Download to specific directory with custom filename
+aria2c --dir=/tmp --out=output.iso https://example.com/file.iso
+
+# Resume interrupted download
+aria2c --continue=true https://example.com/large.iso
+
+# Download from a list of URLs
+aria2c --input-file=urls.txt
+
+# Run as background RPC daemon (for GUI/frontend integration)
+aria2c --enable-rpc --rpc-listen-all=true --daemon=true
+```
+
 ## Re-running or Cleaning Up
 
 - Reinstall any component with `bash install_security_tools.sh <tool-name>`; it reuses the same log locations above.

@@ -281,6 +281,27 @@ feroxbuster -u https://target.com
 rg "pattern" /path/to/search
 ```
 
+### Utility Tools
+```bash
+# Download a file (single connection)
+aria2c https://example.com/file.iso
+
+# Download with 8 parallel connections (much faster for large files)
+aria2c --split=8 --max-connection-per-server=8 https://example.com/large.iso
+
+# Download to a specific directory with a custom filename
+aria2c --dir=/tmp --out=myfile.iso https://example.com/file.iso
+
+# Download multiple files from a list
+aria2c --input-file=urls.txt
+
+# Resume an interrupted download
+aria2c --continue=true https://example.com/large.iso
+
+# Run as a daemon with JSON-RPC interface (for use with frontends)
+aria2c --enable-rpc --rpc-listen-all=true --daemon=true
+```
+
 ## 🔄 Updating Tools
 
 ### Python Tools

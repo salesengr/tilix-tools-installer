@@ -548,6 +548,7 @@ install_aria2() {
 
         if command -v apt-get &>/dev/null; then
             # Strategy 1: direct install (works if running as root, e.g. in Docker)
+            apt-get update -qq 2>/dev/null || true
             if apt-get install -y --no-install-recommends aria2 2>/dev/null; then
                 local sys_bin
                 sys_bin=$(command -v aria2c 2>/dev/null)

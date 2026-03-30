@@ -544,40 +544,48 @@ install_aria2() {
         # Simplest reliable approach for Debian/Ubuntu (Tilix base): use the
         # system package manager to install into the user prefix.
 
-        echo "Attempting install via system package manager (no root — user-space workaround)..."
+        echo "Attempting install via system package manager..."
 
-        # Check if apt-get is available and aria2 is installable
         if command -v apt-get &>/dev/null; then
-            # Install to a temp prefix, then copy binary to ~/.local/bin
-            local tmp_prefix="$HOME/opt/src/aria2-pkg"
-            mkdir -p "$tmp_prefix"
-
-            if apt-get download aria2 2>/dev/null; then
-                mv aria2_*.deb "$tmp_prefix/" 2>/dev/null || true
-                cd "$tmp_prefix" || return 1
-                dpkg -x aria2_*.deb . 2>/dev/null || true
-                if [ -f "./usr/bin/aria2c" ]; then
-                    cp ./usr/bin/aria2c "$HOME/.local/bin/aria2c"
+            # Strategy 1: direct install (works if running as root, e.g. in Docker)
+            if apt-get install -y --no-install-recommends aria2 2>/dev/null; then
+                local sys_bin
+                sys_bin=$(command -v aria2c 2>/dev/null)
+                if [ -n "$sys_bin" ]; then
+                    cp "$sys_bin" "$HOME/.local/bin/aria2c"
                     chmod +x "$HOME/.local/bin/aria2c"
-                    cd "$HOME" || true
-                    rm -rf "$tmp_prefix"
-                    echo "aria2c installed from package extraction"
-                else
-                    cd "$HOME" || true
-                    rm -rf "$tmp_prefix"
-                    echo "ERROR: aria2c binary not found in package"
-                    return 1
+                    echo "aria2c installed via apt and copied to user-space"
                 fi
             else
-                # Fallback: try downloading a static build from GitHub releases
-                echo "apt-get download failed, trying static binary from p3ng0s/aria2-static-build..."
-                local static_url="https://github.com/abcguitar/aria2-static-build/releases/latest/download/aria2-${arch_tag}-linux-gnu.tar.gz"
-                if curl -fsSL "$static_url" -o "/tmp/aria2-static.tar.gz" 2>/dev/null; then
-                    tar -xzf /tmp/aria2-static.tar.gz -C /tmp/ 2>/dev/null || true
-                    find /tmp -name "aria2c" -type f 2>/dev/null | head -1 | xargs -I{} cp {} "$HOME/.local/bin/aria2c" || true
-                    chmod +x "$HOME/.local/bin/aria2c" 2>/dev/null || true
-                    rm -f /tmp/aria2-static.tar.gz
+                # Strategy 2: apt-get download + dpkg extract (no root needed)
+                echo "Direct apt install failed, trying package extraction..."
+                local tmp_prefix="$HOME/opt/src/aria2-pkg"
+                mkdir -p "$tmp_prefix"
+                cd "$tmp_prefix" || return 1
+
+                if apt-get download aria2 2>/dev/null && ls aria2_*.deb &>/dev/null; then
+                    dpkg -x aria2_*.deb . 2>/dev/null || true
+                    if [ -f "./usr/bin/aria2c" ]; then
+                        cp ./usr/bin/aria2c "$HOME/.local/bin/aria2c"
+                        chmod +x "$HOME/.local/bin/aria2c"
+                        echo "aria2c installed from package extraction"
+                    fi
                 fi
+
+                cd "$HOME" || true
+                rm -rf "$tmp_prefix"
+            fi
+        fi
+
+        # Strategy 3: static build from p3ng0s/static-aria2 (community maintained)
+        if [ ! -f "$HOME/.local/bin/aria2c" ]; then
+            echo "Trying static build from p3ng0s/static-aria2..."
+            local static_url="https://github.com/p3ng0s/static-aria2/releases/latest/download/aria2c-linux-${arch_tag}"
+            if curl -fsSL "$static_url" -o "$HOME/.local/bin/aria2c" 2>/dev/null; then
+                chmod +x "$HOME/.local/bin/aria2c"
+                echo "aria2c installed from static build"
+            else
+                echo "Static build download failed"
             fi
         fi
 

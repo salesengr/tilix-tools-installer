@@ -5,6 +5,29 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-31
+
+### Changed
+- **Menu redesigned by use-case category** — tools are now grouped by function
+  rather than runtime (Python/Go/Node/Rust). New categories:
+  - `PASSIVE OSINT` [7-18]: sherlock, holehe, socialscan, theHarvester, spiderfoot,
+    photon, wappalyzer, h8mail, waybackurls, assetfinder, subfinder, git-hound
+  - `DOMAIN & SUBDOMAIN ENUMERATION` [19-21]: sublist3r, gobuster, ffuf
+  - `ACTIVE RECON & SCANNING` [22-25]: httprobe, rustscan, feroxbuster, nuclei
+  - `CYBER THREAT INTEL (CTI)` [26-30]: shodan, censys, yara, trufflehog, virustotal
+  - `SECURITY TESTING` [31]: jwt-cracker
+  - `UTILITIES` [32-38]: ripgrep, fd, bat, sd, tokei, dog, aria2
+  - `BULK INSTALL` [39-44]: All Passive OSINT, All Domain/Subdomain, All Active Recon,
+    All CTI, All Utilities, Install Everything
+- **New CLI flags**: `--osint-tools`, `--domain-tools`, `--recon-tools`,
+  `--cti-tools`, `--utility-tools`
+- **Deprecated CLI flags**: `--python-tools`, `--go-tools`, `--node-tools`,
+  `--rust-tools` — still functional, print deprecation notice
+- **New category arrays**: `PASSIVE_OSINT`, `DOMAIN_ENUM`, `ACTIVE_RECON`,
+  `CTI_TOOLS`, `SECURITY_TESTING`, `UTILITY_TOOLS` in `tool-definitions.sh`
+- `install_all()` now uses use-case arrays for consistent ordering
+- Version bumped to 1.4.0
+
 ## [Unreleased]
 
 ### Added

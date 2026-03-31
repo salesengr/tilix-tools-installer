@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Generic Installers Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Reusable generic installers for each language ecosystem
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script

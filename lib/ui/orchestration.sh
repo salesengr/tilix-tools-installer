@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Orchestration Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: High-level installation coordination and workflow management
 
 # shellcheck disable=SC2034  # Variables used in display/logging
@@ -92,12 +92,13 @@ install_all() {
     fi
 
     local all_tools=(
-        "cmake" "github_cli" "nodejs" "rust" "python_venv"
-        "${ALL_PYTHON_TOOLS[@]}"
-        "${ALL_GO_TOOLS[@]}"
-        "${NODE_TOOLS[@]}"
-        "${ALL_RUST_TOOLS[@]}"
-        "${ALL_UTILITY_TOOLS[@]}"
+        "cmake" "github_cli" "go_runtime" "nodejs" "rust" "python_venv"
+        "${PASSIVE_OSINT[@]}"
+        "${DOMAIN_ENUM[@]}"
+        "${ACTIVE_RECON[@]}"
+        "${CTI_TOOLS[@]}"
+        "${SECURITY_TESTING[@]}"
+        "${UTILITY_TOOLS[@]}"
     )
 
     for tool in "${all_tools[@]}"; do
@@ -154,40 +155,63 @@ process_cli_args() {
         return
     fi
 
-    if [[ "${args[0]}" == "--python-tools" ]]; then
+    # ===== USE-CASE FLAGS (v1.4.0) =====
+    if [[ "${args[0]}" == "--osint-tools" ]]; then
         install_tool "python_venv"
-        for tool in "${ALL_PYTHON_TOOLS[@]}"; do
-            install_tool "$tool"
-        done
+        for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
+        return
+    fi
+
+    if [[ "${args[0]}" == "--domain-tools" ]]; then
+        install_tool "python_venv"
+        for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
+        return
+    fi
+
+    if [[ "${args[0]}" == "--recon-tools" ]]; then
+        install_tool "rust"
+        for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
+        return
+    fi
+
+    if [[ "${args[0]}" == "--cti-tools" ]]; then
+        install_tool "python_venv"
+        install_tool "nodejs"
+        for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
+
+    if [[ "${args[0]}" == "--utility-tools" ]]; then
+        install_tool "rust"
+        for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
+
+    # ===== LEGACY RUNTIME FLAGS (deprecated, still functional) =====
+    if [[ "${args[0]}" == "--python-tools" ]]; then
+        echo -e "${WARNING}${WARN} --python-tools is deprecated. Use --osint-tools or --cti-tools instead.${NC}"
+        install_tool "python_venv"
+        for tool in "${ALL_PYTHON_TOOLS[@]}"; do install_tool "$tool"; done
         return
     fi
 
     if [[ "${args[0]}" == "--go-tools" ]]; then
-        echo -e "${YELLOW}Installing all Go tools (using system Go)...${NC}"
-        if ! verify_system_go; then
-            echo -e "${RED}ERROR: System Go not found. Cannot install Go tools.${NC}"
-            echo "Please ensure Go is installed at /usr/local/go"
-            exit 1
-        fi
-        for tool in "${ALL_GO_TOOLS[@]}"; do
-            install_tool "$tool"
-        done
+        echo -e "${WARNING}${WARN} --go-tools is deprecated. Use --osint-tools, --domain-tools, or --recon-tools instead.${NC}"
+        for tool in "${ALL_GO_TOOLS[@]}"; do install_tool "$tool"; done
         return
     fi
 
     if [[ "${args[0]}" == "--node-tools" ]]; then
+        echo -e "${WARNING}${WARN} --node-tools is deprecated. Use --cti-tools instead.${NC}"
         install_tool "nodejs"
-        for tool in "${NODE_TOOLS[@]}"; do
-            install_tool "$tool"
-        done
+        for tool in "${NODE_TOOLS[@]}"; do install_tool "$tool"; done
         return
     fi
 
     if [[ "${args[0]}" == "--rust-tools" ]]; then
+        echo -e "${WARNING}${WARN} --rust-tools is deprecated. Use --recon-tools or --utility-tools instead.${NC}"
         install_tool "rust"
-        for tool in "${ALL_RUST_TOOLS[@]}"; do
-            install_tool "$tool"
-        done
+        for tool in "${ALL_RUST_TOOLS[@]}"; do install_tool "$tool"; done
         return
     fi
 

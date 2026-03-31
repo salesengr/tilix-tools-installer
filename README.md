@@ -339,12 +339,14 @@ sbase get https://example.com --headless -o screenshot.png
 ```
 
 #### Playwright — Cross-Browser Automation
+Playwright uses the system Chrome (`/usr/bin/google-chrome`) already present in the Tilix image.
+Pass `executable_path` to avoid downloading separate browser binaries (~620MB).
 ```bash
-# Basic page fetch (Chromium)
+# Basic page fetch using system Chrome
 python3 -c "
 from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(headless=True, executable_path='/usr/bin/google-chrome')
     page = browser.new_page()
     page.goto('https://example.com')
     print(page.title())

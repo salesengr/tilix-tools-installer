@@ -925,8 +925,10 @@ install_seleniumbase() {
 }
 
 # Function: install_playwright
-# Purpose: Install Playwright Python + Chromium browser binaries
-#          Provides stealth automation via patchright-compatible API.
+# Purpose: Install Playwright Python package.
+#          Uses the system Chrome (/usr/bin/google-chrome) already present in
+#          the Tilix image — avoids downloading 620MB+ of Chromium binaries.
+#          Set PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 to prevent any browser download.
 install_playwright() {
     local logfile
     logfile=$(create_tool_log "playwright")
@@ -936,10 +938,12 @@ install_playwright() {
         echo "Started: $(date)"
         local python_bin; python_bin=$(_get_python_bin)
         mkdir -p "$HOME/.local/bin"
-        # Install playwright Python package
-        "$python_bin" -m pip install --user --quiet playwright || return 1
-        # Install Chromium browser binary
-        "$python_bin" -m playwright install chromium 2>/dev/null || true
+        # Install playwright Python package only — no browser download needed.
+        # The Tilix image ships Google Chrome at /usr/bin/google-chrome.
+        # Use: playwright.chromium.launch(executable_path="/usr/bin/google-chrome")
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 "$python_bin" -m pip install --user --quiet playwright || return 1
+        echo "NOTE: Using system Chrome at /usr/bin/google-chrome"
+        echo "      Pass executable_path='/usr/bin/google-chrome' to launch()"
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
     if is_installed "playwright"; then

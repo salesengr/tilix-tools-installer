@@ -28,7 +28,8 @@ is_installed() {
         rust)
             [ -f "$HOME/.local/share/cargo/bin/cargo" ] && return 0 ;;
         python_venv)
-            [ -d "$XDG_DATA_HOME/virtualenvs/tools" ] && return 0 ;;
+            # No longer using a venv — python_venv is "ready" if python3 exists
+            command -v python3 &>/dev/null && return 0 ;;
         # Python tools check wrapper
         sherlock|holehe|socialscan|h8mail|photon|sublist3r|shodan|censys|theHarvester|spiderfoot|yara|wappalyzer)
             [ -f "$HOME/.local/bin/$tool" ] && return 0 ;;

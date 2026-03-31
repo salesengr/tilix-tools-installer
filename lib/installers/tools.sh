@@ -28,7 +28,8 @@ install_photon() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         mkdir -p "$HOME/opt/src"
 
@@ -42,20 +43,19 @@ install_photon() {
         fi
 
         echo "Installing Photon dependencies..."
-        pip install --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
+        python3 -m pip install --user --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/photon" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 TOOL_SCRIPT="$HOME/opt/src/Photon/photon.py"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -107,12 +107,12 @@ install_theHarvester() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing latest theHarvester from GitHub..."
-        pip install --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
+        python3 -m pip install --user --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         create_python_wrapper "theHarvester"
@@ -152,7 +152,8 @@ install_spiderfoot() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         mkdir -p "$HOME/opt/src"
 
@@ -177,20 +178,19 @@ install_spiderfoot() {
         }' "$HOME/opt/src/spiderfoot/requirements.txt" > "$HOME/opt/src/spiderfoot/requirements.py313.txt"
 
         echo "Installing SpiderFoot dependencies..."
-        pip install --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
+        python3 -m pip install --user --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/spiderfoot" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 TOOL_SCRIPT="$HOME/opt/src/spiderfoot/sf.py"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -239,22 +239,22 @@ install_wappalyzer() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing python-Wappalyzer..."
-        pip install --quiet "python-Wappalyzer" || return 1
+        python3 -m pip install --user --quiet "python-Wappalyzer" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/wappalyzer" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -341,15 +341,15 @@ install_yara() {
             fi
         fi
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing yara-python..."
-        pip install --quiet yara-python || return 1
+        python3 -m pip install --user --quiet yara-python || return 1
 
         # Confirm Python module availability.
         python3 -c "import yara" >/dev/null 2>&1 || return 1
 
-        deactivate
 
         # yara-python does not provide a native yara CLI binary.
         # Try native build first (if autotools are available), otherwise create
@@ -386,11 +386,11 @@ install_yara() {
             cat > "$HOME/.local/bin/yara" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 

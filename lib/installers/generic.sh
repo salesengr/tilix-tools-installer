@@ -8,25 +8,40 @@
 
 # ===== HELPER FUNCTIONS =====
 
+# Function: _get_python_bin
+# Purpose: Resolve best available Python binary (prefers 3.13+)
+# Returns: python binary name via stdout
+_get_python_bin() {
+    if [ -f "$HOME/.local/share/.python_bin" ]; then
+        cat "$HOME/.local/share/.python_bin"
+        return
+    fi
+    for py in python3.13 python3.11 python3.10 python3.9 python3; do
+        if command -v "$py" &>/dev/null; then echo "$py"; return; fi
+    done
+    echo "python3"
+}
+
 # Function: create_python_wrapper
-# Purpose: Create wrapper script for Python tools to auto-activate virtualenv
+# Purpose: Create a thin wrapper in ~/.local/bin that invokes the user-installed tool.
+#          With pip --user, tools install their entry points to ~/.local/bin directly.
+#          This wrapper is a fallback for tools that don't create entry points.
 # Parameters: $1 - tool name
 # Returns: Always succeeds
 create_python_wrapper() {
     local tool=$1
+    local python_bin
+    python_bin=$(_get_python_bin)
 
+    # If pip --user already placed an entry point, nothing to do
+    if [ -x "$HOME/.local/bin/$tool" ]; then
+        return 0
+    fi
+
+    # Create a minimal wrapper that invokes the module directly
     cat > "$HOME/.local/bin/$tool" << WRAPPER_EOF
 #!/bin/bash
-XDG_DATA_HOME="\${XDG_DATA_HOME:-\$HOME/.local/share}"
-TOOL_BIN="\$XDG_DATA_HOME/virtualenvs/tools/bin/$tool"
-
-if [ ! -x "\$TOOL_BIN" ]; then
-    echo "Error: $tool is not installed in \$XDG_DATA_HOME/virtualenvs/tools/bin" >&2
-    echo "Run: bash install_security_tools.sh $tool" >&2
-    exit 1
-fi
-
-exec "\$TOOL_BIN" "\$@"
+exec $(_get_python_bin) -m $tool "\$@"
 WRAPPER_EOF
 
     chmod +x "$HOME/.local/bin/$tool"
@@ -35,7 +50,9 @@ WRAPPER_EOF
 # ===== GENERIC INSTALLERS =====
 
 # Function: install_python_tool
-# Purpose: Generic Python tool installer using pip
+# Purpose: Generic Python tool installer using pip install --user (no venv)
+#          Installs directly into user-space: ~/.local/lib/pythonX.Y/site-packages/
+#          Entry points go to ~/.local/bin/ automatically.
 # Parameters:
 #   $1 - tool name
 #   $2 - pip package name
@@ -46,7 +63,7 @@ install_python_tool() {
     local logfile
     logfile=$(create_tool_log "$tool")
 
-    echo -e "${INFO}⚙ Activating Python environment...${NC}"
+    echo -e "${INFO}⚙ Installing $tool via pip --user...${NC}"
 
     {
         echo "=========================================="
@@ -54,15 +71,21 @@ install_python_tool() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        local python_bin
+        python_bin=$(_get_python_bin)
+        echo "Using Python: $python_bin"
+
+        mkdir -p "$HOME/.local/bin"
+        export PATH="$HOME/.local/bin:$PATH"
 
         echo "Installing $pip_package..."
-        pip install --quiet "$pip_package" || return 1
+        "$python_bin" -m pip install --user --quiet "$pip_package" || return 1
 
-        deactivate
-
-        echo "Creating wrapper script..."
-        create_python_wrapper "$tool"
+        # Create wrapper if entry point wasn't placed by pip
+        if [ ! -x "$HOME/.local/bin/$tool" ]; then
+            echo "Creating wrapper script..."
+            create_python_wrapper "$tool"
+        fi
 
         echo "=========================================="
         echo "Completed: $(date)"

@@ -70,6 +70,10 @@ install_tool() {
         sd) install_sd ;;
         dog) install_dog ;;
         aria2) install_aria2 ;;
+        seleniumbase) install_seleniumbase ;;
+        playwright) install_playwright ;;
+        yandex_browser) install_yandex_browser ;;
+        tor_browser) install_tor_browser ;;
         *)
             echo -e "${RED}Unknown tool: $tool${NC}"
             return 1
@@ -98,6 +102,7 @@ install_all() {
         "${CTI_TOOLS[@]}"
         "${SECURITY_TESTING[@]}"
         "${UTILITY_TOOLS[@]}"
+        "${WEB_AUTOMATION[@]}"
     )
 
     for tool in "${all_tools[@]}"; do
@@ -183,6 +188,11 @@ process_cli_args() {
     if [[ "${args[0]}" == "--utility-tools" ]]; then
         install_tool "rust"
         for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
+
+    if [[ "${args[0]}" == "--web-tools" ]]; then
+        for tool in "${WEB_AUTOMATION[@]}"; do install_tool "$tool"; done
         return
     fi
 

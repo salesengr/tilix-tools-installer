@@ -126,3 +126,50 @@ aria2c --enable-rpc --rpc-listen-all=true --daemon=true
 - Inspect `~/.local/state/install_tools/installation_history.log` to see when a tool was last touched and which log file captured the output.
 
 Use `README.md` and `docs/xdg_setup.md` for usage workflows and environment bootstrap details.
+
+## Web Automation Tools
+
+Web automation tools enable browser-based OSINT, stealth scraping, captcha bypass, and anonymous browsing. All tools are installed to user-space.
+
+| Tool | Installation Method | Binary / Entry Point |
+|------|--------------------|--------------------|
+| SeleniumBase | `pip install --user seleniumbase` | `~/.local/bin/sbase` |
+| Playwright | `pip install --user playwright` + `playwright install chromium` | `~/.local/bin/playwright` + `~/.local/share/ms-playwright/` |
+| Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` |
+| Tor Browser | tarball from `torproject.org/dist/torbrowser/` | `~/opt/tor-browser/Browser/start-tor-browser` + `~/.local/bin/tor-browser` |
+
+### SeleniumBase
+Works with the system Chrome already in the Tilix image. Three modes:
+- **Standard mode** — fastest, detected by most anti-bot systems
+- **UC Mode** (`uc=True`) — undetected-chromedriver base, bypasses most detection
+- **CDP Mode** — Chrome DevTools Protocol, stealthiest, handles Cloudflare/reCAPTCHA
+
+Key commands:
+```bash
+sbase --help                        # CLI help
+python3 -m seleniumbase             # Python module usage
+```
+
+### Playwright
+Cross-browser automation supporting Chromium, Firefox, and WebKit. Browser binaries stored in `~/.local/share/ms-playwright/`.
+```bash
+playwright install --list           # List installed browsers
+playwright install chromium         # Install/update Chromium
+playwright codegen https://target   # Record browser actions as code
+```
+
+### Yandex Browser
+Chromium-based, amd64 only. Installed system-wide via the official Yandex APT repository. Useful for Russian-language OSINT — Yandex Search, reverse image search, Maps, and accessing Russian social media with appropriate locale.
+```bash
+yandex-browser-beta                 # Launch (requires VNC/display)
+yandex-browser-beta --version       # Check version
+```
+
+### Tor Browser
+Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser`.
+
+**Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
+```bash
+tor-browser                         # Launch with GUI (requires VNC)
+~/opt/tor-browser/Browser/start-tor-browser --detach  # Background
+```

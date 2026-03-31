@@ -158,15 +158,29 @@ install_github_cli() {
 # ===== LANGUAGE RUNTIMES =====
 
 # Function: install_nodejs
-# Purpose: Install Node.js from official tarball
+# Purpose: Verify system Node.js is available. The Tilix image ships Node 22
+#          system-wide — no separate install needed. Falls back to downloading
+#          the official tarball only if system Node is absent.
 # Returns: 0 on success, 1 on failure
 install_nodejs() {
     local logfile
     logfile=$(create_tool_log "nodejs")
 
+    # Use system Node if available — saves 169MB from session archive
+    if command -v node &>/dev/null; then
+        local node_ver
+        node_ver=$(node --version 2>/dev/null)
+        echo -e "${GREEN}[OK] Using system Node.js ${node_ver}${NC}"
+        SUCCESSFUL_INSTALLS+=("nodejs")
+        log_installation "nodejs" "success" "$logfile"
+        return 0
+    fi
+
+    # Fallback: download tarball if system Node is not present
+    echo -e "${WARNING}${WARN} System Node.js not found — downloading tarball...${NC}"
     {
         echo "=========================================="
-        echo "Installing Node.js"
+        echo "Installing Node.js (tarball fallback)"
         echo "Started: $(date)"
         echo "=========================================="
 
@@ -182,25 +196,11 @@ install_nodejs() {
             return 1
         fi
 
-        if ! verify_file_exists "$filename" "Node.js tarball"; then
-            return 1
-        fi
-
-        echo "Extracting..."
-        if ! tar -xJf "$filename"; then
-            echo "ERROR: Failed to extract Node.js"
-            return 1
-        fi
-
+        tar -xJf "$filename" || return 1
         mv "node-v${NODE_VERSION}-linux-x64" node
-
-        echo "Cleaning up..."
-        rm "$filename"
-
-        echo "Setting up environment..."
+        rm -f "$filename"
         export PATH="$HOME/opt/node/bin:$PATH"
 
-        echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
     } > "$logfile" 2>&1

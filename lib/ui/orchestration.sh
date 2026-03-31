@@ -69,6 +69,7 @@ install_tool() {
         sd) install_sd ;;
         tokei) install_tokei ;;
         dog) install_dog ;;
+        aria2) install_aria2 ;;
         *)
             echo -e "${RED}Unknown tool: $tool${NC}"
             return 1
@@ -95,6 +96,7 @@ install_all() {
         "${ALL_GO_TOOLS[@]}"
         "${NODE_TOOLS[@]}"
         "${ALL_RUST_TOOLS[@]}"
+        "${ALL_UTILITY_TOOLS[@]}"
     )
 
     for tool in "${all_tools[@]}"; do

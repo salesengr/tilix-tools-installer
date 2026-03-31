@@ -23,11 +23,13 @@ GO_THREAT_INTEL=("virustotal")
 NODE_TOOLS=("trufflehog" "git-hound" "jwt-cracker")
 RUST_RECON=("feroxbuster" "rustscan")
 RUST_UTILS=("ripgrep" "fd" "bat" "sd" "tokei" "dog")
+UTILITY_TOOLS=("aria2")
 
 # Combined lists for bulk operations
 ALL_PYTHON_TOOLS=("${PYTHON_RECON_PASSIVE[@]}" "${PYTHON_RECON_DOMAIN[@]}" "${PYTHON_RECON_WEB[@]}" "${PYTHON_THREAT_INTEL[@]}" "${PYTHON_CREDENTIAL[@]}")
 ALL_GO_TOOLS=("${GO_RECON_ACTIVE[@]}" "${GO_RECON_PASSIVE[@]}" "${GO_VULN_SCAN[@]}" "${GO_THREAT_INTEL[@]}")
 ALL_RUST_TOOLS=("${RUST_RECON[@]}" "${RUST_UTILS[@]}")
+ALL_UTILITY_TOOLS=("${UTILITY_TOOLS[@]}")
 
 # ===== TOOL DEFINITIONS FUNCTION =====
 
@@ -222,4 +224,10 @@ define_tools() {
     TOOL_SIZES[dog]="1.5MB"
     TOOL_DEPENDENCIES[dog]="rust"
     TOOL_INSTALL_LOCATION[dog]="\$CARGO_HOME/bin/dog"
+
+    # Utility Tools
+    TOOL_INFO[aria2]="aria2|Multi-protocol download utility (HTTP/FTP/BitTorrent/Metalink)|Utility"
+    TOOL_SIZES[aria2]="5MB"
+    TOOL_DEPENDENCIES[aria2]=""
+    TOOL_INSTALL_LOCATION[aria2]="$HOME/.local/bin/aria2c"
 }

@@ -46,6 +46,9 @@ is_installed() {
             command -v fd &>/dev/null && return 0 ;;
         bat)
             command -v bat &>/dev/null && return 0 ;;
+        # Utility tools
+        aria2)
+            [ -f "$HOME/.local/bin/aria2c" ] && return 0 ;;
     esac
 
     return 1

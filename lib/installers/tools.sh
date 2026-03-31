@@ -491,3 +491,130 @@ install_bat() { install_rust_tool "bat" "bat"; }
 install_sd() { install_rust_tool "sd" "sd"; }
 install_tokei() { install_rust_tool "tokei" "tokei"; }
 install_dog() { install_rust_tool "dog" "dog"; }
+
+# ===== UTILITY TOOL INSTALLERS =====
+
+# Function: install_aria2
+# Purpose: Install aria2 pre-built binary into user-space (~/.local/bin)
+#          aria2 was originally in the Tilix Dockerfile but was commented out.
+#          This installer adds it to user-space without requiring root.
+# Returns: 0 on success, 1 on failure
+install_aria2() {
+    local logfile
+    logfile=$(create_tool_log "aria2")
+
+    echo -e "${INFO}⬇ Downloading aria2 pre-built binary...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing aria2"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+
+        # Detect architecture
+        local arch
+        arch=$(uname -m)
+        case "$arch" in
+            x86_64)  arch_tag="x86_64" ;;
+            aarch64) arch_tag="aarch64" ;;
+            *)
+                echo "ERROR: Unsupported architecture: $arch"
+                return 1
+                ;;
+        esac
+
+        # Fetch latest release tag from GitHub API
+        local latest_tag
+        latest_tag=$(curl -fsSL "https://api.github.com/repos/aria2/aria2/releases/latest" \
+            | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"//;s/".*//')
+
+        if [[ -z "$latest_tag" ]]; then
+            echo "ERROR: Could not determine latest aria2 release tag"
+            return 1
+        fi
+
+        echo "Latest aria2 release: $latest_tag"
+
+        # aria2 distributes static Linux binaries via GitHub Actions artifacts,
+        # but official release assets are source tarballs only.
+        # Use the abcguitar/aria2-static-build releases which provide
+        # pre-built static binaries, or fall back to building from source via apt.
+        # Simplest reliable approach for Debian/Ubuntu (Tilix base): use the
+        # system package manager to install into the user prefix.
+
+        echo "Attempting install via system package manager..."
+
+        if command -v apt-get &>/dev/null; then
+            # Strategy 1: direct install (works if running as root, e.g. in Docker)
+            apt-get update -qq 2>/dev/null || true
+            if apt-get install -y --no-install-recommends aria2 2>/dev/null; then
+                local sys_bin
+                sys_bin=$(command -v aria2c 2>/dev/null)
+                if [ -n "$sys_bin" ]; then
+                    cp "$sys_bin" "$HOME/.local/bin/aria2c"
+                    chmod +x "$HOME/.local/bin/aria2c"
+                    echo "aria2c installed via apt and copied to user-space"
+                fi
+            else
+                # Strategy 2: apt-get download + dpkg extract (no root needed)
+                echo "Direct apt install failed, trying package extraction..."
+                local tmp_prefix="$HOME/opt/src/aria2-pkg"
+                mkdir -p "$tmp_prefix"
+                cd "$tmp_prefix" || return 1
+
+                if apt-get download aria2 2>/dev/null && ls aria2_*.deb &>/dev/null; then
+                    dpkg -x aria2_*.deb . 2>/dev/null || true
+                    if [ -f "./usr/bin/aria2c" ]; then
+                        cp ./usr/bin/aria2c "$HOME/.local/bin/aria2c"
+                        chmod +x "$HOME/.local/bin/aria2c"
+                        echo "aria2c installed from package extraction"
+                    fi
+                fi
+
+                cd "$HOME" || true
+                rm -rf "$tmp_prefix"
+            fi
+        fi
+
+        # Strategy 3: static build from p3ng0s/static-aria2 (community maintained)
+        if [ ! -f "$HOME/.local/bin/aria2c" ]; then
+            echo "Trying static build from p3ng0s/static-aria2..."
+            local static_url="https://github.com/p3ng0s/static-aria2/releases/latest/download/aria2c-linux-${arch_tag}"
+            if curl -fsSL "$static_url" -o "$HOME/.local/bin/aria2c" 2>/dev/null; then
+                chmod +x "$HOME/.local/bin/aria2c"
+                echo "aria2c installed from static build"
+            else
+                echo "Static build download failed"
+            fi
+        fi
+
+        # Create convenience symlink aria2 -> aria2c
+        if [ -f "$HOME/.local/bin/aria2c" ] && [ ! -e "$HOME/.local/bin/aria2" ]; then
+            ln -sf "$HOME/.local/bin/aria2c" "$HOME/.local/bin/aria2"
+            echo "Created symlink: aria2 -> aria2c"
+        fi
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if is_installed "aria2"; then
+        local version
+        version=$("$HOME/.local/bin/aria2c" --version 2>/dev/null | head -1 || echo "unknown")
+        echo -e "${SUCCESS}${CHECK} aria2 installed successfully ($version)${NC}"
+        SUCCESSFUL_INSTALLS+=("aria2")
+        log_installation "aria2" "success" "$logfile"
+        cleanup_old_logs "aria2"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} aria2 installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("aria2")
+        FAILED_INSTALL_LOGS["aria2"]="$logfile"
+        log_installation "aria2" "failure" "$logfile"
+        return 1
+    fi
+}

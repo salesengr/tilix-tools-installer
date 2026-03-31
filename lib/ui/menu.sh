@@ -30,7 +30,9 @@ show_menu() {
     echo ""
     echo -e "${CATEGORY}RUST:${NC} [29] feroxbuster [30] rustscan [31] ripgrep [32] fd [33] bat"
     echo ""
-    echo -e "${CATEGORY}BULK INSTALL:${NC} [34] All Python [35] All Go [36] All Node [37] All Rust"
+    echo -e "${CATEGORY}UTILITIES:${NC} [34] aria2"
+    echo ""
+    echo -e "${CATEGORY}BULK INSTALL:${NC} [35] All Python [36] All Go [37] All Node [38] All Rust [39] All Utilities"
     echo ""
     echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools [L] Show Logs [Q] Quit"
     echo ""
@@ -88,15 +90,18 @@ process_menu_selection() {
         32) install_tool "fd" ;;
         33) install_tool "bat" ;;
 
-        # BULK INSTALL (34-37)
-        34)
+        # UTILITY TOOLS (34)
+        34) install_tool "aria2" ;;
+
+        # BULK INSTALL (35-39)
+        35)
             # All Python tools
             install_tool "python_venv"
             for tool in "${ALL_PYTHON_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        35)
+        36)
             # All Go tools
             echo -e "${WARNING}${WARN} Installing all Go tools (using system Go)...${NC}"
             if ! verify_system_go; then
@@ -108,14 +113,14 @@ process_menu_selection() {
                 install_tool "$tool"
             done
             ;;
-        36)
+        37)
             # All Node.js tools
             install_tool "nodejs"
             for tool in "${NODE_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        37)
+        38)
             # All Rust tools
             echo -e "${WARNING}${WARN} Warning: Rust tools take 15-30 minutes to compile${NC}"
             read -r -p "Continue? (yes/no): " confirm
@@ -125,6 +130,12 @@ process_menu_selection() {
                     install_tool "$tool"
                 done
             fi
+            ;;
+        39)
+            # All Utility tools
+            for tool in "${ALL_UTILITY_TOOLS[@]}"; do
+                install_tool "$tool"
+            done
             ;;
 
         # INFO OPTIONS (T, L, Q)

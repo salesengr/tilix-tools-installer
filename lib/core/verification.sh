@@ -24,6 +24,8 @@ is_installed() {
             command -v go &>/dev/null && return 0
             [ -f "$HOME/opt/go/bin/go" ] && return 0 ;;
         nodejs)
+            # Prefer system node; fall back to ~/opt/node (tarball install)
+            command -v node &>/dev/null && return 0
             [ -f "$HOME/opt/node/bin/node" ] && return 0 ;;
         rust)
             [ -f "$HOME/.local/share/cargo/bin/cargo" ] && return 0 ;;
@@ -45,6 +47,7 @@ is_installed() {
             [ -f "$HOME/.local/bin/$tool" ] && return 0
             [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
         jwt-cracker)
+            [ -f "$HOME/.local/bin/$tool" ] && return 0
             [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
         # Rust tools
         feroxbuster|rustscan|sd|dog)

@@ -793,23 +793,7 @@ install_bat() {
         "bat"
 }
 
-install_sd() {
-    _install_rust_with_fallback "sd" \
-        "chmln/sd" \
-        "x86_64-unknown-linux-gnu\.tar\.gz" \
-        "sd" \
-        "tar.gz" \
-        "sd"
-}
 
-install_dog() {
-    _install_rust_with_fallback "dog" \
-        "ogham/dog" \
-        "x86_64-unknown-linux-gnu\.zip" \
-        "dog" \
-        "zip" \
-        "dog"
-}
 
 # ===== UTILITY TOOL INSTALLERS =====
 
@@ -1114,4 +1098,45 @@ WRAPPER
     FAILED_INSTALL_LOGS["tor_browser"]="$logfile"
     log_installation "tor_browser" "failure" "$logfile"
     return 1
+}
+
+install_sd() {
+    # Use musl static build — avoids GLIBC_2.32 incompatibility on Ubuntu 20.04
+    local logfile; logfile=$(create_tool_log "sd")
+    echo -e "${INFO}⬇ Installing sd (pre-built musl binary)...${NC}"
+    {
+        echo "Installing sd"; echo "Started: $(date)"
+        local api_url="https://api.github.com/repos/chmln/sd/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep "x86_64-unknown-linux-musl\.tar\.gz" \
+            | head -1 \
+            | sed 's/.*"browser_download_url": *"//;s/".*//')
+        echo "Downloading musl: $asset_url"
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+        cd "$HOME/opt/src" || return 1
+        curl -fsSL "$asset_url" -o sd-musl.tar.gz || return 1
+        tar -xzf sd-musl.tar.gz 2>/dev/null || true
+        local found; found=$(find . -name "sd" -type f ! -name "*.tar.gz" 2>/dev/null | head -1)
+        if [[ -n "$found" ]]; then
+            cp "$found" "$HOME/.local/bin/sd"
+            chmod +x "$HOME/.local/bin/sd"
+        else
+            echo "ERROR: sd binary not found in musl archive"; return 1
+        fi
+        rm -f sd-musl.tar.gz; echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if [ -x "$HOME/.local/bin/sd" ]; then
+        echo -e "${SUCCESS}${CHECK} sd installed successfully (pre-built musl)${NC}"
+        SUCCESSFUL_INSTALLS+=("sd"); log_installation "sd" "success" "$logfile"; cleanup_old_logs "sd"; return 0
+    fi
+    echo -e "${WARNING}${WARN} musl download failed, falling back to cargo...${NC}"
+    install_rust_tool "sd" "sd"
+}
+
+install_dog() {
+    # dog has no musl build; gnu binary requires GLIBC_2.32 (Ubuntu 20.04 has 2.31)
+    # Compile from cargo — gcc is available in the Tilix image
+    install_rust_tool "dog" "dog"
 }

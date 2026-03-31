@@ -541,12 +541,49 @@ install_feroxbuster() {
 }
 
 install_rustscan() {
-    _install_rust_with_fallback "rustscan" \
-        "RustScan/RustScan" \
-        "x86_64-linux.*\.tar\.gz" \
-        "rustscan" \
-        "tar.gz" \
-        "rustscan"
+    # RustScan ships a zip containing a tar.gz — extract zip then tar
+    local logfile
+    logfile=$(create_tool_log "rustscan")
+    echo -e "${INFO}⬇ Installing rustscan (pre-built binary)...${NC}"
+    {
+        echo "Installing rustscan"; echo "Started: $(date)"
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+        local api_url="https://api.github.com/repos/RustScan/RustScan/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep "x86_64-linux-rustscan\.tar\.gz\.zip" \
+            | head -1 | sed 's/.*"browser_download_url": *"//;s/".*//')
+        if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found"; return 1; fi
+        echo "Downloading: $asset_url"
+        cd "$HOME/opt/src" || return 1
+        curl -fsSL "$asset_url" -o rustscan.zip || return 1
+        unzip -q rustscan.zip 2>/dev/null || true
+        local tgz
+        tgz=$(find . -name "*.tar.gz" | head -1)
+        if [[ -n "$tgz" ]]; then
+            tar -xzf "$tgz" 2>/dev/null || true
+        fi
+        local bin
+        bin=$(find . -name "rustscan" -type f 2>/dev/null | head -1)
+        if [[ -n "$bin" ]]; then
+            cp "$bin" "$HOME/.local/bin/rustscan"
+            chmod +x "$HOME/.local/bin/rustscan"
+        else
+            echo "ERROR: rustscan binary not found"; return 1
+        fi
+        rm -f rustscan.zip "$tgz"
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if [ -x "$HOME/.local/bin/rustscan" ]; then
+        echo -e "${SUCCESS}${CHECK} rustscan installed successfully (pre-built)${NC}"
+        SUCCESSFUL_INSTALLS+=("rustscan")
+        log_installation "rustscan" "success" "$logfile"
+        cleanup_old_logs "rustscan"
+        return 0
+    fi
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo...${NC}"
+    install_rust_tool "rustscan" "rustscan"
 }
 
 install_ripgrep() {

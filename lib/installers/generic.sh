@@ -216,6 +216,21 @@ install_rust_tool() {
         export RUSTUP_HOME="$HOME/.local/share/rustup"
         export PATH="$CARGO_HOME/bin:$PATH"
 
+        # cargo requires a C linker (gcc). Some images strip gcc in cleanup
+        # layers — restore it if missing before attempting compilation.
+        if ! command -v gcc &>/dev/null; then
+            echo "gcc not found — attempting to install via apt..."
+            if command -v apt-get &>/dev/null; then
+                apt-get update -qq 2>/dev/null || true
+                apt-get install -y --no-install-recommends gcc 2>/dev/null || true
+            fi
+            if ! command -v gcc &>/dev/null; then
+                echo "ERROR: gcc is required for cargo builds but could not be installed."
+                return 1
+            fi
+            echo "gcc installed successfully"
+        fi
+
         echo "Compiling $crate from source..."
         cargo install "$crate" || return 1
 

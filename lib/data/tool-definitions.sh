@@ -10,7 +10,7 @@
 
 # Tool category arrays
 BUILD_TOOLS=("cmake" "github_cli")
-LANGUAGES=("nodejs" "rust")
+LANGUAGES=("nodejs" "rust" "go_runtime")
 PYTHON_RECON_PASSIVE=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot")
 PYTHON_RECON_DOMAIN=("sublist3r")
 PYTHON_RECON_WEB=("photon" "wappalyzer")
@@ -49,6 +49,11 @@ define_tools() {
     TOOL_INSTALL_LOCATION[github_cli]="$HOME/.local/bin/gh"
 
     # Languages
+    TOOL_INFO[go_runtime]="Go Runtime|Go programming language runtime (user-space install)|Language"
+    TOOL_SIZES[go_runtime]="500MB"
+    TOOL_DEPENDENCIES[go_runtime]=""
+    TOOL_INSTALL_LOCATION[go_runtime]="$HOME/opt/go/bin/go"
+
     TOOL_INFO[nodejs]="Node.js|JavaScript runtime|Language"
     TOOL_SIZES[nodejs]="50MB"
     TOOL_DEPENDENCIES[nodejs]=""

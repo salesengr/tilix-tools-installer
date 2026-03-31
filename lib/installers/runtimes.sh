@@ -222,6 +222,110 @@ install_nodejs() {
     fi
 }
 
+# Function: install_go_runtime
+# Purpose: Install Go runtime to ~/opt/go (user-space, no root required)
+#          Required by all Go tools. Mirrors what /usr/local/go provides.
+# Returns: 0 on success, 1 on failure
+install_go_runtime() {
+    local logfile
+    logfile=$(create_tool_log "go_runtime")
+
+    echo -e "${INFO}⬇ Downloading Go runtime...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing Go Runtime"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        # Detect architecture
+        local arch
+        case "$(uname -m)" in
+            x86_64)  arch="amd64" ;;
+            aarch64) arch="arm64" ;;
+            armv6l)  arch="armv6l" ;;
+            *)
+                echo "ERROR: Unsupported architecture: $(uname -m)"
+                return 1
+                ;;
+        esac
+
+        # Fetch latest stable Go version
+        local go_version
+        go_version=$(curl -fsSL "https://go.dev/VERSION?m=text" 2>/dev/null | head -1)
+        if [[ -z "$go_version" ]]; then
+            echo "ERROR: Could not determine latest Go version"
+            return 1
+        fi
+
+        echo "Latest Go: $go_version (arch: $arch)"
+
+        local filename="${go_version}.linux-${arch}.tar.gz"
+        local url="https://go.dev/dl/${filename}"
+        local install_dir="$HOME/opt/go"
+
+        mkdir -p "$HOME/opt/src"
+        cd "$HOME/opt/src" || return 1
+
+        echo "Downloading $url..."
+        if ! curl -fsSL "$url" -o "$filename"; then
+            echo "ERROR: Failed to download Go"
+            return 1
+        fi
+
+        echo "Extracting to $install_dir..."
+        rm -rf "$install_dir"
+        mkdir -p "$HOME/opt"
+        tar -xzf "$filename" -C "$HOME/opt/" || return 1
+        # Go extracts to a 'go' directory
+        [ -d "$HOME/opt/go" ] || { echo "ERROR: Go directory not found after extract"; return 1; }
+
+        rm -f "$filename"
+
+        # Add to PATH in .bashrc if not already present
+        if ! grep -q 'opt/go/bin' "$HOME/.bashrc" 2>/dev/null; then
+            echo '' >> "$HOME/.bashrc"
+            echo '# Go runtime (user-space install)' >> "$HOME/.bashrc"
+            echo 'export GOROOT="$HOME/opt/go"' >> "$HOME/.bashrc"
+            echo 'export GOPATH="$HOME/opt/gopath"' >> "$HOME/.bashrc"
+            echo 'export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"' >> "$HOME/.bashrc"
+        fi
+
+        # Export for current session
+        export GOROOT="$HOME/opt/go"
+        export GOPATH="$HOME/opt/gopath"
+        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+        mkdir -p "$GOPATH"
+
+        echo "Go installed: $("$HOME/opt/go/bin/go" version)"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if [ -f "$HOME/opt/go/bin/go" ]; then
+        local ver
+        ver=$("$HOME/opt/go/bin/go" version 2>/dev/null)
+        echo -e "${SUCCESS}${CHECK} Go runtime installed ($ver)${NC}"
+        SUCCESSFUL_INSTALLS+=("go_runtime")
+        log_installation "go_runtime" "success" "$logfile"
+        cleanup_old_logs "go_runtime"
+        export GOROOT="$HOME/opt/go"
+        export GOPATH="$HOME/opt/gopath"
+        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+        mkdir -p "$GOPATH"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} Go runtime installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("go_runtime")
+        FAILED_INSTALL_LOGS["go_runtime"]="$logfile"
+        log_installation "go_runtime" "failure" "$logfile"
+        return 1
+    fi
+}
+
 # Function: install_rust
 # Purpose: Install Rust via rustup
 # Returns: 0 on success, 1 on failure
@@ -298,8 +402,24 @@ install_python_venv() {
         echo "Started: $(date)"
         echo "=========================================="
 
+        # Prefer Python 3.13 if available (some tools require 3.9+).
+        # Fall back to python3 if 3.13 is not present.
+        local python_bin
+        if command -v python3.13 &>/dev/null; then
+            python_bin="python3.13"
+        elif command -v python3.11 &>/dev/null; then
+            python_bin="python3.11"
+        elif command -v python3.10 &>/dev/null; then
+            python_bin="python3.10"
+        elif command -v python3.9 &>/dev/null; then
+            python_bin="python3.9"
+        else
+            python_bin="python3"
+        fi
+        echo "Using Python: $python_bin ($($python_bin --version 2>&1))"
+
         echo "Creating venv..."
-        python3 -m venv "$XDG_DATA_HOME/virtualenvs/tools" || return 1
+        "$python_bin" -m venv "$XDG_DATA_HOME/virtualenvs/tools" || return 1
 
         echo "Activating venv..."
         source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1

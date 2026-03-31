@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **New tool: aria2** — multi-protocol download utility (HTTP/FTP/BitTorrent/Metalink)
+  - aria2 was originally in the Tilix Dockerfile but was commented out; now available in user-space
+  - Custom `install_aria2()` installer in `lib/installers/tools.sh`
+  - Pre-built binary installed to `~/.local/bin/aria2c` with convenience symlink `aria2`
+  - Added `UTILITY_TOOLS` and `ALL_UTILITY_TOOLS` category arrays in `lib/data/tool-definitions.sh`
+  - Menu entry `[34]` aria2 under new `UTILITIES` section
+  - Bulk install option `[39] All Utilities` added to menu
+  - Existing bulk install options renumbered: All Python [35], All Go [36], All Node [37], All Rust [38]
+  - Registered in `is_installed()` verification and `install_tool()` dispatcher
+  - Added to `install_all()` bulk installer
 - **Supply-Chain Security:** SHA256 checksum verification for release binary fallbacks
   - Added checksum verification to `install_release_binary_with_log()` function
   - Checksums configured for trufflehog, git-hound, and dog release binaries

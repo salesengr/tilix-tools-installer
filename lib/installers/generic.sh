@@ -188,10 +188,13 @@ install_node_tool() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        export PATH="$HOME/opt/node/bin:$PATH"
+        # Prefer system npm; fall back to ~/opt/node/bin if needed
+        if ! command -v npm &>/dev/null; then
+            export PATH="$HOME/opt/node/bin:$PATH"
+        fi
 
-        echo "Installing $npm_package..."
-        npm install -g "$npm_package" || return 1
+        # Install globally to ~/.local to keep out of system dirs
+        npm install -g --prefix "$HOME/.local" "$npm_package" || return 1
 
         echo "=========================================="
         echo "Completed: $(date)"

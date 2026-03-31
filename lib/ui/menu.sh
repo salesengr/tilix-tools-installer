@@ -38,9 +38,13 @@ show_menu() {
     echo "  [32] ripgrep       [33] fd             [34] bat          [35] sd"
     echo "  [36] dog            [37] aria2"
     echo ""
+    echo -e "${CATEGORY}WEB AUTOMATION:${NC}"
+    echo "  [38] seleniumbase  [39] playwright      [40] yandex-browser  [41] tor-browser"
+    echo ""
     echo -e "${CATEGORY}BULK INSTALL:${NC}"
-    echo "  [38] All Passive OSINT    [39] All Domain/Subdomain    [40] All Active Recon"
-    echo "  [41] All CTI              [42] All Utilities           [43] Install Everything"
+    echo "  [42] All Passive OSINT    [43] All Domain/Subdomain    [44] All Active Recon"
+    echo "  [45] All CTI              [46] All Utilities           [47] All Web Tools"
+    echo "  [48] Install Everything"
     echo ""
     echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools  [L] Show Logs  [Q] Quit"
     echo ""
@@ -107,45 +111,38 @@ process_menu_selection() {
         36) install_tool "dog" ;;
         37) install_tool "aria2" ;;
 
-        # BULK INSTALL (39-44)
-        38)
-            # All Passive OSINT (auto-installs python_venv and Go as needed)
-            install_tool "python_venv"
-            for tool in "${PASSIVE_OSINT[@]}"; do
-                install_tool "$tool"
-            done
-            ;;
-        39)
-            # All Domain/Subdomain Enumeration
-            install_tool "python_venv"
-            for tool in "${DOMAIN_ENUM[@]}"; do
-                install_tool "$tool"
-            done
-            ;;
-        40)
-            # All Active Recon & Scanning
-            install_tool "rust"
-            for tool in "${ACTIVE_RECON[@]}"; do
-                install_tool "$tool"
-            done
-            ;;
-        41)
-            # All CTI Tools
-            install_tool "python_venv"
-            install_tool "nodejs"
-            for tool in "${CTI_TOOLS[@]}"; do
-                install_tool "$tool"
-            done
-            ;;
+        # WEB AUTOMATION TOOLS (38-41)
+        38) install_tool "seleniumbase" ;;
+        39) install_tool "playwright" ;;
+        40) install_tool "yandex_browser" ;;
+        41) install_tool "tor_browser" ;;
+
+        # BULK INSTALL (42-48)
         42)
-            # All Utilities
-            install_tool "rust"
-            for tool in "${UTILITY_TOOLS[@]}"; do
-                install_tool "$tool"
-            done
+            install_tool "python_venv"
+            for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
             ;;
         43)
-            # Install Everything
+            install_tool "python_venv"
+            for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
+            ;;
+        44)
+            install_tool "rust"
+            for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
+            ;;
+        45)
+            install_tool "python_venv"
+            install_tool "nodejs"
+            for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
+            ;;
+        46)
+            install_tool "rust"
+            for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
+            ;;
+        47)
+            for tool in "${WEB_AUTOMATION[@]}"; do install_tool "$tool"; done
+            ;;
+        48)
             echo -e "${WARNING}${WARN} Installing ALL tools — this will take 30-60 minutes${NC}"
             read -r -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then

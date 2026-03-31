@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Verification Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Installation status checking and environment validation
 
 # shellcheck disable=SC2034  # INSTALLED_STATUS used in parent script
@@ -28,20 +28,26 @@ is_installed() {
         rust)
             [ -f "$HOME/.local/share/cargo/bin/cargo" ] && return 0 ;;
         python_venv)
-            [ -d "$XDG_DATA_HOME/virtualenvs/tools" ] && return 0 ;;
+            # No longer using a venv — python_venv is "ready" if python3 exists
+            command -v python3 &>/dev/null && return 0 ;;
         # Python tools check wrapper
         sherlock|holehe|socialscan|h8mail|photon|sublist3r|shodan|censys|theHarvester|spiderfoot|yara|wappalyzer)
             [ -f "$HOME/.local/bin/$tool" ] && return 0 ;;
-        # Go tools
+        # Go tools — check ~/.local/bin (pre-built) then ~/opt/gopath/bin (compiled)
         gobuster|ffuf|httprobe|waybackurls|assetfinder|subfinder|nuclei)
+            [ -f "$HOME/.local/bin/$tool" ] && return 0
             [ -f "$HOME/opt/gopath/bin/$tool" ] && return 0 ;;
         virustotal)
+            [ -f "$HOME/.local/bin/vt" ] && return 0
             [ -f "$HOME/opt/gopath/bin/vt" ] && return 0 ;;
-        # Node tools
-        trufflehog|git-hound|jwt-cracker)
+        # Node tools — check ~/.local/bin (pre-built) then npm bin
+        trufflehog|git-hound)
+            [ -f "$HOME/.local/bin/$tool" ] && return 0
+            [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
+        jwt-cracker)
             [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
         # Rust tools
-        feroxbuster|rustscan|sd|tokei|dog)
+        feroxbuster|rustscan|sd|dog)
             command -v "$tool" &>/dev/null && return 0 ;;
         ripgrep)
             command -v rg &>/dev/null && return 0 ;;

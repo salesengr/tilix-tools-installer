@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Runtimes Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Language runtime and build tool installation
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
@@ -390,7 +390,10 @@ install_rust() {
 }
 
 # Function: install_python_venv
-# Purpose: Create Python virtual environment for tools
+# Purpose: Configure user-space pip install (no venv — uses system Python directly).
+#          In a container-per-session architecture a venv adds 400MB+ of bloat with
+#          no benefit. pip install --user installs to ~/.local/lib/pythonX.Y/site-packages
+#          which is already isolated by the container.
 # Returns: 0 on success, 1 on failure
 install_python_venv() {
     local logfile
@@ -398,12 +401,11 @@ install_python_venv() {
 
     {
         echo "=========================================="
-        echo "Creating Python Virtual Environment"
+        echo "Configuring Python user-space install"
         echo "Started: $(date)"
         echo "=========================================="
 
-        # Prefer Python 3.13 if available (some tools require 3.9+).
-        # Fall back to python3 if 3.13 is not present.
+        # Resolve best available Python (prefer 3.13 for tool compatibility)
         local python_bin
         if command -v python3.13 &>/dev/null; then
             python_bin="python3.13"
@@ -416,33 +418,38 @@ install_python_venv() {
         else
             python_bin="python3"
         fi
+
         echo "Using Python: $python_bin ($($python_bin --version 2>&1))"
 
-        echo "Creating venv..."
-        "$python_bin" -m venv "$XDG_DATA_HOME/virtualenvs/tools" || return 1
+        # Ensure ~/.local/bin is on PATH for user-installed scripts
+        mkdir -p "$HOME/.local/bin"
+        if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+            export PATH="$HOME/.local/bin:$PATH"
+        fi
 
-        echo "Activating venv..."
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # Store resolved python binary for use by install_python_tool
+        echo "$python_bin" > "$HOME/.local/share/.python_bin"
 
-        echo "Upgrading pip, wheel, and compatible setuptools..."
-        # python-Wappalyzer still imports pkg_resources, which was removed from setuptools 81+
-        pip install --upgrade pip wheel "setuptools<81" || return 1
+        # Upgrade pip and setuptools in user space
+        "$python_bin" -m pip install --user --quiet --upgrade pip "setuptools<81" wheel 2>/dev/null || true
 
-        deactivate
+        echo "Python user-space install configured: $python_bin"
+        echo "Install target: $HOME/.local/lib/$(${python_bin} -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')/site-packages/"
 
         echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "python_venv"; then
-        echo -e "${GREEN}[OK] Python virtual environment created${NC}"
+    # python_venv is "installed" if we can resolve a python binary
+    if command -v python3 &>/dev/null; then
+        echo -e "${GREEN}[OK] Python user-space install configured${NC}"
         SUCCESSFUL_INSTALLS+=("python_venv")
         log_installation "python_venv" "success" "$logfile"
         cleanup_old_logs "python_venv"
         return 0
     else
-        echo -e "${RED}[FAIL] Python venv creation failed${NC}"
+        echo -e "${RED}[FAIL] No Python found${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("python_venv")
         FAILED_INSTALL_LOGS["python_venv"]="$logfile"

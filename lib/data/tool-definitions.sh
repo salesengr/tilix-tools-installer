@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Tool Definitions Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Centralized tool metadata and category definitions
 
 # shellcheck disable=SC2034  # Variables used in parent script and other modules
@@ -8,27 +8,35 @@
 
 # ===== TOOL CATEGORIES =====
 
-# Tool category arrays
+# Build tools and runtimes
 BUILD_TOOLS=("cmake" "github_cli")
 LANGUAGES=("nodejs" "rust" "go_runtime")
-PYTHON_RECON_PASSIVE=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot")
-PYTHON_RECON_DOMAIN=("sublist3r")
-PYTHON_RECON_WEB=("photon" "wappalyzer")
-PYTHON_THREAT_INTEL=("shodan" "censys" "yara")
-PYTHON_CREDENTIAL=("h8mail")
-GO_RECON_ACTIVE=("gobuster" "ffuf" "httprobe")
-GO_RECON_PASSIVE=("waybackurls" "assetfinder" "subfinder")
-GO_VULN_SCAN=("nuclei")
-GO_THREAT_INTEL=("virustotal")
-NODE_TOOLS=("trufflehog" "git-hound" "jwt-cracker")
-RUST_RECON=("feroxbuster" "rustscan")
-RUST_UTILS=("ripgrep" "fd" "bat" "sd" "tokei" "dog")
-UTILITY_TOOLS=("aria2")
 
-# Combined lists for bulk operations
-ALL_PYTHON_TOOLS=("${PYTHON_RECON_PASSIVE[@]}" "${PYTHON_RECON_DOMAIN[@]}" "${PYTHON_RECON_WEB[@]}" "${PYTHON_THREAT_INTEL[@]}" "${PYTHON_CREDENTIAL[@]}")
-ALL_GO_TOOLS=("${GO_RECON_ACTIVE[@]}" "${GO_RECON_PASSIVE[@]}" "${GO_VULN_SCAN[@]}" "${GO_THREAT_INTEL[@]}")
-ALL_RUST_TOOLS=("${RUST_RECON[@]}" "${RUST_UTILS[@]}")
+# ===== USE-CASE CATEGORIES (v1.4.0) =====
+# Menu and bulk install operations use these arrays.
+# Tools are grouped by function, not by runtime.
+
+PASSIVE_OSINT=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot" "photon" "wappalyzer" "h8mail" "waybackurls" "assetfinder" "subfinder" "git-hound")
+DOMAIN_ENUM=("sublist3r" "gobuster" "ffuf")
+ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
+CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
+SECURITY_TESTING=("jwt-cracker")
+UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "dog" "aria2")
+
+# ===== INTERNAL RUNTIME ARRAYS =====
+# Used internally for dependency resolution only (not exposed in menu).
+# Each installer knows what runtime it needs; these help bulk installs
+# ensure prerequisites are met.
+_PYTHON_TOOLS=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot" "photon" "wappalyzer" "h8mail" "sublist3r" "shodan" "censys" "yara")
+_GO_TOOLS=("gobuster" "ffuf" "httprobe" "waybackurls" "assetfinder" "subfinder" "nuclei" "virustotal")
+_NODE_TOOLS=("trufflehog" "git-hound" "jwt-cracker")
+_RUST_TOOLS=("feroxbuster" "rustscan" "ripgrep" "fd" "bat" "sd" "dog")
+
+# Legacy aliases — kept for backward compatibility with any external scripts
+NODE_TOOLS=("${_NODE_TOOLS[@]}")
+ALL_PYTHON_TOOLS=("${_PYTHON_TOOLS[@]}")
+ALL_GO_TOOLS=("${_GO_TOOLS[@]}")
+ALL_RUST_TOOLS=("${_RUST_TOOLS[@]}")
 ALL_UTILITY_TOOLS=("${UTILITY_TOOLS[@]}")
 
 # ===== TOOL DEFINITIONS FUNCTION =====
@@ -220,10 +228,6 @@ define_tools() {
     TOOL_DEPENDENCIES[sd]="rust"
     TOOL_INSTALL_LOCATION[sd]="\$CARGO_HOME/bin/sd"
 
-    TOOL_INFO[tokei]="tokei|Code statistics analyzer|Utility"
-    TOOL_SIZES[tokei]="2MB"
-    TOOL_DEPENDENCIES[tokei]="rust"
-    TOOL_INSTALL_LOCATION[tokei]="\$CARGO_HOME/bin/tokei"
 
     TOOL_INFO[dog]="dog|Modern DNS client|Utility"
     TOOL_SIZES[dog]="1.5MB"

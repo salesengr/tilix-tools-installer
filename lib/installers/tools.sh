@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Tool-Specific Installers Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Tool-specific installation logic and wrapper functions
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
@@ -28,7 +28,8 @@ install_photon() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         mkdir -p "$HOME/opt/src"
 
@@ -42,20 +43,19 @@ install_photon() {
         fi
 
         echo "Installing Photon dependencies..."
-        pip install --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
+        python3 -m pip install --user --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/photon" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 TOOL_SCRIPT="$HOME/opt/src/Photon/photon.py"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -107,12 +107,12 @@ install_theHarvester() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing latest theHarvester from GitHub..."
-        pip install --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
+        python3 -m pip install --user --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         create_python_wrapper "theHarvester"
@@ -152,7 +152,8 @@ install_spiderfoot() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         mkdir -p "$HOME/opt/src"
 
@@ -177,20 +178,19 @@ install_spiderfoot() {
         }' "$HOME/opt/src/spiderfoot/requirements.txt" > "$HOME/opt/src/spiderfoot/requirements.py313.txt"
 
         echo "Installing SpiderFoot dependencies..."
-        pip install --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
+        python3 -m pip install --user --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/spiderfoot" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 TOOL_SCRIPT="$HOME/opt/src/spiderfoot/sf.py"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -239,22 +239,22 @@ install_wappalyzer() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing python-Wappalyzer..."
-        pip install --quiet "python-Wappalyzer" || return 1
+        python3 -m pip install --user --quiet "python-Wappalyzer" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/wappalyzer" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -341,15 +341,15 @@ install_yara() {
             fi
         fi
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing yara-python..."
-        pip install --quiet yara-python || return 1
+        python3 -m pip install --user --quiet yara-python || return 1
 
         # Confirm Python module availability.
         python3 -c "import yara" >/dev/null 2>&1 || return 1
 
-        deactivate
 
         # yara-python does not provide a native yara CLI binary.
         # Try native build first (if autotools are available), otherwise create
@@ -386,11 +386,11 @@ install_yara() {
             cat > "$HOME/.local/bin/yara" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -488,24 +488,282 @@ install_subfinder() { install_go_tool "subfinder" "github.com/projectdiscovery/s
 install_nuclei() { install_go_tool "nuclei" "github.com/projectdiscovery/nuclei/v3/cmd/nuclei"; }
 install_virustotal() { install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"; }
 
+# ===== GO TOOL WRAPPERS — Pre-built binaries primary, go install fallback =====
+
+# Function: _install_go_with_fallback
+# Purpose: Try pre-built binary first, fall back to go install
+# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=go_module
+_install_go_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 gomod=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to go install...${NC}"
+    if install_go_tool "$tool" "$gomod"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_gobuster() {
+    _install_go_with_fallback "gobuster" \
+        "OJ/gobuster" \
+        "Linux_x86_64\.tar\.gz" \
+        "gobuster" "tar.gz" \
+        "github.com/OJ/gobuster/v3"
+}
+
+install_ffuf() {
+    _install_go_with_fallback "ffuf" \
+        "ffuf/ffuf" \
+        "linux_amd64\.tar\.gz" \
+        "ffuf" "tar.gz" \
+        "github.com/ffuf/ffuf/v2"
+}
+
+install_httprobe() {
+    _install_go_with_fallback "httprobe" \
+        "tomnomnom/httprobe" \
+        "linux-amd64.*\.tgz" \
+        "httprobe" "tar.gz" \
+        "github.com/tomnomnom/httprobe"
+}
+
+install_waybackurls() {
+    _install_go_with_fallback "waybackurls" \
+        "tomnomnom/waybackurls" \
+        "linux-amd64.*\.tgz" \
+        "waybackurls" "tar.gz" \
+        "github.com/tomnomnom/waybackurls"
+}
+
+install_assetfinder() {
+    # No pre-built binary available — go install only
+    install_go_tool "assetfinder" "github.com/tomnomnom/assetfinder"
+}
+
+install_subfinder() {
+    _install_go_with_fallback "subfinder" \
+        "projectdiscovery/subfinder" \
+        "linux_amd64\.zip" \
+        "subfinder" "zip" \
+        "github.com/projectdiscovery/subfinder/v2/cmd/subfinder"
+}
+
+install_nuclei() {
+    _install_go_with_fallback "nuclei" \
+        "projectdiscovery/nuclei" \
+        "linux_amd64\.zip" \
+        "nuclei" "zip" \
+        "github.com/projectdiscovery/nuclei/v3/cmd/nuclei"
+}
+
+install_virustotal() {
+    # No pre-built binary available — go install only
+    install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"
+}
+
 # ===== NODE.JS TOOL WRAPPERS =====
 
-# Convenience wrappers for Node.js tools using generic installer
-install_trufflehog() { install_node_tool "trufflehog" "@trufflesecurity/trufflehog"; }
-install_git-hound() { install_node_tool "git-hound" "git-hound"; }
+# Function: _install_node_with_fallback
+# Purpose: Try pre-built binary first, fall back to npm install
+_install_node_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 npm_pkg=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to npm...${NC}"
+    if install_node_tool "$tool" "$npm_pkg"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_trufflehog() {
+    _install_node_with_fallback "trufflehog" \
+        "trufflesecurity/trufflehog" \
+        "linux_amd64\.tar\.gz" \
+        "trufflehog" "tar.gz" \
+        "@trufflesecurity/trufflehog"
+}
+
+install_git-hound() {
+    _install_node_with_fallback "git-hound" \
+        "tillson/git-hound" \
+        "linux_amd64\.zip" \
+        "git-hound" "zip" \
+        "git-hound"
+}
+
 install_jwt-cracker() { install_node_tool "jwt-cracker" "jwt-cracker"; }
 
 # ===== RUST TOOL WRAPPERS =====
 
 # Convenience wrappers for Rust tools using generic installer
-install_feroxbuster() { install_rust_tool "feroxbuster" "feroxbuster"; }
-install_rustscan() { install_rust_tool "rustscan" "rustscan"; }
-install_ripgrep() { install_rust_tool "ripgrep" "ripgrep"; }
-install_fd() { install_rust_tool "fd" "fd-find"; }
-install_bat() { install_rust_tool "bat" "bat"; }
-install_sd() { install_rust_tool "sd" "sd"; }
-install_tokei() { install_rust_tool "tokei" "tokei"; }
-install_dog() { install_rust_tool "dog" "dog"; }
+# ===== RUST TOOLS — Pre-built binaries primary, cargo fallback =====
+
+# Function: _install_rust_with_fallback
+# Purpose: Try pre-built binary first, fall back to cargo compile
+# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=crate
+_install_rust_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 crate=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo compile...${NC}"
+    if install_rust_tool "$tool" "$crate"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_feroxbuster() {
+    _install_rust_with_fallback "feroxbuster" \
+        "epi052/feroxbuster" \
+        "x86_64-linux.*\.tar\.gz" \
+        "feroxbuster" \
+        "tar.gz" \
+        "feroxbuster"
+}
+
+install_rustscan() {
+    # RustScan ships a zip containing a tar.gz — extract zip then tar
+    local logfile
+    logfile=$(create_tool_log "rustscan")
+    echo -e "${INFO}⬇ Installing rustscan (pre-built binary)...${NC}"
+    {
+        echo "Installing rustscan"; echo "Started: $(date)"
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+        local api_url="https://api.github.com/repos/RustScan/RustScan/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep "x86_64-linux-rustscan\.tar\.gz\.zip" \
+            | head -1 | sed 's/.*"browser_download_url": *"//;s/".*//')
+        if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found"; return 1; fi
+        echo "Downloading: $asset_url"
+        cd "$HOME/opt/src" || return 1
+        curl -fsSL "$asset_url" -o rustscan.zip || return 1
+        unzip -q rustscan.zip 2>/dev/null || true
+        local tgz
+        tgz=$(find . -name "*.tar.gz" | head -1)
+        if [[ -n "$tgz" ]]; then
+            tar -xzf "$tgz" 2>/dev/null || true
+        fi
+        local bin
+        bin=$(find . -name "rustscan" -type f 2>/dev/null | head -1)
+        if [[ -n "$bin" ]]; then
+            cp "$bin" "$HOME/.local/bin/rustscan"
+            chmod +x "$HOME/.local/bin/rustscan"
+        else
+            echo "ERROR: rustscan binary not found"; return 1
+        fi
+        rm -f rustscan.zip "$tgz"
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if [ -x "$HOME/.local/bin/rustscan" ]; then
+        echo -e "${SUCCESS}${CHECK} rustscan installed successfully (pre-built)${NC}"
+        SUCCESSFUL_INSTALLS+=("rustscan")
+        log_installation "rustscan" "success" "$logfile"
+        cleanup_old_logs "rustscan"
+        return 0
+    fi
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo...${NC}"
+    install_rust_tool "rustscan" "rustscan"
+}
+
+install_ripgrep() {
+    _install_rust_with_fallback "ripgrep" \
+        "BurntSushi/ripgrep" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "rg" \
+        "tar.gz" \
+        "ripgrep"
+}
+
+install_fd() {
+    _install_rust_with_fallback "fd" \
+        "sharkdp/fd" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "fd" \
+        "tar.gz" \
+        "fd-find"
+}
+
+install_bat() {
+    _install_rust_with_fallback "bat" \
+        "sharkdp/bat" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "bat" \
+        "tar.gz" \
+        "bat"
+}
+
+install_sd() {
+    _install_rust_with_fallback "sd" \
+        "chmln/sd" \
+        "x86_64-unknown-linux-gnu\.tar\.gz" \
+        "sd" \
+        "tar.gz" \
+        "sd"
+}
+
+install_dog() {
+    _install_rust_with_fallback "dog" \
+        "ogham/dog" \
+        "x86_64-unknown-linux-gnu\.zip" \
+        "dog" \
+        "zip" \
+        "dog"
+}
 
 # ===== UTILITY TOOL INSTALLERS =====
 

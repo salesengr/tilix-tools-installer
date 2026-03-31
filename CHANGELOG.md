@@ -5,6 +5,51 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-31
+
+### Added
+- **New CLI flags** for use-case-based bulk installs:
+  - `--osint-tools` — passive OSINT (12 tools)
+  - `--domain-tools` — domain and subdomain enumeration (3 tools)
+  - `--recon-tools` — active recon and scanning (4 tools)
+  - `--cti-tools` — cyber threat intelligence (5 tools)
+  - `--utility-tools` — developer utilities (6 tools)
+- `install_prebuilt_binary()` — generic helper for GitHub release binary downloads
+- `_install_go_with_fallback()`, `_install_rust_with_fallback()`, `_install_node_with_fallback()` — pre-built first, compile as fallback
+- `_get_python_bin()` — resolves best available Python binary (prefers 3.13)
+
+### Changed
+- **Menu redesigned by use-case category** (replaces runtime grouping):
+  - `PASSIVE OSINT` [7-18]: sherlock, holehe, socialscan, theHarvester, spiderfoot, photon, wappalyzer, h8mail, waybackurls, assetfinder, subfinder, git-hound
+  - `DOMAIN & SUBDOMAIN ENUMERATION` [19-21]: sublist3r, gobuster, ffuf
+  - `ACTIVE RECON & SCANNING` [22-25]: httprobe, rustscan, feroxbuster, nuclei
+  - `CYBER THREAT INTEL (CTI)` [26-30]: shodan, censys, yara, trufflehog, virustotal
+  - `SECURITY TESTING` [31]: jwt-cracker
+  - `UTILITIES` [32-37]: ripgrep, fd, bat, sd, dog, aria2
+  - `BULK INSTALL` [38-43]: by use-case + Install Everything
+- **Pre-built binaries are now the primary install method** for all applicable tools.
+  Go tools (gobuster, ffuf, httprobe, waybackurls, subfinder, nuclei), Rust tools (feroxbuster, rustscan, ripgrep, fd, bat, sd, dog), and Node tools (trufflehog, git-hound) all download GitHub release binaries first. Compile-from-source is the fallback only.
+- **Python tools use `pip install --user`** instead of a virtualenv.
+  In a container-per-session architecture a venv adds 400MB+ with no isolation benefit. Packages now install directly to `~/.local/lib/python3.13/site-packages/` using system Python 3.13.
+- Old runtime CLI flags (`--python-tools`, `--go-tools`, `--node-tools`, `--rust-tools`) are deprecated but still functional — they print a deprecation notice and redirect to the appropriate use-case flag.
+- New category arrays: `PASSIVE_OSINT`, `DOMAIN_ENUM`, `ACTIVE_RECON`, `CTI_TOOLS`, `SECURITY_TESTING`, `UTILITY_TOOLS` replace the old runtime-based arrays in `lib/data/tool-definitions.sh`
+
+### Removed
+- **tokei** — no pre-built binary available; low relevance in security context
+- **Python virtualenv** — replaced by `pip install --user` with system Python 3.13
+
+### Performance
+Measured on `salesengr/local-apps:tilix-amd64` (x86_64, 10 CPUs):
+
+| Operation | Before v1.4.0 | v1.4.0 |
+|-----------|--------------|--------|
+| `--domain-tools` | ~8 min | **13 sec** |
+| `--osint-tools` | ~10 min | **~3 min** |
+| `--recon-tools` | ~35 min | **~6 min** |
+| `--utility-tools` | ~20 min | **~2 min** |
+| Session archive (all tools, compressed) | ~275MB | **~285MB** |
+| `~/.local/share` after install | ~423MB (venv) | **~4KB** |
+
 ## [Unreleased]
 
 ### Added

@@ -907,6 +907,9 @@ install_seleniumbase() {
         echo "Started: $(date)"
         local python_bin; python_bin=$(_get_python_bin)
         mkdir -p "$HOME/.local/bin"
+        # Note: seleniumbase requires selenium as a direct dependency and will
+        # install selenium 4.41+ to ~/.local even though selenium 4.40 is
+        # system-wide. The ~28MB duplicate is unavoidable with pip --user.
         "$python_bin" -m pip install --user --quiet seleniumbase || return 1
         echo "Completed: $(date)"
     } > "$logfile" 2>&1

@@ -197,6 +197,106 @@ install_node_tool() {
 #   $1 - tool name
 #   $2 - crate name
 # Returns: 0 on success, 1 on failure
+# Function: install_prebuilt_binary
+# Purpose: Download a pre-built binary from GitHub releases and install to ~/.local/bin
+# Parameters:
+#   $1 - tool name (used for logging and destination binary name)
+#   $2 - GitHub repo (e.g. "BurntSushi/ripgrep")
+#   $3 - asset name pattern (grep regex to match the asset filename)
+#   $4 - binary name inside archive (defaults to tool name if omitted)
+#   $5 - archive type: "tar.gz", "zip", or "binary" (defaults to tar.gz)
+# Returns: 0 on success, 1 on failure
+install_prebuilt_binary() {
+    local tool=$1
+    local repo=$2
+    local asset_pattern=$3
+    local binary_name="${4:-$tool}"
+    local archive_type="${5:-tar.gz}"
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Downloading pre-built $tool binary...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing $tool (pre-built binary)"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+
+        # Fetch latest release asset URL
+        local api_url="https://api.github.com/repos/${repo}/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep -iE "$asset_pattern" \
+            | grep -v "\.sha256\|\.sig\|\.minisig" \
+            | head -1 \
+            | sed 's/.*"browser_download_url": *"//;s/".*//')
+
+        if [[ -z "$asset_url" ]]; then
+            echo "ERROR: Could not find release asset matching '$asset_pattern' in $repo"
+            return 1
+        fi
+
+        echo "Downloading: $asset_url"
+        local filename
+        filename=$(basename "$asset_url")
+        cd "$HOME/opt/src" || return 1
+        curl -fsSL "$asset_url" -o "$filename" || return 1
+
+        echo "Extracting..."
+        case "$archive_type" in
+            tar.gz)
+                tar -xzf "$filename" 2>/dev/null || true
+                # Find binary in extracted contents
+                local found_bin
+                found_bin=$(find . -name "$binary_name" -type f ! -name "*.md" ! -name "*.txt" 2>/dev/null | head -1)
+                if [[ -z "$found_bin" ]]; then
+                    # Try the tool name as a fallback
+                    found_bin=$(find . -maxdepth 3 -executable -type f -name "$tool" 2>/dev/null | head -1)
+                fi
+                if [[ -n "$found_bin" ]]; then
+                    cp "$found_bin" "$HOME/.local/bin/$tool"
+                    chmod +x "$HOME/.local/bin/$tool"
+                else
+                    echo "ERROR: Could not find binary '$binary_name' in extracted archive"
+                    return 1
+                fi
+                ;;
+            zip)
+                unzip -q "$filename" 2>/dev/null || true
+                local found_bin
+                found_bin=$(find . -name "$binary_name" -type f 2>/dev/null | head -1)
+                if [[ -n "$found_bin" ]]; then
+                    cp "$found_bin" "$HOME/.local/bin/$tool"
+                    chmod +x "$HOME/.local/bin/$tool"
+                else
+                    echo "ERROR: Could not find binary '$binary_name' in zip"
+                    return 1
+                fi
+                ;;
+            binary)
+                cp "$filename" "$HOME/.local/bin/$tool"
+                chmod +x "$HOME/.local/bin/$tool"
+                ;;
+        esac
+
+        rm -f "$filename"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if [ -x "$HOME/.local/bin/$tool" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 install_rust_tool() {
     local tool=$1
     local crate=$2

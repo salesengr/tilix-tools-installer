@@ -21,7 +21,7 @@ DOMAIN_ENUM=("sublist3r" "gobuster" "ffuf")
 ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
 CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
 SECURITY_TESTING=("jwt-cracker")
-UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "tokei" "dog" "aria2")
+UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "dog" "aria2")
 
 # ===== INTERNAL RUNTIME ARRAYS =====
 # Used internally for dependency resolution only (not exposed in menu).
@@ -30,7 +30,7 @@ UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "tokei" "dog" "aria2")
 _PYTHON_TOOLS=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot" "photon" "wappalyzer" "h8mail" "sublist3r" "shodan" "censys" "yara")
 _GO_TOOLS=("gobuster" "ffuf" "httprobe" "waybackurls" "assetfinder" "subfinder" "nuclei" "virustotal")
 _NODE_TOOLS=("trufflehog" "git-hound" "jwt-cracker")
-_RUST_TOOLS=("feroxbuster" "rustscan" "ripgrep" "fd" "bat" "sd" "tokei" "dog")
+_RUST_TOOLS=("feroxbuster" "rustscan" "ripgrep" "fd" "bat" "sd" "dog")
 
 # Legacy aliases — kept for backward compatibility with any external scripts
 NODE_TOOLS=("${_NODE_TOOLS[@]}")
@@ -228,10 +228,6 @@ define_tools() {
     TOOL_DEPENDENCIES[sd]="rust"
     TOOL_INSTALL_LOCATION[sd]="\$CARGO_HOME/bin/sd"
 
-    TOOL_INFO[tokei]="tokei|Code statistics analyzer|Utility"
-    TOOL_SIZES[tokei]="2MB"
-    TOOL_DEPENDENCIES[tokei]="rust"
-    TOOL_INSTALL_LOCATION[tokei]="\$CARGO_HOME/bin/tokei"
 
     TOOL_INFO[dog]="dog|Modern DNS client|Utility"
     TOOL_SIZES[dog]="1.5MB"

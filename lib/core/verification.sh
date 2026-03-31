@@ -41,7 +41,7 @@ is_installed() {
         trufflehog|git-hound|jwt-cracker)
             [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
         # Rust tools
-        feroxbuster|rustscan|sd|tokei|dog)
+        feroxbuster|rustscan|sd|dog)
             command -v "$tool" &>/dev/null && return 0 ;;
         ripgrep)
             command -v rg &>/dev/null && return 0 ;;

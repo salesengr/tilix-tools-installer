@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.4.0] - 2026-03-31
 
 ### Changed
+- **Rust tools now use pre-built GitHub release binaries as primary install method**
+  - feroxbuster, rustscan, ripgrep, fd, bat, sd, dog — download pre-built x86_64
+    Linux binaries first; cargo compile is the fallback only
+  - Eliminates 20-35 minute compile times for `--recon-tools` and `--utility-tools`
+  - Added `install_prebuilt_binary()` generic helper in `lib/installers/generic.sh`
+  - Added `_install_rust_with_fallback()` wrapper for consistent pre-built → cargo pattern
+- **Removed tokei** — no pre-built binary available, low value in security context
+  - Removed from UTILITY_TOOLS array, menu, tool definitions, verification, orchestration
 - **Menu redesigned by use-case category** — tools are now grouped by function
   rather than runtime (Python/Go/Node/Rust). New categories:
   - `PASSIVE OSINT` [7-18]: sherlock, holehe, socialscan, theHarvester, spiderfoot,

@@ -68,7 +68,6 @@ install_tool() {
         fd) install_fd ;;
         bat) install_bat ;;
         sd) install_sd ;;
-        tokei) install_tokei ;;
         dog) install_dog ;;
         aria2) install_aria2 ;;
         *)

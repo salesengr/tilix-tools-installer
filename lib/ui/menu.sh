@@ -36,11 +36,11 @@ show_menu() {
     echo ""
     echo -e "${CATEGORY}UTILITIES:${NC}"
     echo "  [32] ripgrep       [33] fd             [34] bat          [35] sd"
-    echo "  [36] tokei         [37] dog            [38] aria2"
+    echo "  [36] dog            [37] aria2"
     echo ""
     echo -e "${CATEGORY}BULK INSTALL:${NC}"
-    echo "  [39] All Passive OSINT    [40] All Domain/Subdomain    [41] All Active Recon"
-    echo "  [42] All CTI              [43] All Utilities           [44] Install Everything"
+    echo "  [38] All Passive OSINT    [39] All Domain/Subdomain    [40] All Active Recon"
+    echo "  [41] All CTI              [42] All Utilities           [43] Install Everything"
     echo ""
     echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools  [L] Show Logs  [Q] Quit"
     echo ""
@@ -103,33 +103,33 @@ process_menu_selection() {
         33) install_tool "fd" ;;
         34) install_tool "bat" ;;
         35) install_tool "sd" ;;
-        36) install_tool "tokei" ;;
-        37) install_tool "dog" ;;
-        38) install_tool "aria2" ;;
+        
+        36) install_tool "dog" ;;
+        37) install_tool "aria2" ;;
 
         # BULK INSTALL (39-44)
-        39)
+        38)
             # All Passive OSINT (auto-installs python_venv and Go as needed)
             install_tool "python_venv"
             for tool in "${PASSIVE_OSINT[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        40)
+        39)
             # All Domain/Subdomain Enumeration
             install_tool "python_venv"
             for tool in "${DOMAIN_ENUM[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        41)
+        40)
             # All Active Recon & Scanning
             install_tool "rust"
             for tool in "${ACTIVE_RECON[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        42)
+        41)
             # All CTI Tools
             install_tool "python_venv"
             install_tool "nodejs"
@@ -137,14 +137,14 @@ process_menu_selection() {
                 install_tool "$tool"
             done
             ;;
-        43)
+        42)
             # All Utilities
             install_tool "rust"
             for tool in "${UTILITY_TOOLS[@]}"; do
                 install_tool "$tool"
             done
             ;;
-        44)
+        43)
             # Install Everything
             echo -e "${WARNING}${WARN} Installing ALL tools — this will take 30-60 minutes${NC}"
             read -r -p "Continue? (yes/no): " confirm

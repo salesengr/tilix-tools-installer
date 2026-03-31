@@ -498,14 +498,101 @@ install_jwt-cracker() { install_node_tool "jwt-cracker" "jwt-cracker"; }
 # ===== RUST TOOL WRAPPERS =====
 
 # Convenience wrappers for Rust tools using generic installer
-install_feroxbuster() { install_rust_tool "feroxbuster" "feroxbuster"; }
-install_rustscan() { install_rust_tool "rustscan" "rustscan"; }
-install_ripgrep() { install_rust_tool "ripgrep" "ripgrep"; }
-install_fd() { install_rust_tool "fd" "fd-find"; }
-install_bat() { install_rust_tool "bat" "bat"; }
-install_sd() { install_rust_tool "sd" "sd"; }
-install_tokei() { install_rust_tool "tokei" "tokei"; }
-install_dog() { install_rust_tool "dog" "dog"; }
+# ===== RUST TOOLS — Pre-built binaries primary, cargo fallback =====
+
+# Function: _install_rust_with_fallback
+# Purpose: Try pre-built binary first, fall back to cargo compile
+# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=crate
+_install_rust_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 crate=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo compile...${NC}"
+    if install_rust_tool "$tool" "$crate"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_feroxbuster() {
+    _install_rust_with_fallback "feroxbuster" \
+        "epi052/feroxbuster" \
+        "x86_64-linux.*\.tar\.gz" \
+        "feroxbuster" \
+        "tar.gz" \
+        "feroxbuster"
+}
+
+install_rustscan() {
+    _install_rust_with_fallback "rustscan" \
+        "RustScan/RustScan" \
+        "x86_64-linux.*\.tar\.gz" \
+        "rustscan" \
+        "tar.gz" \
+        "rustscan"
+}
+
+install_ripgrep() {
+    _install_rust_with_fallback "ripgrep" \
+        "BurntSushi/ripgrep" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "rg" \
+        "tar.gz" \
+        "ripgrep"
+}
+
+install_fd() {
+    _install_rust_with_fallback "fd" \
+        "sharkdp/fd" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "fd" \
+        "tar.gz" \
+        "fd-find"
+}
+
+install_bat() {
+    _install_rust_with_fallback "bat" \
+        "sharkdp/bat" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "bat" \
+        "tar.gz" \
+        "bat"
+}
+
+install_sd() {
+    _install_rust_with_fallback "sd" \
+        "chmln/sd" \
+        "x86_64-unknown-linux-gnu\.tar\.gz" \
+        "sd" \
+        "tar.gz" \
+        "sd"
+}
+
+install_dog() {
+    _install_rust_with_fallback "dog" \
+        "ogham/dog" \
+        "x86_64-unknown-linux-gnu\.zip" \
+        "dog" \
+        "zip" \
+        "dog"
+}
 
 # ===== UTILITY TOOL INSTALLERS =====
 

@@ -32,13 +32,18 @@ is_installed() {
         # Python tools check wrapper
         sherlock|holehe|socialscan|h8mail|photon|sublist3r|shodan|censys|theHarvester|spiderfoot|yara|wappalyzer)
             [ -f "$HOME/.local/bin/$tool" ] && return 0 ;;
-        # Go tools
+        # Go tools — check ~/.local/bin (pre-built) then ~/opt/gopath/bin (compiled)
         gobuster|ffuf|httprobe|waybackurls|assetfinder|subfinder|nuclei)
+            [ -f "$HOME/.local/bin/$tool" ] && return 0
             [ -f "$HOME/opt/gopath/bin/$tool" ] && return 0 ;;
         virustotal)
+            [ -f "$HOME/.local/bin/vt" ] && return 0
             [ -f "$HOME/opt/gopath/bin/vt" ] && return 0 ;;
-        # Node tools
-        trufflehog|git-hound|jwt-cracker)
+        # Node tools — check ~/.local/bin (pre-built) then npm bin
+        trufflehog|git-hound)
+            [ -f "$HOME/.local/bin/$tool" ] && return 0
+            [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
+        jwt-cracker)
             [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
         # Rust tools
         feroxbuster|rustscan|sd|dog)

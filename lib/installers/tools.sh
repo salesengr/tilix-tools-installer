@@ -488,11 +488,145 @@ install_subfinder() { install_go_tool "subfinder" "github.com/projectdiscovery/s
 install_nuclei() { install_go_tool "nuclei" "github.com/projectdiscovery/nuclei/v3/cmd/nuclei"; }
 install_virustotal() { install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"; }
 
+# ===== GO TOOL WRAPPERS — Pre-built binaries primary, go install fallback =====
+
+# Function: _install_go_with_fallback
+# Purpose: Try pre-built binary first, fall back to go install
+# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=go_module
+_install_go_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 gomod=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to go install...${NC}"
+    if install_go_tool "$tool" "$gomod"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_gobuster() {
+    _install_go_with_fallback "gobuster" \
+        "OJ/gobuster" \
+        "Linux_x86_64\.tar\.gz" \
+        "gobuster" "tar.gz" \
+        "github.com/OJ/gobuster/v3"
+}
+
+install_ffuf() {
+    _install_go_with_fallback "ffuf" \
+        "ffuf/ffuf" \
+        "linux_amd64\.tar\.gz" \
+        "ffuf" "tar.gz" \
+        "github.com/ffuf/ffuf/v2"
+}
+
+install_httprobe() {
+    _install_go_with_fallback "httprobe" \
+        "tomnomnom/httprobe" \
+        "linux-amd64.*\.tgz" \
+        "httprobe" "tar.gz" \
+        "github.com/tomnomnom/httprobe"
+}
+
+install_waybackurls() {
+    _install_go_with_fallback "waybackurls" \
+        "tomnomnom/waybackurls" \
+        "linux-amd64.*\.tgz" \
+        "waybackurls" "tar.gz" \
+        "github.com/tomnomnom/waybackurls"
+}
+
+install_assetfinder() {
+    # No pre-built binary available — go install only
+    install_go_tool "assetfinder" "github.com/tomnomnom/assetfinder"
+}
+
+install_subfinder() {
+    _install_go_with_fallback "subfinder" \
+        "projectdiscovery/subfinder" \
+        "linux_amd64\.zip" \
+        "subfinder" "zip" \
+        "github.com/projectdiscovery/subfinder/v2/cmd/subfinder"
+}
+
+install_nuclei() {
+    _install_go_with_fallback "nuclei" \
+        "projectdiscovery/nuclei" \
+        "linux_amd64\.zip" \
+        "nuclei" "zip" \
+        "github.com/projectdiscovery/nuclei/v3/cmd/nuclei"
+}
+
+install_virustotal() {
+    # No pre-built binary available — go install only
+    install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"
+}
+
 # ===== NODE.JS TOOL WRAPPERS =====
 
-# Convenience wrappers for Node.js tools using generic installer
-install_trufflehog() { install_node_tool "trufflehog" "@trufflesecurity/trufflehog"; }
-install_git-hound() { install_node_tool "git-hound" "git-hound"; }
+# Function: _install_node_with_fallback
+# Purpose: Try pre-built binary first, fall back to npm install
+_install_node_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 npm_pkg=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to npm...${NC}"
+    if install_node_tool "$tool" "$npm_pkg"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_trufflehog() {
+    _install_node_with_fallback "trufflehog" \
+        "trufflesecurity/trufflehog" \
+        "linux_amd64\.tar\.gz" \
+        "trufflehog" "tar.gz" \
+        "@trufflesecurity/trufflehog"
+}
+
+install_git-hound() {
+    _install_node_with_fallback "git-hound" \
+        "tillson/git-hound" \
+        "linux_amd64\.zip" \
+        "git-hound" "zip" \
+        "git-hound"
+}
+
 install_jwt-cracker() { install_node_tool "jwt-cracker" "jwt-cracker"; }
 
 # ===== RUST TOOL WRAPPERS =====

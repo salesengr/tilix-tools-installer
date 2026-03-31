@@ -891,3 +891,174 @@ install_aria2() {
         return 1
     fi
 }
+
+# ===== WEB AUTOMATION TOOLS =====
+
+# Function: install_seleniumbase
+# Purpose: Install SeleniumBase via pip --user
+#          Provides UC Mode and CDP Mode for bypassing bot-detection and CAPTCHAs.
+#          Works with the system Chrome already present in the Tilix image.
+install_seleniumbase() {
+    local logfile
+    logfile=$(create_tool_log "seleniumbase")
+    echo -e "${INFO}⚙ Installing SeleniumBase via pip --user...${NC}"
+    {
+        echo "Installing seleniumbase"
+        echo "Started: $(date)"
+        local python_bin; python_bin=$(_get_python_bin)
+        mkdir -p "$HOME/.local/bin"
+        "$python_bin" -m pip install --user --quiet seleniumbase || return 1
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "seleniumbase"; then
+        echo -e "${SUCCESS}${CHECK} SeleniumBase installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("seleniumbase")
+        log_installation "seleniumbase" "success" "$logfile"
+        cleanup_old_logs "seleniumbase"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} SeleniumBase installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("seleniumbase")
+    FAILED_INSTALL_LOGS["seleniumbase"]="$logfile"
+    log_installation "seleniumbase" "failure" "$logfile"
+    return 1
+}
+
+# Function: install_playwright
+# Purpose: Install Playwright Python + Chromium browser binaries
+#          Provides stealth automation via patchright-compatible API.
+install_playwright() {
+    local logfile
+    logfile=$(create_tool_log "playwright")
+    echo -e "${INFO}⚙ Installing Playwright...${NC}"
+    {
+        echo "Installing playwright"
+        echo "Started: $(date)"
+        local python_bin; python_bin=$(_get_python_bin)
+        mkdir -p "$HOME/.local/bin"
+        # Install playwright Python package
+        "$python_bin" -m pip install --user --quiet playwright || return 1
+        # Install Chromium browser binary
+        "$python_bin" -m playwright install chromium 2>/dev/null || true
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "playwright"; then
+        echo -e "${SUCCESS}${CHECK} Playwright installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("playwright")
+        log_installation "playwright" "success" "$logfile"
+        cleanup_old_logs "playwright"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} Playwright installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("playwright")
+    FAILED_INSTALL_LOGS["playwright"]="$logfile"
+    log_installation "playwright" "failure" "$logfile"
+    return 1
+}
+
+# Function: install_yandex_browser
+# Purpose: Install Yandex Browser via official APT repository (amd64 only)
+#          Useful for Russian-language OSINT and accessing Yandex services.
+install_yandex_browser() {
+    local logfile
+    logfile=$(create_tool_log "yandex_browser")
+    echo -e "${INFO}⬇ Installing Yandex Browser...${NC}"
+    {
+        echo "Installing yandex_browser"
+        echo "Started: $(date)"
+
+        # amd64 only
+        if [ "$(uname -m)" != "x86_64" ]; then
+            echo "ERROR: Yandex Browser is only available for amd64 (x86_64)"
+            return 1
+        fi
+
+        if ! command -v apt-get &>/dev/null; then
+            echo "ERROR: apt-get required"
+            return 1
+        fi
+
+        apt-get update -qq 2>/dev/null || true
+        apt-get install -y --no-install-recommends gnupg2 curl 2>/dev/null || true
+
+        # Add Yandex GPG key and repo
+        curl -fsSL "https://repo.yandex.ru/yandex-browser/YANDEX-BROWSER-KEY.GPG" \
+            | apt-key add - 2>/dev/null || true
+        echo "deb [arch=amd64] http://repo.yandex.ru/yandex-browser/deb beta main" \
+            > /etc/apt/sources.list.d/yandex-browser.list
+
+        apt-get update -qq 2>/dev/null || true
+        apt-get install -y --no-install-recommends yandex-browser-beta 2>/dev/null || return 1
+
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "yandex_browser"; then
+        echo -e "${SUCCESS}${CHECK} Yandex Browser installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("yandex_browser")
+        log_installation "yandex_browser" "success" "$logfile"
+        cleanup_old_logs "yandex_browser"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} Yandex Browser installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("yandex_browser")
+    FAILED_INSTALL_LOGS["yandex_browser"]="$logfile"
+    log_installation "yandex_browser" "failure" "$logfile"
+    return 1
+}
+
+# Function: install_tor_browser
+# Purpose: Install Tor Browser from official Tor Project release tarball
+#          Provides anonymous browsing via Tor network for dark web OSINT.
+install_tor_browser() {
+    local logfile
+    logfile=$(create_tool_log "tor_browser")
+    echo -e "${INFO}⬇ Installing Tor Browser...${NC}"
+    {
+        echo "Installing tor_browser"
+        echo "Started: $(date)"
+
+        mkdir -p "$HOME/opt"
+
+        # Fetch latest version from Tor Project dist
+        local version
+        version=$(curl -fsSL "https://www.torproject.org/dist/torbrowser/" 2>/dev/null \
+            | grep -oE 'href="[0-9]+\.[0-9.]+/"' \
+            | grep -oE '[0-9]+\.[0-9.]+' \
+            | sort -V | tail -1)
+
+        if [[ -z "$version" ]]; then
+            version="15.0.8"  # fallback to known good version
+        fi
+
+        echo "Installing Tor Browser $version..."
+        local filename="tor-browser-linux-x86_64-${version}.tar.xz"
+        local url="https://www.torproject.org/dist/torbrowser/${version}/${filename}"
+
+        cd "$HOME/opt" || return 1
+        curl -fsSL "$url" -o "$filename" || return 1
+        tar -xJf "$filename" 2>/dev/null || return 1
+        rm -f "$filename"
+
+        # Create launcher wrapper in ~/.local/bin
+        cat > "$HOME/.local/bin/tor-browser" << 'WRAPPER'
+#!/bin/bash
+exec "$HOME/opt/tor-browser/Browser/start-tor-browser" --detach "$@"
+WRAPPER
+        chmod +x "$HOME/.local/bin/tor-browser"
+
+        echo "Tor Browser $version installed to ~/opt/tor-browser"
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "tor_browser"; then
+        echo -e "${SUCCESS}${CHECK} Tor Browser installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("tor_browser")
+        log_installation "tor_browser" "success" "$logfile"
+        cleanup_old_logs "tor_browser"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} Tor Browser installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("tor_browser")
+    FAILED_INSTALL_LOGS["tor_browser"]="$logfile"
+    log_installation "tor_browser" "failure" "$logfile"
+    return 1
+}

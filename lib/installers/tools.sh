@@ -90,7 +90,12 @@ WRAPPER_EOF
     fi
 }
 install_sublist3r() { install_python_tool "sublist3r" "sublist3r"; }
-install_shodan() { install_python_tool "shodan" "shodan"; }
+install_shodan() {
+    # shodan requires pkg_resources (from setuptools) which was removed in Python 3.13+
+    local python_bin; python_bin=$(_get_python_bin)
+    "$python_bin" -m pip install --user --quiet "setuptools" 2>/dev/null || true
+    install_python_tool "shodan" "shodan"
+}
 install_censys() { install_python_tool "censys" "censys"; }
 # Function: install_theHarvester
 # Purpose: Install active theHarvester release from GitHub (PyPI package is stale)

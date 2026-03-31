@@ -147,6 +147,14 @@ install_go_tool() {
         echo "Compiling $tool from source..."
         go install "$repo@latest" || return 1
 
+        # Symlink to ~/.local/bin so tool is on PATH without GOPATH export
+        local gobin="$GOPATH/bin/$tool"
+        if [ -f "$gobin" ]; then
+            mkdir -p "$HOME/.local/bin"
+            ln -sf "$gobin" "$HOME/.local/bin/$tool"
+            echo "Symlinked $tool to ~/.local/bin/"
+        fi
+
         echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
@@ -359,6 +367,14 @@ install_rust_tool() {
 
         echo "Compiling $crate from source..."
         cargo install "$crate" || return 1
+
+        # Symlink to ~/.local/bin so tool is on PATH
+        local cargobin="$CARGO_HOME/bin/$tool"
+        if [ -f "$cargobin" ]; then
+            mkdir -p "$HOME/.local/bin"
+            ln -sf "$cargobin" "$HOME/.local/bin/$tool"
+            echo "Symlinked $tool to ~/.local/bin/"
+        fi
 
         echo "=========================================="
         echo "Completed: $(date)"

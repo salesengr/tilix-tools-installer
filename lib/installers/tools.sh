@@ -91,10 +91,31 @@ WRAPPER_EOF
 }
 install_sublist3r() { install_python_tool "sublist3r" "sublist3r"; }
 install_shodan() {
-    # shodan requires pkg_resources (from setuptools) which was removed in Python 3.13+
+    # shodan imports pkg_resources which was removed from Python 3.13+ stdlib.
+    # Install setuptools first to restore pkg_resources, then install shodan.
     local python_bin; python_bin=$(_get_python_bin)
-    "$python_bin" -m pip install --user --quiet "setuptools" 2>/dev/null || true
-    install_python_tool "shodan" "shodan"
+    local logfile; logfile=$(create_tool_log "shodan")
+    echo -e "${INFO}⚙ Installing shodan via pip --user...${NC}"
+    {
+        echo "Installing shodan"; echo "Started: $(date)"
+        mkdir -p "$HOME/.local/bin"
+        export PATH="$HOME/.local/bin:$PATH"
+        "$python_bin" -m pip install --user --quiet "setuptools" || true
+        "$python_bin" -m pip install --user --quiet "shodan" || return 1
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "shodan"; then
+        echo -e "${SUCCESS}${CHECK} shodan installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("shodan")
+        log_installation "shodan" "success" "$logfile"
+        cleanup_old_logs "shodan"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} shodan installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("shodan")
+    FAILED_INSTALL_LOGS["shodan"]="$logfile"
+    log_installation "shodan" "failure" "$logfile"
+    return 1
 }
 install_censys() { install_python_tool "censys" "censys"; }
 # Function: install_theHarvester

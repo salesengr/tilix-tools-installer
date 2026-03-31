@@ -21,8 +21,8 @@ is_installed() {
         github_cli)
             [ -f "$HOME/.local/bin/gh" ] && return 0 ;;
         go_runtime)
-            [ -f "$HOME/opt/go/bin/go" ] && return 0
-            [ -f "/usr/local/go/bin/go" ] && return 0 ;;
+            command -v go &>/dev/null && return 0
+            [ -f "$HOME/opt/go/bin/go" ] && return 0 ;;
         nodejs)
             [ -f "$HOME/opt/node/bin/node" ] && return 0 ;;
         rust)
@@ -71,26 +71,33 @@ scan_installed_tools() {
 }
 
 # Function: verify_system_go
-# Purpose: Verify Go is available (system or user-space install)
-#          Auto-installs user-space Go runtime if not found.
+# Purpose: Verify Go is available — checks system PATH, common system locations,
+#          and user-space install (~/opt/go). Auto-installs if not found.
 # Returns: 0 if Go is available, 1 if not found and install failed
 verify_system_go() {
-    # Check user-space install first
-    if [ -f "$HOME/opt/go/bin/go" ]; then
-        export GOROOT="$HOME/opt/go"
-        export GOPATH="$HOME/opt/gopath"
-        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
-        mkdir -p "$GOPATH"
-    fi
-
+    # 1. Check system PATH first (covers /usr/local/bin/go in Tilix image)
     if command -v go &>/dev/null; then
         local go_version
         go_version=$(go version 2>/dev/null | awk '{print $3}')
         echo -e "${GREEN}Go found: ${go_version}${NC}"
+        export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+        mkdir -p "$GOPATH"
         return 0
     fi
 
-    # Go not found — auto-install user-space runtime
+    # 2. Check user-space install (~/opt/go — installed by install_go_runtime)
+    if [ -f "$HOME/opt/go/bin/go" ]; then
+        export GOROOT="$HOME/opt/go"
+        export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+        mkdir -p "$GOPATH"
+        local go_version
+        go_version=$("$HOME/opt/go/bin/go" version 2>/dev/null | awk '{print $3}')
+        echo -e "${GREEN}Go found (user-space): ${go_version}${NC}"
+        return 0
+    fi
+
+    # 3. Go not found anywhere — auto-install user-space runtime
     echo -e "${WARNING}${WARN} Go not found. Installing Go runtime automatically...${NC}"
     if install_go_runtime; then
         return 0

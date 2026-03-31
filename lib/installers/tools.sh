@@ -326,6 +326,21 @@ install_yara() {
         echo "Started: $(date)"
         echo "=========================================="
 
+        # yara-python requires gcc to compile its C extension.
+        # Some images strip gcc in cleanup layers — restore it if missing.
+        if ! command -v gcc &>/dev/null; then
+            echo "gcc not found — attempting to install via apt..."
+            if command -v apt-get &>/dev/null; then
+                apt-get update -qq 2>/dev/null || true
+                apt-get install -y --no-install-recommends gcc 2>/dev/null || true
+            fi
+            if ! command -v gcc &>/dev/null; then
+                echo "ERROR: gcc is required for yara-python but could not be installed."
+                echo "Install gcc first: apt-get install -y gcc"
+                return 1
+            fi
+        fi
+
         source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
 
         echo "Installing yara-python..."

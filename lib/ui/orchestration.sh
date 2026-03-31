@@ -35,6 +35,7 @@ install_tool() {
     case "$tool" in
         cmake) install_cmake ;;
         github_cli) install_github_cli ;;
+        go_runtime) install_go_runtime ;;
         nodejs) install_nodejs ;;
         rust) install_rust ;;
         python_venv) install_python_venv ;;

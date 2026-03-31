@@ -20,6 +20,9 @@ is_installed() {
             [ -f "$HOME/.local/bin/cmake" ] && return 0 ;;
         github_cli)
             [ -f "$HOME/.local/bin/gh" ] && return 0 ;;
+        go_runtime)
+            command -v go &>/dev/null && return 0
+            [ -f "$HOME/opt/go/bin/go" ] && return 0 ;;
         nodejs)
             [ -f "$HOME/opt/node/bin/node" ] && return 0 ;;
         rust)
@@ -68,19 +71,39 @@ scan_installed_tools() {
 }
 
 # Function: verify_system_go
-# Purpose: Verify system Go is available before installing Go tools
-# Returns: 0 if Go is available, 1 if not found
-# Side effects: Prints Go version if found, error message if missing
+# Purpose: Verify Go is available — checks system PATH, common system locations,
+#          and user-space install (~/opt/go). Auto-installs if not found.
+# Returns: 0 if Go is available, 1 if not found and install failed
 verify_system_go() {
-    if ! command -v go &>/dev/null; then
-        echo -e "${RED}ERROR: Go is not installed on this system${NC}"
-        echo "Go tools require a system Go installation (expected at /usr/local/go)"
-        echo "Please ensure Go is installed before attempting to install Go tools."
-        return 1
+    # 1. Check system PATH first (covers /usr/local/bin/go in Tilix image)
+    if command -v go &>/dev/null; then
+        local go_version
+        go_version=$(go version 2>/dev/null | awk '{print $3}')
+        echo -e "${GREEN}Go found: ${go_version}${NC}"
+        export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+        mkdir -p "$GOPATH"
+        return 0
     fi
 
-    local go_version
-    go_version=$(go version 2>/dev/null | awk '{print $3}')
-    echo -e "${GREEN}System Go found: ${go_version}${NC}"
-    return 0
+    # 2. Check user-space install (~/opt/go — installed by install_go_runtime)
+    if [ -f "$HOME/opt/go/bin/go" ]; then
+        export GOROOT="$HOME/opt/go"
+        export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+        mkdir -p "$GOPATH"
+        local go_version
+        go_version=$("$HOME/opt/go/bin/go" version 2>/dev/null | awk '{print $3}')
+        echo -e "${GREEN}Go found (user-space): ${go_version}${NC}"
+        return 0
+    fi
+
+    # 3. Go not found anywhere — auto-install user-space runtime
+    echo -e "${WARNING}${WARN} Go not found. Installing Go runtime automatically...${NC}"
+    if install_go_runtime; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} Go is not available and automatic install failed.${NC}"
+    echo "Install Go manually or run: bash install_security_tools.sh go_runtime"
+    return 1
 }

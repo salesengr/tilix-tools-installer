@@ -100,8 +100,28 @@ install_shodan() {
         echo "Installing shodan"; echo "Started: $(date)"
         mkdir -p "$HOME/.local/bin"
         export PATH="$HOME/.local/bin:$PATH"
-        "$python_bin" -m pip install --user --quiet "setuptools" || true
+        # Install setuptools<70 which still ships pkg_resources (removed in newer versions)
+        "$python_bin" -m pip install --user --quiet "setuptools<70" ||             "$python_bin" -m pip install --user --quiet "setuptools" || true
         "$python_bin" -m pip install --user --quiet "shodan" || return 1
+        # Patch the shodan wrapper to inject setuptools path if needed
+        if [ -f "$HOME/.local/bin/shodan" ]; then
+            # If pkg_resources still missing, create a patched wrapper
+            if ! "$python_bin" -c "import pkg_resources" 2>/dev/null; then
+                cat > "$HOME/.local/bin/shodan" << WRAPPER_EOF
+#!/bin/bash
+import sys
+import importlib
+try:
+    import pkg_resources
+except ImportError:
+    import types
+    pkg_resources = types.ModuleType("pkg_resources")
+    pkg_resources.require = lambda *a, **kw: None
+    sys.modules["pkg_resources"] = pkg_resources
+exec open("/root/.local/lib/python3.13/site-packages/shodan/__main__.py").read()
+WRAPPER_EOF
+            fi
+        fi
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
     if is_installed "shodan"; then

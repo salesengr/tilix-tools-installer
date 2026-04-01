@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Menu Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Interactive user interface
 
 # ===== MENU FUNCTIONS =====
@@ -15,24 +15,38 @@ show_menu() {
     echo "Security Tools Installer v${SCRIPT_VERSION}"
     echo -e "==========================================${NC}"
     echo ""
-    echo -e "${CATEGORY}BUILD & LANGUAGES:${NC} [1] CMake [2] GitHub CLI [3] Node.js [4] Rust [5] Python venv"
+    echo -e "${CATEGORY}BUILD & LANGUAGES:${NC} [1] CMake  [2] GitHub CLI  [3] Node.js  [4] Rust  [5] Go Runtime  [6] Python venv"
     echo ""
-    echo -e "${CATEGORY}PYTHON TOOLS:${NC}"
-    echo "  [6] sherlock      [7] holehe        [8] socialscan    [9] theHarvester"
-    echo "  [10] spiderfoot   [11] sublist3r    [12] photon       [13] wappalyzer"
-    echo "  [14] shodan       [15] censys       [16] yara         [17] h8mail"
+    echo -e "${CATEGORY}PASSIVE OSINT:${NC}"
+    echo "  [7]  sherlock      [8]  holehe        [9]  socialscan    [10] theHarvester"
+    echo "  [11] spiderfoot    [12] photon         [13] wappalyzer   [14] h8mail"
+    echo "  [15] waybackurls   [16] assetfinder    [17] subfinder    [18] git-hound"
     echo ""
-    echo -e "${CATEGORY}GO TOOLS (system Go required):${NC}"
-    echo "  [18] gobuster     [19] ffuf         [20] httprobe     [21] waybackurls"
-    echo "  [22] assetfinder  [23] subfinder    [24] nuclei       [25] virustotal"
+    echo -e "${CATEGORY}DOMAIN & SUBDOMAIN ENUMERATION:${NC}"
+    echo "  [19] sublist3r     [20] gobuster       [21] ffuf"
     echo ""
-    echo -e "${CATEGORY}NODE.JS:${NC} [26] trufflehog [27] git-hound [28] jwt-cracker"
+    echo -e "${CATEGORY}ACTIVE RECON & SCANNING:${NC}"
+    echo "  [22] httprobe      [23] rustscan       [24] feroxbuster  [25] nuclei"
     echo ""
-    echo -e "${CATEGORY}RUST:${NC} [29] feroxbuster [30] rustscan [31] ripgrep [32] fd [33] bat"
+    echo -e "${CATEGORY}CYBER THREAT INTEL (CTI):${NC}"
+    echo "  [26] shodan        [27] censys         [28] yara         [29] trufflehog"
+    echo "  [30] virustotal"
     echo ""
-    echo -e "${CATEGORY}BULK INSTALL:${NC} [34] All Python [35] All Go [36] All Node [37] All Rust"
+    echo -e "${CATEGORY}SECURITY TESTING:${NC} [31] jwt-cracker"
     echo ""
-    echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools [L] Show Logs [Q] Quit"
+    echo -e "${CATEGORY}UTILITIES:${NC}"
+    echo "  [32] ripgrep       [33] fd             [34] bat          [35] sd"
+    echo "  [36] dog            [37] aria2"
+    echo ""
+    echo -e "${CATEGORY}WEB AUTOMATION:${NC}"
+    echo "  [38] seleniumbase  [39] playwright      [40] yandex-browser  [41] tor-browser"
+    echo ""
+    echo -e "${CATEGORY}BULK INSTALL:${NC}"
+    echo "  [42] All Passive OSINT    [43] All Domain/Subdomain    [44] All Active Recon"
+    echo "  [45] All CTI              [46] All Utilities           [47] All Web Tools"
+    echo "  [48] Install Everything"
+    echo ""
+    echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools  [L] Show Logs  [Q] Quit"
     echo ""
     echo -n "Enter selection (comma-separated): "
 }
@@ -45,85 +59,94 @@ process_menu_selection() {
     local selection=$1
 
     case "$selection" in
-        # BUILD & LANGUAGES (1-5)
+        # BUILD & LANGUAGES (1-6)
         1) install_tool "cmake" ;;
         2) install_tool "github_cli" ;;
         3) install_tool "nodejs" ;;
         4) install_tool "rust" ;;
-        5) install_tool "python_venv" ;;
+        5) install_tool "go_runtime" ;;
+        6) install_tool "python_venv" ;;
 
-        # PYTHON TOOLS (6-17)
-        6) install_tool "sherlock" ;;
-        7) install_tool "holehe" ;;
-        8) install_tool "socialscan" ;;
-        9) install_tool "theHarvester" ;;
-        10) install_tool "spiderfoot" ;;
-        11) install_tool "sublist3r" ;;
+        # PASSIVE OSINT (7-18)
+        7)  install_tool "sherlock" ;;
+        8)  install_tool "holehe" ;;
+        9)  install_tool "socialscan" ;;
+        10) install_tool "theHarvester" ;;
+        11) install_tool "spiderfoot" ;;
         12) install_tool "photon" ;;
         13) install_tool "wappalyzer" ;;
-        14) install_tool "shodan" ;;
-        15) install_tool "censys" ;;
-        16) install_tool "yara" ;;
-        17) install_tool "h8mail" ;;
+        14) install_tool "h8mail" ;;
+        15) install_tool "waybackurls" ;;
+        16) install_tool "assetfinder" ;;
+        17) install_tool "subfinder" ;;
+        18) install_tool "git-hound" ;;
 
-        # GO TOOLS (18-25)
-        18) install_tool "gobuster" ;;
-        19) install_tool "ffuf" ;;
-        20) install_tool "httprobe" ;;
-        21) install_tool "waybackurls" ;;
-        22) install_tool "assetfinder" ;;
-        23) install_tool "subfinder" ;;
-        24) install_tool "nuclei" ;;
-        25) install_tool "virustotal" ;;
+        # DOMAIN & SUBDOMAIN ENUMERATION (19-21)
+        19) install_tool "sublist3r" ;;
+        20) install_tool "gobuster" ;;
+        21) install_tool "ffuf" ;;
 
-        # NODE.JS TOOLS (26-28)
-        26) install_tool "trufflehog" ;;
-        27) install_tool "git-hound" ;;
-        28) install_tool "jwt-cracker" ;;
+        # ACTIVE RECON & SCANNING (22-25)
+        22) install_tool "httprobe" ;;
+        23) install_tool "rustscan" ;;
+        24) install_tool "feroxbuster" ;;
+        25) install_tool "nuclei" ;;
 
-        # RUST TOOLS (29-33)
-        29) install_tool "feroxbuster" ;;
-        30) install_tool "rustscan" ;;
-        31) install_tool "ripgrep" ;;
-        32) install_tool "fd" ;;
-        33) install_tool "bat" ;;
+        # CYBER THREAT INTEL (26-30)
+        26) install_tool "shodan" ;;
+        27) install_tool "censys" ;;
+        28) install_tool "yara" ;;
+        29) install_tool "trufflehog" ;;
+        30) install_tool "virustotal" ;;
 
-        # BULK INSTALL (34-37)
-        34)
-            # All Python tools
+        # SECURITY TESTING (31)
+        31) install_tool "jwt-cracker" ;;
+
+        # UTILITIES (32-38)
+        32) install_tool "ripgrep" ;;
+        33) install_tool "fd" ;;
+        34) install_tool "bat" ;;
+        35) install_tool "sd" ;;
+        
+        36) install_tool "dog" ;;
+        37) install_tool "aria2" ;;
+
+        # WEB AUTOMATION TOOLS (38-41)
+        38) install_tool "seleniumbase" ;;
+        39) install_tool "playwright" ;;
+        40) install_tool "yandex_browser" ;;
+        41) install_tool "tor_browser" ;;
+
+        # BULK INSTALL (42-48)
+        42)
             install_tool "python_venv"
-            for tool in "${ALL_PYTHON_TOOLS[@]}"; do
-                install_tool "$tool"
-            done
+            for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
             ;;
-        35)
-            # All Go tools
-            echo -e "${WARNING}${WARN} Installing all Go tools (using system Go)...${NC}"
-            if ! verify_system_go; then
-                echo -e "${ERROR}${CROSS} System Go not found. Cannot install Go tools.${NC}"
-                read -r -p "Press Enter to continue..."
-                return 1
-            fi
-            for tool in "${ALL_GO_TOOLS[@]}"; do
-                install_tool "$tool"
-            done
+        43)
+            install_tool "python_venv"
+            for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
             ;;
-        36)
-            # All Node.js tools
+        44)
+            install_tool "rust"
+            for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
+            ;;
+        45)
+            install_tool "python_venv"
             install_tool "nodejs"
-            for tool in "${NODE_TOOLS[@]}"; do
-                install_tool "$tool"
-            done
+            for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
             ;;
-        37)
-            # All Rust tools
-            echo -e "${WARNING}${WARN} Warning: Rust tools take 15-30 minutes to compile${NC}"
+        46)
+            install_tool "rust"
+            for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
+            ;;
+        47)
+            for tool in "${WEB_AUTOMATION[@]}"; do install_tool "$tool"; done
+            ;;
+        48)
+            echo -e "${WARNING}${WARN} Installing ALL tools — this will take 30-60 minutes${NC}"
             read -r -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then
-                install_tool "rust"
-                for tool in "${ALL_RUST_TOOLS[@]}"; do
-                    install_tool "$tool"
-                done
+                install_all
             fi
             ;;
 

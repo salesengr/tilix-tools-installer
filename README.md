@@ -5,7 +5,7 @@
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
 
-**Python support:** Validated with Python **3.13** (matching `salesengr/tilix-app:latest`, currently Python 3.13.8).
+**Python support:** Validated with Python **3.13** (Python 3.13.8). No virtual environment required — tools install via `pip install --user` using the system Python.
 
 **Architecture:** Modular design with 11 focused library modules for maintainability and extensibility.
 
@@ -13,7 +13,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 - ✅ **No sudo required** - Complete user-space installation
 - ✅ **37+ security tools** - OSINT, CTI, reconnaissance, and pentesting
-- ✅ **3 managed runtimes + Python venv** - Node.js, Rust, Python venv (uses system Go for Go tools)
+- ✅ **3 managed runtimes** - Node.js, Rust, system Go/Python (no venv — pip install --user)
 - ✅ **Interactive menu** - Easy point-and-click installation
 - ✅ **CLI support** - Script automation and batch installation
 - ✅ **XDG compliant** - Follows Linux filesystem standards
@@ -182,8 +182,7 @@ After installation, your files will be organized as follows:
 ├── bin/                    # User executables (tools, wrappers)
 ├── lib/                    # User libraries
 ├── share/                  # User data
-│   └── virtualenvs/        # Python virtual environments
-│       └── tools/          # Security tools venv
+│   └── python3.13/         # Python tools (pip --user packages)
 └── state/                  # Application state & logs
     └── install_tools/
         └── logs/           # Installation logs
@@ -216,7 +215,7 @@ Comprehensive guides are available in the `docs/` directory:
 | Go installation | ~120 MB |
 | Node.js installation | ~50 MB |
 | Rust installation | ~800 MB |
-| Python venv + tools | ~80 MB |
+| Python tools (pip --user) | ~80 MB |
 | Go tools (compiled) | ~100 MB |
 | Node.js tools | ~80 MB |
 | Rust tools (compiled) | ~30 MB |
@@ -281,13 +280,170 @@ feroxbuster -u https://target.com
 rg "pattern" /path/to/search
 ```
 
+### Utility Tools
+```bash
+# Download a file (single connection)
+aria2c https://example.com/file.iso
+
+# Download with 8 parallel connections (much faster for large files)
+aria2c --split=8 --max-connection-per-server=8 https://example.com/large.iso
+
+# Download to a specific directory with a custom filename
+aria2c --dir=/tmp --out=myfile.iso https://example.com/file.iso
+
+# Download multiple files from a list
+aria2c --input-file=urls.txt
+
+# Resume an interrupted download
+aria2c --continue=true https://example.com/large.iso
+
+# Run as a daemon with JSON-RPC interface (for use with frontends)
+aria2c --enable-rpc --rpc-listen-all=true --daemon=true
+```
+
+### Web Automation Tools
+
+#### SeleniumBase — Stealth Browser Automation
+SeleniumBase works with the Chrome browser already installed in the Tilix image.
+```bash
+# Standard Selenium mode (fastest, but detectable)
+python3 -c "
+from seleniumbase import Driver
+driver = Driver(browser='chrome', headless=True)
+driver.get('https://example.com')
+print(driver.title)
+driver.quit()
+"
+
+# UC Mode — Undetected ChromeDriver (bypasses most bot detection)
+python3 -c "
+from seleniumbase import Driver
+driver = Driver(uc=True)
+driver.uc_open_with_reconnect('https://target.com', reconnect_time=3)
+print(driver.get_current_url())
+driver.quit()
+"
+
+# CDP Mode — Chrome DevTools Protocol (stealthiest, handles Cloudflare)
+python3 -c "
+from seleniumbase import SB
+with SB(uc=True, test=True, locale_code='en') as sb:
+    sb.uc_open_with_reconnect('https://target.com', reconnect_time=4)
+    sb.uc_gui_click_captcha()  # Auto-solve checkbox CAPTCHAs
+    print(sb.get_page_source()[:500])
+"
+
+# CLI screenshot
+sbase get https://example.com --headless -o screenshot.png
+```
+
+#### Playwright — Cross-Browser Automation
+Playwright uses the system Chrome (`/usr/bin/google-chrome`) already present in the Tilix image.
+Pass `executable_path` to avoid downloading separate browser binaries (~620MB).
+```bash
+# Basic page fetch using system Chrome
+python3 -c "
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True, executable_path='/usr/bin/google-chrome')
+    page = browser.new_page()
+    page.goto('https://example.com')
+    print(page.title())
+    browser.close()
+"
+
+# Stealth mode — evade basic bot detection
+python3 -c "
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True, args=['--disable-blink-features=AutomationControlled'])
+    ctx = browser.new_context(user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+    page = ctx.new_page()
+    page.goto('https://example.com')
+    print(page.evaluate('navigator.userAgent'))
+    browser.close()
+"
+
+# Screenshot a page
+python3 -c "
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    page = browser.new_page()
+    page.goto('https://example.com')
+    page.screenshot(path='screenshot.png')
+    browser.close()
+"
+
+# List available browsers
+playwright install --list
+```
+
+#### Yandex Browser — Russian OSINT
+Yandex Browser is a Chromium-based browser useful for accessing Russian-language
+services and Yandex-specific features (Yandex Search, Yandex Maps, Russian social media).
+```bash
+# Launch Yandex Browser (requires display / VNC session in Tilix)
+yandex-browser-beta
+
+# Headless screenshot via Selenium (same API as Chrome)
+python3 -c "
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+opts = Options()
+opts.binary_location = '/usr/bin/yandex-browser-beta'
+opts.add_argument('--headless')
+opts.add_argument('--no-sandbox')
+opts.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome(options=opts)
+driver.get('https://yandex.ru/search/?text=osint')
+print(driver.title)
+driver.quit()
+"
+
+# Useful Yandex OSINT endpoints
+# https://yandex.ru/search/         — Yandex Search
+# https://yandex.ru/images/         — Yandex Image Search (reverse image)
+# https://yandex.ru/maps/            — Yandex Maps
+# https://social.yandex.ru/          — Yandex Social
+```
+
+#### Tor Browser — Anonymous Browsing
+Tor Browser routes all traffic through the Tor network for anonymous OSINT.
+```bash
+# Start Tor Browser (requires display / VNC session in Tilix)
+tor-browser
+
+# Start detached (background)
+~/opt/tor-browser/Browser/start-tor-browser --detach
+
+# Use Tor as SOCKS5 proxy with curl (Tor daemon must be running)
+# First start Tor daemon separately:
+tor &
+# Then use the SOCKS5 proxy on localhost:9050
+curl --socks5 localhost:9050 https://check.torproject.org/api/ip
+
+# Use Tor proxy with Python requests
+python3 -c "
+import requests
+proxies = {'http': 'socks5h://localhost:9050', 'https': 'socks5h://localhost:9050'}
+r = requests.get('https://check.torproject.org/api/ip', proxies=proxies)
+print(r.json())
+"
+
+# Check your Tor exit IP
+curl --socks5 localhost:9050 https://api.ipify.org
+
+# Access .onion sites (requires Tor daemon)
+curl --socks5 localhost:9050 http://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion
+```
+
 ## 🔄 Updating Tools
 
 ### Python Tools
 ```bash
-source ~/.local/share/virtualenvs/tools/bin/activate
-pip install --upgrade sherlock-project holehe socialscan
-deactivate
+# Update individual tools (no venv — installed directly via pip --user)
+pip install --user --upgrade sherlock-project holehe socialscan
 ```
 
 ### Go Tools
@@ -311,13 +467,14 @@ source ~/.bashrc  # Reload environment
 
 ### Python import errors
 ```bash
-# Check venv exists
-ls -la ~/.local/share/virtualenvs/tools/
+# Check user-space packages
+pip show sherlock-project holehe shodan
 
-# Manually activate and test
-source ~/.local/share/virtualenvs/tools/bin/activate
-sherlock --help
-deactivate
+# Reinstall a specific tool
+pip install --user --force-reinstall sherlock-project
+
+# Check ~/.local/bin for tool wrappers
+ls -la ~/.local/bin/sherlock holehe shodan
 ```
 
 ### Go tools not in PATH

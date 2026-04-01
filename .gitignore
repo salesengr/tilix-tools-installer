@@ -356,3 +356,27 @@ vulnerability-report.txt
 # Keep test scripts
 !test_*.sh
 !*_test.sh
+
+# =============================================================================
+# Tilix-tools-installer specific additions
+# =============================================================================
+
+# Playwright browser binaries (downloaded via playwright install)
+~/.cache/ms-playwright/
+
+# Newman test output
+newman/
+newman-*.json
+newman-*.html
+
+# Validation artifacts (internal testing)
+docs/VALIDATION_RESULTS*.md
+docs/LIFECYCLE_SUMMARY*.md
+docs/INTEL_VALIDATION_PLAN*.md
+docs/CHECKSUM_VERIFICATION.md
+
+# Local build/source downloads in opt/
+opt/
+
+# Shellcheck and lint reports
+.shellcheck/

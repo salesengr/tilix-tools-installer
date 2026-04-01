@@ -1,9 +1,10 @@
 #!/bin/bash
 # Security Tools Installer - Tool-Specific Installers Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Tool-specific installation logic and wrapper functions
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
+# shellcheck disable=SC2329  # Go fallback stubs called indirectly via _install_go_with_fallback
 # shellcheck disable=SC1091  # Source files in virtualenvs (dynamic paths)
 
 # ===== PYTHON TOOL WRAPPERS =====
@@ -28,7 +29,8 @@ install_photon() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         mkdir -p "$HOME/opt/src"
 
@@ -42,20 +44,19 @@ install_photon() {
         fi
 
         echo "Installing Photon dependencies..."
-        pip install --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
+        python3 -m pip install --user --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/photon" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 TOOL_SCRIPT="$HOME/opt/src/Photon/photon.py"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -90,7 +91,53 @@ WRAPPER_EOF
     fi
 }
 install_sublist3r() { install_python_tool "sublist3r" "sublist3r"; }
-install_shodan() { install_python_tool "shodan" "shodan"; }
+install_shodan() {
+    # shodan imports pkg_resources which was removed from Python 3.13+ stdlib.
+    # Install setuptools first to restore pkg_resources, then install shodan.
+    local python_bin; python_bin=$(_get_python_bin)
+    local logfile; logfile=$(create_tool_log "shodan")
+    echo -e "${INFO}⚙ Installing shodan via pip --user...${NC}"
+    {
+        echo "Installing shodan"; echo "Started: $(date)"
+        mkdir -p "$HOME/.local/bin"
+        export PATH="$HOME/.local/bin:$PATH"
+        # Install setuptools<70 which still ships pkg_resources (removed in newer versions)
+        "$python_bin" -m pip install --user --quiet "setuptools<70" ||             "$python_bin" -m pip install --user --quiet "setuptools" || true
+        "$python_bin" -m pip install --user --quiet "shodan" || return 1
+        # Patch the shodan wrapper to inject setuptools path if needed
+        if [ -f "$HOME/.local/bin/shodan" ]; then
+            # If pkg_resources still missing, create a patched wrapper
+            if ! "$python_bin" -c "import pkg_resources" 2>/dev/null; then
+                cat > "$HOME/.local/bin/shodan" << WRAPPER_EOF
+#!/bin/bash
+import sys
+import importlib
+try:
+    import pkg_resources
+except ImportError:
+    import types
+    pkg_resources = types.ModuleType("pkg_resources")
+    pkg_resources.require = lambda *a, **kw: None
+    sys.modules["pkg_resources"] = pkg_resources
+exec open("/root/.local/lib/python3.13/site-packages/shodan/__main__.py").read()
+WRAPPER_EOF
+            fi
+        fi
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "shodan"; then
+        echo -e "${SUCCESS}${CHECK} shodan installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("shodan")
+        log_installation "shodan" "success" "$logfile"
+        cleanup_old_logs "shodan"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} shodan installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("shodan")
+    FAILED_INSTALL_LOGS["shodan"]="$logfile"
+    log_installation "shodan" "failure" "$logfile"
+    return 1
+}
 install_censys() { install_python_tool "censys" "censys"; }
 # Function: install_theHarvester
 # Purpose: Install active theHarvester release from GitHub (PyPI package is stale)
@@ -107,12 +154,12 @@ install_theHarvester() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing latest theHarvester from GitHub..."
-        pip install --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
+        python3 -m pip install --user --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         create_python_wrapper "theHarvester"
@@ -152,7 +199,8 @@ install_spiderfoot() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         mkdir -p "$HOME/opt/src"
 
@@ -177,20 +225,19 @@ install_spiderfoot() {
         }' "$HOME/opt/src/spiderfoot/requirements.txt" > "$HOME/opt/src/spiderfoot/requirements.py313.txt"
 
         echo "Installing SpiderFoot dependencies..."
-        pip install --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
+        python3 -m pip install --user --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/spiderfoot" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 TOOL_SCRIPT="$HOME/opt/src/spiderfoot/sf.py"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -239,22 +286,22 @@ install_wappalyzer() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing python-Wappalyzer..."
-        pip install --quiet "python-Wappalyzer" || return 1
+        python3 -m pip install --user --quiet "python-Wappalyzer" || return 1
 
-        deactivate
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/wappalyzer" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -326,15 +373,30 @@ install_yara() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        # yara-python requires gcc to compile its C extension.
+        # Some images strip gcc in cleanup layers — restore it if missing.
+        if ! command -v gcc &>/dev/null; then
+            echo "gcc not found — attempting to install via apt..."
+            if command -v apt-get &>/dev/null; then
+                apt-get update -qq 2>/dev/null || true
+                apt-get install -y --no-install-recommends gcc 2>/dev/null || true
+            fi
+            if ! command -v gcc &>/dev/null; then
+                echo "ERROR: gcc is required for yara-python but could not be installed."
+                echo "Install gcc first: apt-get install -y gcc"
+                return 1
+            fi
+        fi
+
+        # No venv — using pip --user with system Python
+        local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing yara-python..."
-        pip install --quiet yara-python || return 1
+        python3 -m pip install --user --quiet yara-python || return 1
 
         # Confirm Python module availability.
         python3 -c "import yara" >/dev/null 2>&1 || return 1
 
-        deactivate
 
         # yara-python does not provide a native yara CLI binary.
         # Try native build first (if autotools are available), otherwise create
@@ -371,11 +433,11 @@ install_yara() {
             cat > "$HOME/.local/bin/yara" << 'WRAPPER_EOF'
 #!/bin/bash
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-TOOL_PY="$XDG_DATA_HOME/virtualenvs/tools/bin/python"
+TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python tools virtualenv not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Error: Python not found at $TOOL_PY" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
     exit 1
 fi
 
@@ -473,21 +535,609 @@ install_subfinder() { install_go_tool "subfinder" "github.com/projectdiscovery/s
 install_nuclei() { install_go_tool "nuclei" "github.com/projectdiscovery/nuclei/v3/cmd/nuclei"; }
 install_virustotal() { install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"; }
 
+# ===== GO TOOL WRAPPERS — Pre-built binaries primary, go install fallback =====
+
+# Function: _install_go_with_fallback
+# Purpose: Try pre-built binary first, fall back to go install
+# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=go_module
+_install_go_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 gomod=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to go install...${NC}"
+    if install_go_tool "$tool" "$gomod"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_gobuster() {
+    _install_go_with_fallback "gobuster" \
+        "OJ/gobuster" \
+        "Linux_x86_64\.tar\.gz" \
+        "gobuster" "tar.gz" \
+        "github.com/OJ/gobuster/v3"
+}
+
+install_ffuf() {
+    _install_go_with_fallback "ffuf" \
+        "ffuf/ffuf" \
+        "linux_amd64\.tar\.gz" \
+        "ffuf" "tar.gz" \
+        "github.com/ffuf/ffuf/v2"
+}
+
+install_httprobe() {
+    _install_go_with_fallback "httprobe" \
+        "tomnomnom/httprobe" \
+        "linux-amd64.*\.tgz" \
+        "httprobe" "tar.gz" \
+        "github.com/tomnomnom/httprobe"
+}
+
+install_waybackurls() {
+    _install_go_with_fallback "waybackurls" \
+        "tomnomnom/waybackurls" \
+        "linux-amd64.*\.tgz" \
+        "waybackurls" "tar.gz" \
+        "github.com/tomnomnom/waybackurls"
+}
+
+install_assetfinder() {
+    # No pre-built binary available — go install only
+    install_go_tool "assetfinder" "github.com/tomnomnom/assetfinder"
+}
+
+install_subfinder() {
+    _install_go_with_fallback "subfinder" \
+        "projectdiscovery/subfinder" \
+        "linux_amd64\.zip" \
+        "subfinder" "zip" \
+        "github.com/projectdiscovery/subfinder/v2/cmd/subfinder"
+}
+
+install_nuclei() {
+    _install_go_with_fallback "nuclei" \
+        "projectdiscovery/nuclei" \
+        "linux_amd64\.zip" \
+        "nuclei" "zip" \
+        "github.com/projectdiscovery/nuclei/v3/cmd/nuclei"
+}
+
+install_virustotal() {
+    # No pre-built binary available — go install only
+    install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"
+}
+
 # ===== NODE.JS TOOL WRAPPERS =====
 
-# Convenience wrappers for Node.js tools using generic installer
-install_trufflehog() { install_node_tool "trufflehog" "@trufflesecurity/trufflehog"; }
-install_git-hound() { install_node_tool "git-hound" "git-hound"; }
+# Function: _install_node_with_fallback
+# Purpose: Try pre-built binary first, fall back to npm install
+_install_node_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 npm_pkg=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to npm...${NC}"
+    if install_node_tool "$tool" "$npm_pkg"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_trufflehog() {
+    _install_node_with_fallback "trufflehog" \
+        "trufflesecurity/trufflehog" \
+        "linux_amd64\.tar\.gz" \
+        "trufflehog" "tar.gz" \
+        "@trufflesecurity/trufflehog"
+}
+
+install_git-hound() {
+    _install_node_with_fallback "git-hound" \
+        "tillson/git-hound" \
+        "linux_amd64\.zip" \
+        "git-hound" "zip" \
+        "git-hound"
+}
+
 install_jwt-cracker() { install_node_tool "jwt-cracker" "jwt-cracker"; }
 
 # ===== RUST TOOL WRAPPERS =====
 
 # Convenience wrappers for Rust tools using generic installer
-install_feroxbuster() { install_rust_tool "feroxbuster" "feroxbuster"; }
-install_rustscan() { install_rust_tool "rustscan" "rustscan"; }
-install_ripgrep() { install_rust_tool "ripgrep" "ripgrep"; }
-install_fd() { install_rust_tool "fd" "fd-find"; }
-install_bat() { install_rust_tool "bat" "bat"; }
-install_sd() { install_rust_tool "sd" "sd"; }
-install_tokei() { install_rust_tool "tokei" "tokei"; }
-install_dog() { install_rust_tool "dog" "dog"; }
+# ===== RUST TOOLS — Pre-built binaries primary, cargo fallback =====
+
+# Function: _install_rust_with_fallback
+# Purpose: Try pre-built binary first, fall back to cargo compile
+# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=crate
+_install_rust_with_fallback() {
+    local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 crate=$6
+    local logfile
+    logfile=$(create_tool_log "$tool")
+
+    echo -e "${INFO}⬇ Installing $tool (pre-built binary)...${NC}"
+
+    if install_prebuilt_binary "$tool" "$repo" "$pattern" "$binname" "$archive" 2>/dev/null; then
+        if [ -x "$HOME/.local/bin/$tool" ]; then
+            echo -e "${SUCCESS}${CHECK} $tool installed successfully (pre-built)${NC}"
+            SUCCESSFUL_INSTALLS+=("$tool")
+            log_installation "$tool" "success" "$logfile"
+            cleanup_old_logs "$tool"
+            return 0
+        fi
+    fi
+
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo compile...${NC}"
+    if install_rust_tool "$tool" "$crate"; then
+        return 0
+    fi
+
+    echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    return 1
+}
+
+install_feroxbuster() {
+    _install_rust_with_fallback "feroxbuster" \
+        "epi052/feroxbuster" \
+        "x86_64-linux.*\.tar\.gz" \
+        "feroxbuster" \
+        "tar.gz" \
+        "feroxbuster"
+}
+
+install_rustscan() {
+    # RustScan ships a zip containing a tar.gz — extract zip then tar
+    local logfile
+    logfile=$(create_tool_log "rustscan")
+    echo -e "${INFO}⬇ Installing rustscan (pre-built binary)...${NC}"
+    {
+        echo "Installing rustscan"; echo "Started: $(date)"
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+        local api_url="https://api.github.com/repos/RustScan/RustScan/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep "x86_64-linux-rustscan\.tar\.gz\.zip" \
+            | head -1 | sed 's/.*"browser_download_url": *"//;s/".*//')
+        if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found"; return 1; fi
+        echo "Downloading: $asset_url"
+        cd "$HOME/opt/src" || return 1
+        curl -fsSL "$asset_url" -o rustscan.zip || return 1
+        unzip -q rustscan.zip 2>/dev/null || true
+        local tgz
+        tgz=$(find . -name "*.tar.gz" | head -1)
+        if [[ -n "$tgz" ]]; then
+            tar -xzf "$tgz" 2>/dev/null || true
+        fi
+        local bin
+        bin=$(find . -name "rustscan" -type f 2>/dev/null | head -1)
+        if [[ -n "$bin" ]]; then
+            cp "$bin" "$HOME/.local/bin/rustscan"
+            chmod +x "$HOME/.local/bin/rustscan"
+        else
+            echo "ERROR: rustscan binary not found"; return 1
+        fi
+        rm -f rustscan.zip "$tgz"
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if [ -x "$HOME/.local/bin/rustscan" ]; then
+        echo -e "${SUCCESS}${CHECK} rustscan installed successfully (pre-built)${NC}"
+        SUCCESSFUL_INSTALLS+=("rustscan")
+        log_installation "rustscan" "success" "$logfile"
+        cleanup_old_logs "rustscan"
+        return 0
+    fi
+    echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo...${NC}"
+    install_rust_tool "rustscan" "rustscan"
+}
+
+install_ripgrep() {
+    _install_rust_with_fallback "ripgrep" \
+        "BurntSushi/ripgrep" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "rg" \
+        "tar.gz" \
+        "ripgrep"
+}
+
+install_fd() {
+    _install_rust_with_fallback "fd" \
+        "sharkdp/fd" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "fd" \
+        "tar.gz" \
+        "fd-find"
+}
+
+install_bat() {
+    _install_rust_with_fallback "bat" \
+        "sharkdp/bat" \
+        "x86_64-unknown-linux-musl\.tar\.gz" \
+        "bat" \
+        "tar.gz" \
+        "bat"
+}
+
+
+
+# ===== UTILITY TOOL INSTALLERS =====
+
+# Function: install_aria2
+# Purpose: Install aria2 pre-built binary into user-space (~/.local/bin)
+#          aria2 was originally in the Tilix Dockerfile but was commented out.
+#          This installer adds it to user-space without requiring root.
+# Returns: 0 on success, 1 on failure
+install_aria2() {
+    local logfile
+    logfile=$(create_tool_log "aria2")
+
+    echo -e "${INFO}⬇ Downloading aria2 pre-built binary...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing aria2"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+
+        # Detect architecture
+        local arch
+        arch=$(uname -m)
+        case "$arch" in
+            x86_64)  arch_tag="x86_64" ;;
+            aarch64) arch_tag="aarch64" ;;
+            *)
+                echo "ERROR: Unsupported architecture: $arch"
+                return 1
+                ;;
+        esac
+
+        # Fetch latest release tag from GitHub API
+        local latest_tag
+        latest_tag=$(curl -fsSL "https://api.github.com/repos/aria2/aria2/releases/latest" \
+            | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"//;s/".*//')
+
+        if [[ -z "$latest_tag" ]]; then
+            echo "ERROR: Could not determine latest aria2 release tag"
+            return 1
+        fi
+
+        echo "Latest aria2 release: $latest_tag"
+
+        # aria2 distributes static Linux binaries via GitHub Actions artifacts,
+        # but official release assets are source tarballs only.
+        # Use the abcguitar/aria2-static-build releases which provide
+        # pre-built static binaries, or fall back to building from source via apt.
+        # Simplest reliable approach for Debian/Ubuntu (Tilix base): use the
+        # system package manager to install into the user prefix.
+
+        echo "Attempting install via system package manager..."
+
+        if command -v apt-get &>/dev/null; then
+            # Strategy 1: direct install (works if running as root, e.g. in Docker)
+            apt-get update -qq 2>/dev/null || true
+            if apt-get install -y --no-install-recommends aria2 2>/dev/null; then
+                local sys_bin
+                sys_bin=$(command -v aria2c 2>/dev/null)
+                if [ -n "$sys_bin" ]; then
+                    cp "$sys_bin" "$HOME/.local/bin/aria2c"
+                    chmod +x "$HOME/.local/bin/aria2c"
+                    echo "aria2c installed via apt and copied to user-space"
+                fi
+            else
+                # Strategy 2: apt-get download + dpkg extract (no root needed)
+                echo "Direct apt install failed, trying package extraction..."
+                local tmp_prefix="$HOME/opt/src/aria2-pkg"
+                mkdir -p "$tmp_prefix"
+                cd "$tmp_prefix" || return 1
+
+                if apt-get download aria2 2>/dev/null && ls aria2_*.deb &>/dev/null; then
+                    dpkg -x aria2_*.deb . 2>/dev/null || true
+                    if [ -f "./usr/bin/aria2c" ]; then
+                        cp ./usr/bin/aria2c "$HOME/.local/bin/aria2c"
+                        chmod +x "$HOME/.local/bin/aria2c"
+                        echo "aria2c installed from package extraction"
+                    fi
+                fi
+
+                cd "$HOME" || true
+                rm -rf "$tmp_prefix"
+            fi
+        fi
+
+        # Strategy 3: static build from p3ng0s/static-aria2 (community maintained)
+        if [ ! -f "$HOME/.local/bin/aria2c" ]; then
+            echo "Trying static build from p3ng0s/static-aria2..."
+            local static_url="https://github.com/p3ng0s/static-aria2/releases/latest/download/aria2c-linux-${arch_tag}"
+            if curl -fsSL "$static_url" -o "$HOME/.local/bin/aria2c" 2>/dev/null; then
+                chmod +x "$HOME/.local/bin/aria2c"
+                echo "aria2c installed from static build"
+            else
+                echo "Static build download failed"
+            fi
+        fi
+
+        # Create convenience symlink aria2 -> aria2c
+        if [ -f "$HOME/.local/bin/aria2c" ] && [ ! -e "$HOME/.local/bin/aria2" ]; then
+            ln -sf "$HOME/.local/bin/aria2c" "$HOME/.local/bin/aria2"
+            echo "Created symlink: aria2 -> aria2c"
+        fi
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if is_installed "aria2"; then
+        local version
+        version=$("$HOME/.local/bin/aria2c" --version 2>/dev/null | head -1 || echo "unknown")
+        echo -e "${SUCCESS}${CHECK} aria2 installed successfully ($version)${NC}"
+        SUCCESSFUL_INSTALLS+=("aria2")
+        log_installation "aria2" "success" "$logfile"
+        cleanup_old_logs "aria2"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} aria2 installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("aria2")
+        FAILED_INSTALL_LOGS["aria2"]="$logfile"
+        log_installation "aria2" "failure" "$logfile"
+        return 1
+    fi
+}
+
+# ===== WEB AUTOMATION TOOLS =====
+
+# Function: install_seleniumbase
+# Purpose: Install SeleniumBase via pip --user
+#          Provides UC Mode and CDP Mode for bypassing bot-detection and CAPTCHAs.
+#          Works with the system Chrome already present in the Tilix image.
+install_seleniumbase() {
+    local logfile
+    logfile=$(create_tool_log "seleniumbase")
+    echo -e "${INFO}⚙ Installing SeleniumBase via pip --user...${NC}"
+    {
+        echo "Installing seleniumbase"
+        echo "Started: $(date)"
+        local python_bin; python_bin=$(_get_python_bin)
+        mkdir -p "$HOME/.local/bin"
+        # Note: seleniumbase requires selenium as a direct dependency and will
+        # install selenium 4.41+ to ~/.local even though selenium 4.40 is
+        # system-wide. The ~28MB duplicate is unavoidable with pip --user.
+        "$python_bin" -m pip install --user --quiet seleniumbase || return 1
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "seleniumbase"; then
+        echo -e "${SUCCESS}${CHECK} SeleniumBase installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("seleniumbase")
+        log_installation "seleniumbase" "success" "$logfile"
+        cleanup_old_logs "seleniumbase"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} SeleniumBase installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("seleniumbase")
+    FAILED_INSTALL_LOGS["seleniumbase"]="$logfile"
+    log_installation "seleniumbase" "failure" "$logfile"
+    return 1
+}
+
+# Function: install_playwright
+# Purpose: Install Playwright Python package.
+#          Uses the system Chrome (/usr/bin/google-chrome) already present in
+#          the Tilix image — avoids downloading 620MB+ of Chromium binaries.
+#          Set PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 to prevent any browser download.
+install_playwright() {
+    local logfile
+    logfile=$(create_tool_log "playwright")
+    echo -e "${INFO}⚙ Installing Playwright...${NC}"
+    {
+        echo "Installing playwright"
+        echo "Started: $(date)"
+        local python_bin; python_bin=$(_get_python_bin)
+        mkdir -p "$HOME/.local/bin"
+        # Install playwright Python package only — no browser download needed.
+        # The Tilix image ships Google Chrome at /usr/bin/google-chrome.
+        # Use: playwright.chromium.launch(executable_path="/usr/bin/google-chrome")
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 "$python_bin" -m pip install --user --quiet playwright || return 1
+        echo "NOTE: Using system Chrome at /usr/bin/google-chrome"
+        echo "      Pass executable_path='/usr/bin/google-chrome' to launch()"
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "playwright"; then
+        echo -e "${SUCCESS}${CHECK} Playwright installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("playwright")
+        log_installation "playwright" "success" "$logfile"
+        cleanup_old_logs "playwright"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} Playwright installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("playwright")
+    FAILED_INSTALL_LOGS["playwright"]="$logfile"
+    log_installation "playwright" "failure" "$logfile"
+    return 1
+}
+
+# Function: install_yandex_browser
+# Purpose: Install Yandex Browser via official APT repository (amd64 only)
+#          Useful for Russian-language OSINT and accessing Yandex services.
+install_yandex_browser() {
+    local logfile
+    logfile=$(create_tool_log "yandex_browser")
+    echo -e "${INFO}⬇ Installing Yandex Browser...${NC}"
+    {
+        echo "Installing yandex_browser"
+        echo "Started: $(date)"
+
+        # amd64 only
+        if [ "$(uname -m)" != "x86_64" ]; then
+            echo "ERROR: Yandex Browser is only available for amd64 (x86_64)"
+            return 1
+        fi
+
+        if ! command -v apt-get &>/dev/null; then
+            echo "ERROR: apt-get required"
+            return 1
+        fi
+
+        apt-get update -qq 2>/dev/null || true
+        apt-get install -y --no-install-recommends gnupg2 curl 2>/dev/null || true
+
+        # Add Yandex GPG key and repo
+        curl -fsSL "https://repo.yandex.ru/yandex-browser/YANDEX-BROWSER-KEY.GPG" \
+            | apt-key add - 2>/dev/null || true
+        echo "deb [arch=amd64] http://repo.yandex.ru/yandex-browser/deb beta main" \
+            > /etc/apt/sources.list.d/yandex-browser.list
+
+        apt-get update -qq 2>/dev/null || true
+        apt-get install -y --no-install-recommends yandex-browser-beta 2>/dev/null || return 1
+
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "yandex_browser"; then
+        echo -e "${SUCCESS}${CHECK} Yandex Browser installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("yandex_browser")
+        log_installation "yandex_browser" "success" "$logfile"
+        cleanup_old_logs "yandex_browser"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} Yandex Browser installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("yandex_browser")
+    FAILED_INSTALL_LOGS["yandex_browser"]="$logfile"
+    log_installation "yandex_browser" "failure" "$logfile"
+    return 1
+}
+
+# Function: install_tor_browser
+# Purpose: Install Tor Browser from official Tor Project release tarball
+#          Provides anonymous browsing via Tor network for dark web OSINT.
+install_tor_browser() {
+    local logfile
+    logfile=$(create_tool_log "tor_browser")
+    echo -e "${INFO}⬇ Installing Tor Browser...${NC}"
+    {
+        echo "Installing tor_browser"
+        echo "Started: $(date)"
+
+        mkdir -p "$HOME/opt"
+
+        # Fetch latest version from Tor Project dist
+        local version
+        version=$(curl -fsSL "https://www.torproject.org/dist/torbrowser/" 2>/dev/null \
+            | grep -oE 'href="[0-9]+\.[0-9.]+/"' \
+            | grep -oE '[0-9]+\.[0-9.]+' \
+            | sort -V | tail -1)
+
+        if [[ -z "$version" ]]; then
+            version="15.0.8"  # fallback to known good version
+        fi
+
+        echo "Installing Tor Browser $version..."
+        local filename="tor-browser-linux-x86_64-${version}.tar.xz"
+        local url="https://www.torproject.org/dist/torbrowser/${version}/${filename}"
+
+        cd "$HOME/opt" || return 1
+        curl -fsSL "$url" -o "$filename" || return 1
+        tar -xJf "$filename" 2>/dev/null || return 1
+        rm -f "$filename"
+
+        # Create launcher wrapper in ~/.local/bin
+        cat > "$HOME/.local/bin/tor-browser" << 'WRAPPER'
+#!/bin/bash
+exec "$HOME/opt/tor-browser/Browser/start-tor-browser" --detach "$@"
+WRAPPER
+        chmod +x "$HOME/.local/bin/tor-browser"
+
+        echo "Tor Browser $version installed to ~/opt/tor-browser"
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "tor_browser"; then
+        echo -e "${SUCCESS}${CHECK} Tor Browser installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("tor_browser")
+        log_installation "tor_browser" "success" "$logfile"
+        cleanup_old_logs "tor_browser"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} Tor Browser installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("tor_browser")
+    FAILED_INSTALL_LOGS["tor_browser"]="$logfile"
+    log_installation "tor_browser" "failure" "$logfile"
+    return 1
+}
+
+install_sd() {
+    # Use musl static build — avoids GLIBC_2.32 incompatibility on Ubuntu 20.04
+    local logfile; logfile=$(create_tool_log "sd")
+    echo -e "${INFO}⬇ Installing sd (pre-built musl binary)...${NC}"
+    {
+        echo "Installing sd"; echo "Started: $(date)"
+        local api_url="https://api.github.com/repos/chmln/sd/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep "x86_64-unknown-linux-musl\.tar\.gz" \
+            | head -1 \
+            | sed 's/.*"browser_download_url": *"//;s/".*//')
+        echo "Downloading musl: $asset_url"
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+        cd "$HOME/opt/src" || return 1
+        curl -fsSL "$asset_url" -o sd-musl.tar.gz || return 1
+        tar -xzf sd-musl.tar.gz 2>/dev/null || true
+        local found; found=$(find . -name "sd" -type f ! -name "*.tar.gz" 2>/dev/null | head -1)
+        if [[ -n "$found" ]]; then
+            cp "$found" "$HOME/.local/bin/sd"
+            chmod +x "$HOME/.local/bin/sd"
+        else
+            echo "ERROR: sd binary not found in musl archive"; return 1
+        fi
+        rm -f sd-musl.tar.gz; echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if [ -x "$HOME/.local/bin/sd" ]; then
+        echo -e "${SUCCESS}${CHECK} sd installed successfully (pre-built musl)${NC}"
+        SUCCESSFUL_INSTALLS+=("sd"); log_installation "sd" "success" "$logfile"; cleanup_old_logs "sd"; return 0
+    fi
+    echo -e "${WARNING}${WARN} musl download failed, falling back to cargo...${NC}"
+    install_rust_tool "sd" "sd"
+}
+
+install_dog() {
+    # dog has no musl build; gnu binary requires GLIBC_2.32 (Ubuntu 20.04 has 2.31)
+    # Compile from cargo — gcc is available in the Tilix image
+    install_rust_tool "dog" "dog"
+}

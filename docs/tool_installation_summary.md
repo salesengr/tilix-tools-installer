@@ -27,26 +27,26 @@ Logs for every tool live in `~/.local/state/install_tools/logs/<tool>-<timestamp
 | Go (system prerequisite) | Expected at `/usr/local/go`; installer uses it to build Go tools and sets `GOPATH` to `~/opt/gopath`. | System toolchain at `/usr/local/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
 | Node.js 20.10.0 | Node tarball extracted to `~/opt/node`. npm global prefix points to `~/.local`, so binaries are linked in `~/.local/bin` and packages in `~/.local/lib/node_modules`. | `~/opt/node/bin/node`, `~/.local/bin/*` for npm-installed CLIs. |
 | Rust (rustup) | `rustup` installer runs with `$CARGO_HOME=$HOME/.local/share/cargo`. | Toolchains and registry caches in `~/.local/share/rustup`/`cargo`, binaries in `~/.local/share/cargo/bin`. |
-| Python virtual environment | `python3 -m venv $XDG_DATA_HOME/virtualenvs/tools`, pip upgraded, wrapper alias `tools-venv` provided by `xdg_setup.sh`. | Virtual environment at `~/.local/share/virtualenvs/tools`, activation script plus site-packages. |
+| Python (pip --user) | `pip install --user <package>` using system Python 3.13. No pip --user created. | Packages in `~/.local/lib/python3.13/site-packages/`, entry points in `~/.local/bin/`. |
 
 ## Python OSINT & CTI Tools
 
-All Python applications install into the shared virtual environment above. Each gets a wrapper in `~/.local/bin/<tool>` so you never have to activate the venv manually.
+All Python tools are installed via `pip install --user` using the system Python 3.13 already present in the Tilix image. No virtual environment is created. Packages land in `~/.local/lib/python3.13/site-packages/` and entry points appear directly in `~/.local/bin/<tool>`.
 
 | Tool | pip package installed | Wrapper command | Notable files |
 |------|-----------------------|-----------------|---------------|
 | sherlock | `sherlock-project` | `~/.local/bin/sherlock` | Modules under `~/.local/share/virtualenvs/tools/lib/python*/site-packages/sherlock`. |
-| holehe | `holehe` | `~/.local/bin/holehe` | Same venv, package `holehe`. |
-| socialscan | `socialscan` | `~/.local/bin/socialscan` | venv package `socialscan`. |
-| h8mail | `h8mail` | `~/.local/bin/h8mail` | venv package `h8mail`. |
-| photon | GitHub clone (`s0md3v/Photon`) + `requirements.txt` | `~/.local/bin/photon` | Source cloned under `~/opt/src/Photon`; wrapper points into Python venv. |
-| sublist3r | `sublist3r` | `~/.local/bin/sublist3r` | venv package `sublist3r`. |
-| shodan | `shodan` | `~/.local/bin/shodan` | venv package `shodan`. |
-| censys | `censys` | `~/.local/bin/censys` | venv package `censys`. |
-| theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | venv package `theHarvester`. |
-| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | venv package `spiderfoot`. |
-| yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings live in the venv. |
-| wappalyzer | `python-Wappalyzer` | `~/.local/bin/wappalyzer` | venv package `Wappalyzer`. |
+| holehe | `holehe` | `~/.local/bin/holehe` | pip --user package `holehe`. |
+| socialscan | `socialscan` | `~/.local/bin/socialscan` | pip --user package `socialscan`. |
+| h8mail | `h8mail` | `~/.local/bin/h8mail` | pip --user package `h8mail`. |
+| photon | GitHub clone (`s0md3v/Photon`) + `requirements.txt` | `~/.local/bin/photon` | Source cloned under `~/opt/src/Photon`; wrapper points to user-installed package. |
+| sublist3r | `sublist3r` | `~/.local/bin/sublist3r` | pip --user package `sublist3r`. |
+| shodan | `shodan` | `~/.local/bin/shodan` | pip --user package `shodan` (with pkg_resources shim). |
+| censys | `censys` | `~/.local/bin/censys` | pip --user package `censys`. |
+| theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | pip --user package `theHarvester`. |
+| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | pip --user package `spiderfoot`. |
+| yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings in `~/.local/lib/python3.13/site-packages/`. |
+| wappalyzer | `python-Wappalyzer` | `~/.local/bin/wappalyzer` | pip --user package `python-Wappalyzer`. |
 
 ## Go Tools
 
@@ -88,6 +88,37 @@ Cargo installs place binaries in `~/.local/share/cargo/bin`. The installer sets 
 | tokei | `tokei` | `~/.local/share/cargo/bin/tokei` |
 | dog | `dog` | `~/.local/share/cargo/bin/dog` |
 
+## Utility Tools
+
+Utility tools are installed as pre-built binaries into `~/.local/bin` via the system package manager (`apt`) or a static binary fallback. No runtime dependency (Python/Go/Node/Rust) is required.
+
+| Tool | Installation method | Binary | Symlink |
+|------|--------------------|----|---------|
+| aria2 | `apt-get install aria2` → copy to user-space | `~/.local/bin/aria2c` | `~/.local/bin/aria2 → aria2c` |
+
+**aria2** is a multi-protocol download utility supporting HTTP, HTTPS, FTP, BitTorrent, and Metalink. It was originally included in the Tilix Dockerfile but was commented out; this installer adds it to user-space without requiring root access at runtime.
+
+Common usage patterns:
+```bash
+# Basic download
+aria2c https://example.com/file.iso
+
+# Multi-connection download (8 parallel streams — significantly faster for large files)
+aria2c --split=8 --max-connection-per-server=8 https://example.com/large.iso
+
+# Download to specific directory with custom filename
+aria2c --dir=/tmp --out=output.iso https://example.com/file.iso
+
+# Resume interrupted download
+aria2c --continue=true https://example.com/large.iso
+
+# Download from a list of URLs
+aria2c --input-file=urls.txt
+
+# Run as background RPC daemon (for GUI/frontend integration)
+aria2c --enable-rpc --rpc-listen-all=true --daemon=true
+```
+
 ## Re-running or Cleaning Up
 
 - Reinstall any component with `bash install_security_tools.sh <tool-name>`; it reuses the same log locations above.
@@ -95,3 +126,50 @@ Cargo installs place binaries in `~/.local/share/cargo/bin`. The installer sets 
 - Inspect `~/.local/state/install_tools/installation_history.log` to see when a tool was last touched and which log file captured the output.
 
 Use `README.md` and `docs/xdg_setup.md` for usage workflows and environment bootstrap details.
+
+## Web Automation Tools
+
+Web automation tools enable browser-based OSINT, stealth scraping, captcha bypass, and anonymous browsing. All tools are installed to user-space.
+
+| Tool | Installation Method | Binary / Entry Point |
+|------|--------------------|--------------------|
+| SeleniumBase | `pip install --user seleniumbase` | `~/.local/bin/sbase` |
+| Playwright | `pip install --user playwright` + `playwright install chromium` | `~/.local/bin/playwright` + `~/.local/share/ms-playwright/` |
+| Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` |
+| Tor Browser | tarball from `torproject.org/dist/torbrowser/` | `~/opt/tor-browser/Browser/start-tor-browser` + `~/.local/bin/tor-browser` |
+
+### SeleniumBase
+Works with the system Chrome already in the Tilix image. Three modes:
+- **Standard mode** — fastest, detected by most anti-bot systems
+- **UC Mode** (`uc=True`) — undetected-chromedriver base, bypasses most detection
+- **CDP Mode** — Chrome DevTools Protocol, stealthiest, handles Cloudflare/reCAPTCHA
+
+Key commands:
+```bash
+sbase --help                        # CLI help
+python3 -m seleniumbase             # Python module usage
+```
+
+### Playwright
+Cross-browser automation supporting Chromium, Firefox, and WebKit. Browser binaries stored in `~/.local/share/ms-playwright/`.
+```bash
+playwright install --list           # List installed browsers
+playwright install chromium         # Install/update Chromium
+playwright codegen https://target   # Record browser actions as code
+```
+
+### Yandex Browser
+Chromium-based, amd64 only. Installed system-wide via the official Yandex APT repository. Useful for Russian-language OSINT — Yandex Search, reverse image search, Maps, and accessing Russian social media with appropriate locale.
+```bash
+yandex-browser-beta                 # Launch (requires VNC/display)
+yandex-browser-beta --version       # Check version
+```
+
+### Tor Browser
+Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser`.
+
+**Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
+```bash
+tor-browser                         # Launch with GUI (requires VNC)
+~/opt/tor-browser/Browser/start-tor-browser --detach  # Background
+```

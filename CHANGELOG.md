@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Python virtualenv** — replaced by `pip install --user` with system Python 3.13
 
 ### Performance
-Measured on `salesengr/local-apps:tilix-amd64` (x86_64, 10 CPUs):
+Measured on an Ubuntu 20.04 x86_64 container (10 vCPUs):
 
 | Operation | Before v1.4.0 | v1.4.0 |
 |-----------|--------------|--------|

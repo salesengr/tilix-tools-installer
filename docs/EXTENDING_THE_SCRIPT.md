@@ -1,5 +1,10 @@
 # Extending `install_security_tools.sh`
 
+> 📖 **Wiki:** For quick reference and discovery, see the [GitHub Wiki](https://github.com/salesengr/tilix-tools-installer/wiki).
+> This file is the versioned technical reference — it stays in sync with each release.
+
+
+
 **Version:** 1.4.0 (Modular Architecture)
 
 The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.

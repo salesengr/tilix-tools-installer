@@ -1,5 +1,10 @@
 # XDG Setup Script Documentation
 
+> 📖 **Wiki:** For quick reference and discovery, see the [GitHub Wiki](https://github.com/salesengr/tilix-tools-installer/wiki).
+> This file is the versioned technical reference — it stays in sync with each release.
+
+
+
 ## Overview
 
 `xdg_setup.sh` creates a complete XDG Base Directory Specification compliant environment for user-space installations without requiring sudo access.

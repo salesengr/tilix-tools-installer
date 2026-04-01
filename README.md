@@ -309,7 +309,7 @@ aria2c --enable-rpc --rpc-listen-all=true --daemon=true
 
 ### Web Tools
 
-The Tilix image ships **Google Chrome 146** at `/usr/bin/google-chrome`. All web automation tools use it directly — no separate browser download needed.
+The Tilix image ships **Google Chrome** at `/usr/bin/google-chrome`. Check your version with `google-chrome --version`. All web automation tools use it directly — no separate browser download needed.
 
 #### Launching Chrome Directly
 ```bash

@@ -38,7 +38,7 @@ show_menu() {
     echo "  [32] ripgrep       [33] fd             [34] bat          [35] sd"
     echo "  [36] dog            [37] aria2"
     echo ""
-    echo -e "${CATEGORY}WEB AUTOMATION:${NC}"
+    echo -e "${CATEGORY}WEB TOOLS:${NC}"
     echo "  [38] seleniumbase  [39] playwright      [40] yandex-browser  [41] tor-browser"
     echo ""
     echo -e "${CATEGORY}BULK INSTALL:${NC}"
@@ -111,7 +111,7 @@ process_menu_selection() {
         36) install_tool "dog" ;;
         37) install_tool "aria2" ;;
 
-        # WEB AUTOMATION TOOLS (38-41)
+        # WEB TOOLS (38-41)
         38) install_tool "seleniumbase" ;;
         39) install_tool "playwright" ;;
         40) install_tool "yandex_browser" ;;
@@ -140,7 +140,7 @@ process_menu_selection() {
             for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
             ;;
         47)
-            for tool in "${WEB_AUTOMATION[@]}"; do install_tool "$tool"; done
+            for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
             ;;
         48)
             echo -e "${WARNING}${WARN} Installing ALL tools — this will take 30-60 minutes${NC}"

@@ -174,7 +174,7 @@ This ensures npm:
 
 ```bash
 # Tool management
-alias tools-venv='source $XDG_DATA_HOME/virtualenvs/tools/bin/activate'
+# Note: No virtualenv needed — Python tools install via pip --user to ~/.local/lib/python3.13
 alias tools-update='cd $HOME/opt/src && git pull --all'
 
 # Quick XDG navigation

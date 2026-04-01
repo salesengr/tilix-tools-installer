@@ -25,7 +25,7 @@ Logs for every tool live in `~/.local/state/install_tools/logs/<tool>-<timestamp
 | CMake 3.28.1 | GitHub tarball is downloaded to `~/opt/src`, extracted, and binaries copied into `~/.local/bin` with supporting files in `~/.local/share`. | `~/.local/bin/cmake`, shared modules in `~/.local/share/cmake-*`, man pages in `~/.local/share/man`. |
 | GitHub CLI 2.53.0 | Release tarball pulled into `~/opt/src` and extracted. Binary plus man pages are copied into `~/.local/bin` and `~/.local/share/man`. | `~/.local/bin/gh`, docs under `~/.local/share/doc/gh`. |
 | Go (system prerequisite) | Expected at `/usr/local/go`; installer uses it to build Go tools and sets `GOPATH` to `~/opt/gopath`. | System toolchain at `/usr/local/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
-| Node.js 20.10.0 | Node tarball extracted to `~/opt/node`. npm global prefix points to `~/.local`, so binaries are linked in `~/.local/bin` and packages in `~/.local/lib/node_modules`. | `~/opt/node/bin/node`, `~/.local/bin/*` for npm-installed CLIs. |
+| Node.js (system) | Uses system Node.js pre-installed in image. Falls back to tarball at `~/opt/node` only if system Node absent. npm prefix set to `~/.local`. | `/usr/bin/node` (system) or `~/opt/node/bin/node` (fallback), `~/.local/bin/*` for npm CLIs. |
 | Rust (rustup) | `rustup` installer runs with `$CARGO_HOME=$HOME/.local/share/cargo`. | Toolchains and registry caches in `~/.local/share/rustup`/`cargo`, binaries in `~/.local/share/cargo/bin`. |
 | Python (pip --user) | `pip install --user <package>` using system Python 3.13. No pip --user created. | Packages in `~/.local/lib/python3.13/site-packages/`, entry points in `~/.local/bin/`. |
 
@@ -35,7 +35,7 @@ All Python tools are installed via `pip install --user` using the system Python 
 
 | Tool | pip package installed | Wrapper command | Notable files |
 |------|-----------------------|-----------------|---------------|
-| sherlock | `sherlock-project` | `~/.local/bin/sherlock` | Modules under `~/.local/share/virtualenvs/tools/lib/python*/site-packages/sherlock`. |
+| sherlock | `sherlock-project` | `~/.local/bin/sherlock` | pip --user package in `~/.local/lib/python3.13/site-packages/`. |
 | holehe | `holehe` | `~/.local/bin/holehe` | pip --user package `holehe`. |
 | socialscan | `socialscan` | `~/.local/bin/socialscan` | pip --user package `socialscan`. |
 | h8mail | `h8mail` | `~/.local/bin/h8mail` | pip --user package `h8mail`. |
@@ -85,7 +85,7 @@ Cargo installs place binaries in `~/.local/share/cargo/bin`. The installer sets 
 | fd | `fd-find` | `~/.local/share/cargo/bin/fd` |
 | bat | `bat` | `~/.local/share/cargo/bin/bat` |
 | sd | `sd` | `~/.local/share/cargo/bin/sd` |
-| tokei | `tokei` | `~/.local/share/cargo/bin/tokei` |
+| ~~tokei~~ | *Removed in v1.4.0* | — | No pre-built binary available; low security relevance. |
 | dog | `dog` | `~/.local/share/cargo/bin/dog` |
 
 ## Utility Tools

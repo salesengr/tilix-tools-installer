@@ -1,5 +1,10 @@
 # Tool Installation Summary
 
+> 📖 **Wiki:** For quick reference and discovery, see the [GitHub Wiki](https://github.com/salesengr/tilix-tools-installer/wiki).
+> This file is the versioned technical reference — it stays in sync with each release.
+
+
+
 This reference maps the actions performed by `install_security_tools.sh` to the files and directories that appear on disk. Use it to verify installations, clean up specific stacks, or to explain to approvers exactly what the script touches.
 
 ## Directory Legend

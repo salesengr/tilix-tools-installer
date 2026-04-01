@@ -102,7 +102,7 @@ install_all() {
         "${CTI_TOOLS[@]}"
         "${SECURITY_TESTING[@]}"
         "${UTILITY_TOOLS[@]}"
-        "${WEB_AUTOMATION[@]}"
+        "${WEB_TOOLS[@]}"
     )
 
     for tool in "${all_tools[@]}"; do
@@ -192,7 +192,7 @@ process_cli_args() {
     fi
 
     if [[ "${args[0]}" == "--web-tools" ]]; then
-        for tool in "${WEB_AUTOMATION[@]}"; do install_tool "$tool"; done
+        for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
         return
     fi
 

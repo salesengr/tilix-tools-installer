@@ -58,7 +58,7 @@ Tools are organized by use-case. → **[Full tool list with descriptions](https:
 | Cyber Threat Intelligence | shodan, censys, yara, trufflehog, virustotal | `--cti-tools` |
 | Security Testing | jwt-cracker | — |
 | Utilities | ripgrep, fd, bat, sd, dog, aria2 | `--utility-tools` |
-| Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser | `--web-tools` |
+| Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox | `--web-tools` |
 
 ---
 
@@ -145,6 +145,7 @@ nuclei -u https://target.com
 # Web Tools
 google-chrome --version                       # check Chrome version
 sbase get https://example.com --headless      # SeleniumBase screenshot
+qtox                                          # launch qTox (backgrounds automatically)
 ```
 
 → **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)**

@@ -5,6 +5,16 @@ All notable changes to the Security Tools Installer project will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **qTox** encrypted peer-to-peer chat client (Tox protocol) added to Web Tools category
+  - Installs via AppImage extraction (FUSE-free, container-compatible)
+  - Launcher at `~/.local/bin/qtox` — backgrounds automatically on launch (`nohup` + `disown`)
+
+### Fixed
+- qTox launcher wrapper now uses `nohup ... &>/dev/null & disown` instead of `exec`, allowing it to run detached from the terminal
+
 ## [1.4.0] - 2026-03-31
 
 ### Added

@@ -74,6 +74,7 @@ install_tool() {
         playwright) install_playwright ;;
         yandex_browser) install_yandex_browser ;;
         tor_browser) install_tor_browser ;;
+        qtox) install_qtox ;;
         *)
             echo -e "${RED}Unknown tool: $tool${NC}"
             return 1

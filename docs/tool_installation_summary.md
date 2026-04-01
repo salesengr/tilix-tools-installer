@@ -127,7 +127,7 @@ aria2c --enable-rpc --rpc-listen-all=true --daemon=true
 
 Use `README.md` and `docs/xdg_setup.md` for usage workflows and environment bootstrap details.
 
-## Web Automation Tools
+## Web Tools
 
 Web automation tools enable browser-based OSINT, stealth scraping, captcha bypass, and anonymous browsing. All tools are installed to user-space.
 

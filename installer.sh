@@ -1,6 +1,6 @@
 #!/bin/bash
 # Bootstrap Installer for Security Tools
-# Version: 1.3.0
+# Version: 1.4.0
 # Usage: bash installer.sh
 
 set -e

@@ -34,7 +34,7 @@ create_python_wrapper() {
     python_bin=$(_get_python_bin)
 
     # If pip --user already placed an entry point, nothing to do
-    if [ -x "$HOME/.local/bin/$tool" ]; then
+    if [ -x "$HOME/.local/bin/$binary_name" ] || [ -x "$HOME/.local/bin/$tool" ]; then
         return 0
     fi
 
@@ -146,6 +146,13 @@ install_go_tool() {
         echo ""
         echo "Compiling $tool from source..."
         go install "$repo@latest" || return 1
+
+        # Symlink all binaries in GOPATH/bin to ~/.local/bin so they are on PATH
+        mkdir -p "$HOME/.local/bin"
+        for gobin in "$GOPATH"/bin/*; do
+            [ -f "$gobin" ] && ln -sf "$gobin" "$HOME/.local/bin/$(basename "$gobin")"
+        done
+        echo "Symlinked GOPATH binaries to ~/.local/bin/"
 
         echo "=========================================="
         echo "Completed: $(date)"
@@ -284,8 +291,10 @@ install_prebuilt_binary() {
                     found_bin=$(find . -maxdepth 3 -executable -type f -name "$tool" 2>/dev/null | head -1)
                 fi
                 if [[ -n "$found_bin" ]]; then
-                    cp "$found_bin" "$HOME/.local/bin/$tool"
-                    chmod +x "$HOME/.local/bin/$tool"
+                    cp "$found_bin" "$HOME/.local/bin/$binary_name"
+                    chmod +x "$HOME/.local/bin/$binary_name"
+                    # If tool name differs from binary name, create an alias symlink
+                    [[ "$tool" != "$binary_name" ]] && ln -sf "$HOME/.local/bin/$binary_name" "$HOME/.local/bin/$tool"
                 else
                     echo "ERROR: Could not find binary '$binary_name' in extracted archive"
                     return 1
@@ -296,16 +305,18 @@ install_prebuilt_binary() {
                 local found_bin
                 found_bin=$(find . -name "$binary_name" -type f 2>/dev/null | head -1)
                 if [[ -n "$found_bin" ]]; then
-                    cp "$found_bin" "$HOME/.local/bin/$tool"
-                    chmod +x "$HOME/.local/bin/$tool"
+                    cp "$found_bin" "$HOME/.local/bin/$binary_name"
+                    chmod +x "$HOME/.local/bin/$binary_name"
+                    [[ "$tool" != "$binary_name" ]] && ln -sf "$HOME/.local/bin/$binary_name" "$HOME/.local/bin/$tool"
                 else
                     echo "ERROR: Could not find binary '$binary_name' in zip"
                     return 1
                 fi
                 ;;
             binary)
-                cp "$filename" "$HOME/.local/bin/$tool"
-                chmod +x "$HOME/.local/bin/$tool"
+                cp "$filename" "$HOME/.local/bin/$binary_name"
+                chmod +x "$HOME/.local/bin/$binary_name"
+                [[ "$tool" != "$binary_name" ]] && ln -sf "$HOME/.local/bin/$binary_name" "$HOME/.local/bin/$tool"
                 ;;
         esac
 
@@ -359,6 +370,13 @@ install_rust_tool() {
 
         echo "Compiling $crate from source..."
         cargo install "$crate" || return 1
+
+        # Symlink all new cargo binaries to ~/.local/bin so they are on PATH
+        mkdir -p "$HOME/.local/bin"
+        for cargobin in "$CARGO_HOME"/bin/*; do
+            [ -f "$cargobin" ] && ln -sf "$cargobin" "$HOME/.local/bin/$(basename "$cargobin")"
+        done
+        echo "Symlinked cargo binaries to ~/.local/bin/"
 
         echo "=========================================="
         echo "Completed: $(date)"

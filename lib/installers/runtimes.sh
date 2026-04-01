@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Runtimes Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Language runtime and build tool installation
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
@@ -158,15 +158,29 @@ install_github_cli() {
 # ===== LANGUAGE RUNTIMES =====
 
 # Function: install_nodejs
-# Purpose: Install Node.js from official tarball
+# Purpose: Verify system Node.js is available. The Tilix image ships Node 22
+#          system-wide — no separate install needed. Falls back to downloading
+#          the official tarball only if system Node is absent.
 # Returns: 0 on success, 1 on failure
 install_nodejs() {
     local logfile
     logfile=$(create_tool_log "nodejs")
 
+    # Use system Node if available — saves 169MB from session archive
+    if command -v node &>/dev/null; then
+        local node_ver
+        node_ver=$(node --version 2>/dev/null)
+        echo -e "${GREEN}[OK] Using system Node.js ${node_ver}${NC}"
+        SUCCESSFUL_INSTALLS+=("nodejs")
+        log_installation "nodejs" "success" "$logfile"
+        return 0
+    fi
+
+    # Fallback: download tarball if system Node is not present
+    echo -e "${WARNING}${WARN} System Node.js not found — downloading tarball...${NC}"
     {
         echo "=========================================="
-        echo "Installing Node.js"
+        echo "Installing Node.js (tarball fallback)"
         echo "Started: $(date)"
         echo "=========================================="
 
@@ -182,25 +196,11 @@ install_nodejs() {
             return 1
         fi
 
-        if ! verify_file_exists "$filename" "Node.js tarball"; then
-            return 1
-        fi
-
-        echo "Extracting..."
-        if ! tar -xJf "$filename"; then
-            echo "ERROR: Failed to extract Node.js"
-            return 1
-        fi
-
+        tar -xJf "$filename" || return 1
         mv "node-v${NODE_VERSION}-linux-x64" node
-
-        echo "Cleaning up..."
-        rm "$filename"
-
-        echo "Setting up environment..."
+        rm -f "$filename"
         export PATH="$HOME/opt/node/bin:$PATH"
 
-        echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
     } > "$logfile" 2>&1
@@ -218,6 +218,113 @@ install_nodejs() {
         FAILED_INSTALLS+=("nodejs")
         FAILED_INSTALL_LOGS["nodejs"]="$logfile"
         log_installation "nodejs" "failure" "$logfile"
+        return 1
+    fi
+}
+
+# Function: install_go_runtime
+# Purpose: Install Go runtime to ~/opt/go (user-space, no root required)
+#          Required by all Go tools. Mirrors what /usr/local/go provides.
+# Returns: 0 on success, 1 on failure
+install_go_runtime() {
+    local logfile
+    logfile=$(create_tool_log "go_runtime")
+
+    echo -e "${INFO}⬇ Downloading Go runtime...${NC}"
+
+    {
+        echo "=========================================="
+        echo "Installing Go Runtime"
+        echo "Started: $(date)"
+        echo "=========================================="
+
+        # Detect architecture
+        local arch
+        case "$(uname -m)" in
+            x86_64)  arch="amd64" ;;
+            aarch64) arch="arm64" ;;
+            armv6l)  arch="armv6l" ;;
+            *)
+                echo "ERROR: Unsupported architecture: $(uname -m)"
+                return 1
+                ;;
+        esac
+
+        # Fetch latest stable Go version
+        local go_version
+        go_version=$(curl -fsSL "https://go.dev/VERSION?m=text" 2>/dev/null | head -1)
+        if [[ -z "$go_version" ]]; then
+            echo "ERROR: Could not determine latest Go version"
+            return 1
+        fi
+
+        echo "Latest Go: $go_version (arch: $arch)"
+
+        local filename="${go_version}.linux-${arch}.tar.gz"
+        local url="https://go.dev/dl/${filename}"
+        local install_dir="$HOME/opt/go"
+
+        mkdir -p "$HOME/opt/src"
+        cd "$HOME/opt/src" || return 1
+
+        echo "Downloading $url..."
+        if ! curl -fsSL "$url" -o "$filename"; then
+            echo "ERROR: Failed to download Go"
+            return 1
+        fi
+
+        echo "Extracting to $install_dir..."
+        rm -rf "$install_dir"
+        mkdir -p "$HOME/opt"
+        tar -xzf "$filename" -C "$HOME/opt/" || return 1
+        # Go extracts to a 'go' directory
+        [ -d "$HOME/opt/go" ] || { echo "ERROR: Go directory not found after extract"; return 1; }
+
+        rm -f "$filename"
+
+        # Add to PATH in .bashrc if not already present
+        if ! grep -q 'opt/go/bin' "$HOME/.bashrc" 2>/dev/null; then
+            # shellcheck disable=SC2016  # Single quotes intentional: $HOME expands at shell startup, not write time
+            {
+                echo ''
+                echo '# Go runtime (user-space install)'
+                echo 'export GOROOT="$HOME/opt/go"'
+                echo 'export GOPATH="$HOME/opt/gopath"'
+                echo 'export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"'
+            } >> "$HOME/.bashrc"
+        fi
+
+        # Export for current session
+        export GOROOT="$HOME/opt/go"
+        export GOPATH="$HOME/opt/gopath"
+        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+        mkdir -p "$GOPATH"
+
+        echo "Go installed: $("$HOME/opt/go/bin/go" version)"
+
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
+
+    if [ -f "$HOME/opt/go/bin/go" ]; then
+        local ver
+        ver=$("$HOME/opt/go/bin/go" version 2>/dev/null)
+        echo -e "${SUCCESS}${CHECK} Go runtime installed ($ver)${NC}"
+        SUCCESSFUL_INSTALLS+=("go_runtime")
+        log_installation "go_runtime" "success" "$logfile"
+        cleanup_old_logs "go_runtime"
+        export GOROOT="$HOME/opt/go"
+        export GOPATH="$HOME/opt/gopath"
+        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+        mkdir -p "$GOPATH"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} Go runtime installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("go_runtime")
+        FAILED_INSTALL_LOGS["go_runtime"]="$logfile"
+        log_installation "go_runtime" "failure" "$logfile"
         return 1
     fi
 }
@@ -286,7 +393,10 @@ install_rust() {
 }
 
 # Function: install_python_venv
-# Purpose: Create Python virtual environment for tools
+# Purpose: Configure user-space pip install (no venv — uses system Python directly).
+#          In a container-per-session architecture a venv adds 400MB+ of bloat with
+#          no benefit. pip install --user installs to ~/.local/lib/pythonX.Y/site-packages
+#          which is already isolated by the container.
 # Returns: 0 on success, 1 on failure
 install_python_venv() {
     local logfile
@@ -294,35 +404,55 @@ install_python_venv() {
 
     {
         echo "=========================================="
-        echo "Creating Python Virtual Environment"
+        echo "Configuring Python user-space install"
         echo "Started: $(date)"
         echo "=========================================="
 
-        echo "Creating venv..."
-        python3 -m venv "$XDG_DATA_HOME/virtualenvs/tools" || return 1
+        # Resolve best available Python (prefer 3.13 for tool compatibility)
+        local python_bin
+        if command -v python3.13 &>/dev/null; then
+            python_bin="python3.13"
+        elif command -v python3.11 &>/dev/null; then
+            python_bin="python3.11"
+        elif command -v python3.10 &>/dev/null; then
+            python_bin="python3.10"
+        elif command -v python3.9 &>/dev/null; then
+            python_bin="python3.9"
+        else
+            python_bin="python3"
+        fi
 
-        echo "Activating venv..."
-        source "$XDG_DATA_HOME/virtualenvs/tools/bin/activate" || return 1
+        echo "Using Python: $python_bin ($($python_bin --version 2>&1))"
 
-        echo "Upgrading pip, wheel, and compatible setuptools..."
-        # python-Wappalyzer still imports pkg_resources, which was removed from setuptools 81+
-        pip install --upgrade pip wheel "setuptools<81" || return 1
+        # Ensure ~/.local/bin is on PATH for user-installed scripts
+        mkdir -p "$HOME/.local/bin"
+        if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+            export PATH="$HOME/.local/bin:$PATH"
+        fi
 
-        deactivate
+        # Store resolved python binary for use by install_python_tool
+        echo "$python_bin" > "$HOME/.local/share/.python_bin"
+
+        # Upgrade pip and setuptools in user space
+        "$python_bin" -m pip install --user --quiet --upgrade pip "setuptools<81" wheel 2>/dev/null || true
+
+        echo "Python user-space install configured: $python_bin"
+        echo "Install target: $HOME/.local/lib/$(${python_bin} -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')/site-packages/"
 
         echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "python_venv"; then
-        echo -e "${GREEN}[OK] Python virtual environment created${NC}"
+    # python_venv is "installed" if we can resolve a python binary
+    if command -v python3 &>/dev/null; then
+        echo -e "${GREEN}[OK] Python user-space install configured${NC}"
         SUCCESSFUL_INSTALLS+=("python_venv")
         log_installation "python_venv" "success" "$logfile"
         cleanup_old_logs "python_venv"
         return 0
     else
-        echo -e "${RED}[FAIL] Python venv creation failed${NC}"
+        echo -e "${RED}[FAIL] No Python found${NC}"
         echo "  See log: $logfile"
         FAILED_INSTALLS+=("python_venv")
         FAILED_INSTALL_LOGS["python_venv"]="$logfile"

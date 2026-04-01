@@ -38,7 +38,7 @@ bash install_security_tools.sh --domain-tools     # Domain & Subdomain Enum (3 t
 bash install_security_tools.sh --recon-tools      # Active Recon & Scanning (4 tools)
 bash install_security_tools.sh --cti-tools        # Cyber Threat Intel (5 tools)
 bash install_security_tools.sh --utility-tools    # Utilities (6 tools)
-bash install_security_tools.sh --web-tools        # Web Tools (4 tools)
+bash install_security_tools.sh --web-tools        # Web Tools (5 tools)
 bash install_security_tools.sh all               # Everything
 ```
 
@@ -94,6 +94,7 @@ bash install_security_tools.sh --osint-tools --cti-tools
 ~/.local/state/install_tools/logs/  # Installation logs
 ~/opt/gopath/bin/           # Go tool binaries (symlinked to ~/.local/bin)
 ~/opt/tor-browser/          # Tor Browser
+~/opt/qtox/squashfs-root/   # qTox (AppImage extracted)
 ~/.local/share/cargo/bin/   # Rust tool binaries (symlinked to ~/.local/bin)
 ```
 
@@ -107,7 +108,7 @@ bash install_security_tools.sh --osint-tools --cti-tools
 | **[Wiki: Tool Categories](https://github.com/salesengr/tilix-tools-installer/wiki/Tool-Categories)** | Full tool list with descriptions |
 | **[Wiki: CLI Reference](https://github.com/salesengr/tilix-tools-installer/wiki/CLI-Reference)** | All flags, options, examples |
 | **[Wiki: Usage Examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)** | Practical examples for every tool |
-| **[Wiki: Web Tools](https://github.com/salesengr/tilix-tools-installer/wiki/Web-Tools)** | Chrome, SeleniumBase, Playwright, Tor |
+| **[Wiki: Web Tools](https://github.com/salesengr/tilix-tools-installer/wiki/Web-Tools)** | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox |
 | **[Wiki: Troubleshooting](https://github.com/salesengr/tilix-tools-installer/wiki/Troubleshooting)** | Common issues and fixes |
 | **[Wiki: Disk Space & Performance](https://github.com/salesengr/tilix-tools-installer/wiki/Disk-Space-and-Performance)** | Sizes and install times |
 | **[docs/EXTENDING_THE_SCRIPT.md](docs/EXTENDING_THE_SCRIPT.md)** | How to add new tools (versioned) |

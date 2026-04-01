@@ -90,7 +90,53 @@ WRAPPER_EOF
     fi
 }
 install_sublist3r() { install_python_tool "sublist3r" "sublist3r"; }
-install_shodan() { install_python_tool "shodan" "shodan"; }
+install_shodan() {
+    # shodan imports pkg_resources which was removed from Python 3.13+ stdlib.
+    # Install setuptools first to restore pkg_resources, then install shodan.
+    local python_bin; python_bin=$(_get_python_bin)
+    local logfile; logfile=$(create_tool_log "shodan")
+    echo -e "${INFO}⚙ Installing shodan via pip --user...${NC}"
+    {
+        echo "Installing shodan"; echo "Started: $(date)"
+        mkdir -p "$HOME/.local/bin"
+        export PATH="$HOME/.local/bin:$PATH"
+        # Install setuptools<70 which still ships pkg_resources (removed in newer versions)
+        "$python_bin" -m pip install --user --quiet "setuptools<70" ||             "$python_bin" -m pip install --user --quiet "setuptools" || true
+        "$python_bin" -m pip install --user --quiet "shodan" || return 1
+        # Patch the shodan wrapper to inject setuptools path if needed
+        if [ -f "$HOME/.local/bin/shodan" ]; then
+            # If pkg_resources still missing, create a patched wrapper
+            if ! "$python_bin" -c "import pkg_resources" 2>/dev/null; then
+                cat > "$HOME/.local/bin/shodan" << WRAPPER_EOF
+#!/bin/bash
+import sys
+import importlib
+try:
+    import pkg_resources
+except ImportError:
+    import types
+    pkg_resources = types.ModuleType("pkg_resources")
+    pkg_resources.require = lambda *a, **kw: None
+    sys.modules["pkg_resources"] = pkg_resources
+exec open("/root/.local/lib/python3.13/site-packages/shodan/__main__.py").read()
+WRAPPER_EOF
+            fi
+        fi
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if is_installed "shodan"; then
+        echo -e "${SUCCESS}${CHECK} shodan installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("shodan")
+        log_installation "shodan" "success" "$logfile"
+        cleanup_old_logs "shodan"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} shodan installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("shodan")
+    FAILED_INSTALL_LOGS["shodan"]="$logfile"
+    log_installation "shodan" "failure" "$logfile"
+    return 1
+}
 install_censys() { install_python_tool "censys" "censys"; }
 # Function: install_theHarvester
 # Purpose: Install active theHarvester release from GitHub (PyPI package is stale)
@@ -747,23 +793,7 @@ install_bat() {
         "bat"
 }
 
-install_sd() {
-    _install_rust_with_fallback "sd" \
-        "chmln/sd" \
-        "x86_64-unknown-linux-gnu\.tar\.gz" \
-        "sd" \
-        "tar.gz" \
-        "sd"
-}
 
-install_dog() {
-    _install_rust_with_fallback "dog" \
-        "ogham/dog" \
-        "x86_64-unknown-linux-gnu\.zip" \
-        "dog" \
-        "zip" \
-        "dog"
-}
 
 # ===== UTILITY TOOL INSTALLERS =====
 
@@ -1068,4 +1098,45 @@ WRAPPER
     FAILED_INSTALL_LOGS["tor_browser"]="$logfile"
     log_installation "tor_browser" "failure" "$logfile"
     return 1
+}
+
+install_sd() {
+    # Use musl static build — avoids GLIBC_2.32 incompatibility on Ubuntu 20.04
+    local logfile; logfile=$(create_tool_log "sd")
+    echo -e "${INFO}⬇ Installing sd (pre-built musl binary)...${NC}"
+    {
+        echo "Installing sd"; echo "Started: $(date)"
+        local api_url="https://api.github.com/repos/chmln/sd/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep "x86_64-unknown-linux-musl\.tar\.gz" \
+            | head -1 \
+            | sed 's/.*"browser_download_url": *"//;s/".*//')
+        echo "Downloading musl: $asset_url"
+        mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
+        cd "$HOME/opt/src" || return 1
+        curl -fsSL "$asset_url" -o sd-musl.tar.gz || return 1
+        tar -xzf sd-musl.tar.gz 2>/dev/null || true
+        local found; found=$(find . -name "sd" -type f ! -name "*.tar.gz" 2>/dev/null | head -1)
+        if [[ -n "$found" ]]; then
+            cp "$found" "$HOME/.local/bin/sd"
+            chmod +x "$HOME/.local/bin/sd"
+        else
+            echo "ERROR: sd binary not found in musl archive"; return 1
+        fi
+        rm -f sd-musl.tar.gz; echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+    if [ -x "$HOME/.local/bin/sd" ]; then
+        echo -e "${SUCCESS}${CHECK} sd installed successfully (pre-built musl)${NC}"
+        SUCCESSFUL_INSTALLS+=("sd"); log_installation "sd" "success" "$logfile"; cleanup_old_logs "sd"; return 0
+    fi
+    echo -e "${WARNING}${WARN} musl download failed, falling back to cargo...${NC}"
+    install_rust_tool "sd" "sd"
+}
+
+install_dog() {
+    # dog has no musl build; gnu binary requires GLIBC_2.32 (Ubuntu 20.04 has 2.31)
+    # Compile from cargo — gcc is available in the Tilix image
+    install_rust_tool "dog" "dog"
 }

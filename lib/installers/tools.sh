@@ -1146,7 +1146,7 @@ install_dog() {
 # Purpose: Install qTox encrypted chat client via AppImage extraction.
 #          AppImages normally require FUSE, which is unavailable in containers.
 #          Using --appimage-extract mode instead — extracts to ~/opt/qtox/squashfs-root/
-#          and runs directly without FUSE. Requires display/VNC to run GUI.
+#          and runs directly without FUSE.
 # Returns: 0 on success, 1 on failure
 install_qtox() {
     local logfile
@@ -1196,7 +1196,6 @@ install_qtox() {
         cat > "$HOME/.local/bin/qtox" << 'WRAPPER'
 #!/bin/bash
 # qTox launcher — runs extracted AppImage without FUSE
-# Requires a display (VNC session in Tilix)
 exec "$HOME/opt/qtox/squashfs-root/AppRun" "$@"
 WRAPPER
         chmod +x "$HOME/.local/bin/qtox"

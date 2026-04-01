@@ -1141,3 +1141,80 @@ install_dog() {
     # Compile from cargo — gcc is available in the Tilix image
     install_rust_tool "dog" "dog"
 }
+
+# Function: install_qtox
+# Purpose: Install qTox encrypted chat client via AppImage extraction.
+#          AppImages normally require FUSE, which is unavailable in containers.
+#          Using --appimage-extract mode instead — extracts to ~/opt/qtox/squashfs-root/
+#          and runs directly without FUSE.
+# Returns: 0 on success, 1 on failure
+install_qtox() {
+    local logfile
+    logfile=$(create_tool_log "qtox")
+    echo -e "${INFO}⬇ Installing qTox (AppImage extract mode)...${NC}"
+    {
+        echo "Installing qTox"
+        echo "Started: $(date)"
+
+        mkdir -p "$HOME/opt" "$HOME/.local/bin"
+
+        # Fetch latest release asset URL
+        local api_url="https://api.github.com/repos/TokTok/qTox/releases/latest"
+        local asset_url
+        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+            | grep "browser_download_url" \
+            | grep "x86_64\.AppImage\"" \
+            | grep -v "\.asc\|\.sha256\|\.zsync" \
+            | head -1 \
+            | sed 's/.*"browser_download_url": *"//;s/".*//')
+
+        if [[ -z "$asset_url" ]]; then
+            echo "ERROR: Could not find qTox AppImage asset"
+            return 1
+        fi
+
+        echo "Downloading: $asset_url"
+        cd "$HOME/opt" || return 1
+        curl -fsSL "$asset_url" -o qtox.AppImage || return 1
+        chmod +x qtox.AppImage
+
+        # Extract AppImage without FUSE (container-compatible)
+        echo "Extracting AppImage (FUSE-free mode)..."
+        rm -rf qtox/squashfs-root
+        mkdir -p qtox
+        cd qtox || return 1
+        ../qtox.AppImage --appimage-extract 2>/dev/null || true
+        cd "$HOME/opt" || return 1
+        rm -f qtox.AppImage
+
+        if [ ! -f "$HOME/opt/qtox/squashfs-root/AppRun" ]; then
+            echo "ERROR: AppImage extraction failed — AppRun not found"
+            return 1
+        fi
+
+        # Create launcher wrapper
+        cat > "$HOME/.local/bin/qtox" << 'WRAPPER'
+#!/bin/bash
+# qTox launcher — runs extracted AppImage without FUSE, detached from terminal
+nohup "$HOME/opt/qtox/squashfs-root/AppRun" "$@" &>/dev/null &
+disown
+WRAPPER
+        chmod +x "$HOME/.local/bin/qtox"
+
+        echo "qTox installed at ~/opt/qtox/squashfs-root/"
+        echo "Completed: $(date)"
+    } > "$logfile" 2>&1
+
+    if is_installed "qtox"; then
+        echo -e "${SUCCESS}${CHECK} qTox installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("qtox")
+        log_installation "qtox" "success" "$logfile"
+        cleanup_old_logs "qtox"
+        return 0
+    fi
+    echo -e "${ERROR}${CROSS} qTox installation failed — see $logfile${NC}"
+    FAILED_INSTALLS+=("qtox")
+    FAILED_INSTALL_LOGS["qtox"]="$logfile"
+    log_installation "qtox" "failure" "$logfile"
+    return 1
+}

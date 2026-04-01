@@ -142,6 +142,7 @@ Web automation tools enable browser-based OSINT, stealth scraping, captcha bypas
 | Playwright | `pip install --user playwright` + `playwright install chromium` | `~/.local/bin/playwright` + `~/.local/share/ms-playwright/` |
 | Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` |
 | Tor Browser | tarball from `torproject.org/dist/torbrowser/` | `~/opt/tor-browser/Browser/start-tor-browser` + `~/.local/bin/tor-browser` |
+| qTox | AppImage extract from `github.com/TokTok/qTox` | `~/opt/qtox/squashfs-root/AppRun` + `~/.local/bin/qtox` |
 
 ### SeleniumBase
 Works with the system Chrome already in the Tilix image. Three modes:
@@ -177,4 +178,13 @@ Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. I
 ```bash
 tor-browser                         # Launch with GUI (requires VNC)
 ~/opt/tor-browser/Browser/start-tor-browser --detach  # Background
+```
+
+### qTox
+Encrypted peer-to-peer chat client using the [Tox protocol](https://tox.chat). No central servers — all communication is end-to-end encrypted. Installed via AppImage extraction (FUSE-free, container-compatible) to `~/opt/qtox/squashfs-root/`.
+
+Includes a convenience launcher at `~/.local/bin/qtox` that automatically backgrounds the process using `nohup` + `disown`, so it doesn't block the terminal.
+
+```bash
+qtox                                # Launch qTox (backgrounds automatically)
 ```

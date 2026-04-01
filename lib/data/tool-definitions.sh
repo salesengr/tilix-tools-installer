@@ -22,7 +22,7 @@ ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
 CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
 SECURITY_TESTING=("jwt-cracker")
 UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "dog" "aria2")
-WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser")
+WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser" "qtox")
 
 # ===== INTERNAL RUNTIME ARRAYS =====
 # Used internally for dependency resolution only (not exposed in menu).
@@ -259,6 +259,14 @@ define_tools() {
     TOOL_INSTALL_LOCATION[yandex_browser]="/usr/bin/yandex-browser-beta"
 
     TOOL_INFO[tor_browser]="Tor Browser|Anonymous browsing via Tor network|Web Tools"
+    TOOL_SIZES[tor_browser]="333MB"
+    TOOL_DEPENDENCIES[tor_browser]=""
+    TOOL_INSTALL_LOCATION[tor_browser]="$HOME/opt/tor-browser/Browser/start-tor-browser"
+
+    TOOL_INFO[qtox]="qTox|Encrypted peer-to-peer chat client (Tox protocol)|Web Tools"
+    TOOL_SIZES[qtox]="65MB"
+    TOOL_DEPENDENCIES[qtox]=""
+    TOOL_INSTALL_LOCATION[qtox]="$HOME/opt/qtox/squashfs-root/AppRun"
     TOOL_SIZES[tor_browser]="100MB"
     TOOL_DEPENDENCIES[tor_browser]=""
     TOOL_INSTALL_LOCATION[tor_browser]="$HOME/opt/tor-browser/Browser/start-tor-browser"

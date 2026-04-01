@@ -73,6 +73,9 @@ is_installed() {
             command -v yandex-browser-beta &>/dev/null && return 0 ;;
         tor_browser)
             [ -f "$HOME/opt/tor-browser/Browser/start-tor-browser" ] && return 0 ;;
+        qtox)
+            [ -f "$HOME/opt/qtox/squashfs-root/AppRun" ] && return 0
+            [ -f "$HOME/.local/bin/qtox" ] && return 0 ;;
     esac
 
     return 1

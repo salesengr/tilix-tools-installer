@@ -1,8 +1,8 @@
 # Extending `install_security_tools.sh`
 
-**Version:** 1.3.3 (Modular Architecture)
+**Version:** 1.4.0 (Modular Architecture)
 
-The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.3.3) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
+The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 
 ## What Already Exists
 
@@ -13,7 +13,7 @@ The installer is intentionally data-driven and modular: every tool is described 
 - **Node.js apps (3):** trufflehog, git-hound, jwt-cracker
 - **Rust apps (8):** feroxbuster, rustscan, ripgrep, fd, bat, sd, tokei, dog
 
-## Add or Modify a Tool (v1.3.0 Modular Process)
+## Add or Modify a Tool (v1.4.0 Modular Process)
 
 ### File Locations
 

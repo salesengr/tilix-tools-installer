@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Logging Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Centralized logging operations for installation tracking and history
 
 # ===== LOGGING FUNCTIONS =====

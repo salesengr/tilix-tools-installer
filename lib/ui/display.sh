@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Display Module
-# Version: 1.3.0
+# Version: 1.4.0
 # Purpose: Status and information display functions
 
 # shellcheck disable=SC2012  # Using ls with timestamps is intentional for logs

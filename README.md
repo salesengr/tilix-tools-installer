@@ -5,7 +5,7 @@
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
 
-**Python support:** Validated with Python **3.13** (matching `salesengr/tilix-app:latest`, currently Python 3.13.8).
+**Python support:** Validated with Python **3.13** (Python 3.13.8). No virtual environment required — tools install via `pip install --user` using the system Python.
 
 **Architecture:** Modular design with 11 focused library modules for maintainability and extensibility.
 

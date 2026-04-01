@@ -1195,8 +1195,9 @@ install_qtox() {
         # Create launcher wrapper
         cat > "$HOME/.local/bin/qtox" << 'WRAPPER'
 #!/bin/bash
-# qTox launcher — runs extracted AppImage without FUSE
-exec "$HOME/opt/qtox/squashfs-root/AppRun" "$@"
+# qTox launcher — runs extracted AppImage without FUSE, detached from terminal
+nohup "$HOME/opt/qtox/squashfs-root/AppRun" "$@" &>/dev/null &
+disown
 WRAPPER
         chmod +x "$HOME/.local/bin/qtox"
 

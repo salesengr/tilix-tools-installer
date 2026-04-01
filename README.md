@@ -106,6 +106,7 @@ bash install_security_tools.sh --osint-tools --cti-tools
 | **[Wiki: Getting Started](https://github.com/salesengr/tilix-tools-installer/wiki/Getting-Started)** | Prerequisites, install methods, first run |
 | **[Wiki: Tool Categories](https://github.com/salesengr/tilix-tools-installer/wiki/Tool-Categories)** | Full tool list with descriptions |
 | **[Wiki: CLI Reference](https://github.com/salesengr/tilix-tools-installer/wiki/CLI-Reference)** | All flags, options, examples |
+| **[Wiki: Usage Examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)** | Practical examples for every tool |
 | **[Wiki: Web Tools](https://github.com/salesengr/tilix-tools-installer/wiki/Web-Tools)** | Chrome, SeleniumBase, Playwright, Tor |
 | **[Wiki: Troubleshooting](https://github.com/salesengr/tilix-tools-installer/wiki/Troubleshooting)** | Common issues and fixes |
 | **[Wiki: Disk Space & Performance](https://github.com/salesengr/tilix-tools-installer/wiki/Disk-Space-and-Performance)** | Sizes and install times |
@@ -146,7 +147,7 @@ google-chrome --version                       # check Chrome version
 sbase get https://example.com --headless      # SeleniumBase screenshot
 ```
 
-→ **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/CLI-Reference)**
+→ **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)**
 
 ---
 

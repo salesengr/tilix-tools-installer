@@ -27,26 +27,26 @@ Logs for every tool live in `~/.local/state/install_tools/logs/<tool>-<timestamp
 | Go (system prerequisite) | Expected at `/usr/local/go`; installer uses it to build Go tools and sets `GOPATH` to `~/opt/gopath`. | System toolchain at `/usr/local/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
 | Node.js 20.10.0 | Node tarball extracted to `~/opt/node`. npm global prefix points to `~/.local`, so binaries are linked in `~/.local/bin` and packages in `~/.local/lib/node_modules`. | `~/opt/node/bin/node`, `~/.local/bin/*` for npm-installed CLIs. |
 | Rust (rustup) | `rustup` installer runs with `$CARGO_HOME=$HOME/.local/share/cargo`. | Toolchains and registry caches in `~/.local/share/rustup`/`cargo`, binaries in `~/.local/share/cargo/bin`. |
-| Python virtual environment | `python3 -m venv $XDG_DATA_HOME/virtualenvs/tools`, pip upgraded, wrapper alias `tools-venv` provided by `xdg_setup.sh`. | Virtual environment at `~/.local/share/virtualenvs/tools`, activation script plus site-packages. |
+| Python (pip --user) | `pip install --user <package>` using system Python 3.13. No pip --user created. | Packages in `~/.local/lib/python3.13/site-packages/`, entry points in `~/.local/bin/`. |
 
 ## Python OSINT & CTI Tools
 
-All Python applications install into the shared virtual environment above. Each gets a wrapper in `~/.local/bin/<tool>` so you never have to activate the venv manually.
+All Python tools are installed via `pip install --user` using the system Python 3.13 already present in the Tilix image. No virtual environment is created. Packages land in `~/.local/lib/python3.13/site-packages/` and entry points appear directly in `~/.local/bin/<tool>`.
 
 | Tool | pip package installed | Wrapper command | Notable files |
 |------|-----------------------|-----------------|---------------|
 | sherlock | `sherlock-project` | `~/.local/bin/sherlock` | Modules under `~/.local/share/virtualenvs/tools/lib/python*/site-packages/sherlock`. |
-| holehe | `holehe` | `~/.local/bin/holehe` | Same venv, package `holehe`. |
-| socialscan | `socialscan` | `~/.local/bin/socialscan` | venv package `socialscan`. |
-| h8mail | `h8mail` | `~/.local/bin/h8mail` | venv package `h8mail`. |
-| photon | GitHub clone (`s0md3v/Photon`) + `requirements.txt` | `~/.local/bin/photon` | Source cloned under `~/opt/src/Photon`; wrapper points into Python venv. |
-| sublist3r | `sublist3r` | `~/.local/bin/sublist3r` | venv package `sublist3r`. |
-| shodan | `shodan` | `~/.local/bin/shodan` | venv package `shodan`. |
-| censys | `censys` | `~/.local/bin/censys` | venv package `censys`. |
-| theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | venv package `theHarvester`. |
-| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | venv package `spiderfoot`. |
-| yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings live in the venv. |
-| wappalyzer | `python-Wappalyzer` | `~/.local/bin/wappalyzer` | venv package `Wappalyzer`. |
+| holehe | `holehe` | `~/.local/bin/holehe` | pip --user package `holehe`. |
+| socialscan | `socialscan` | `~/.local/bin/socialscan` | pip --user package `socialscan`. |
+| h8mail | `h8mail` | `~/.local/bin/h8mail` | pip --user package `h8mail`. |
+| photon | GitHub clone (`s0md3v/Photon`) + `requirements.txt` | `~/.local/bin/photon` | Source cloned under `~/opt/src/Photon`; wrapper points to user-installed package. |
+| sublist3r | `sublist3r` | `~/.local/bin/sublist3r` | pip --user package `sublist3r`. |
+| shodan | `shodan` | `~/.local/bin/shodan` | pip --user package `shodan` (with pkg_resources shim). |
+| censys | `censys` | `~/.local/bin/censys` | pip --user package `censys`. |
+| theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | pip --user package `theHarvester`. |
+| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | pip --user package `spiderfoot`. |
+| yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings in `~/.local/lib/python3.13/site-packages/`. |
+| wappalyzer | `python-Wappalyzer` | `~/.local/bin/wappalyzer` | pip --user package `python-Wappalyzer`. |
 
 ## Go Tools
 

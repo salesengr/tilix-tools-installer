@@ -13,7 +13,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 - ✅ **No sudo required** - Complete user-space installation
 - ✅ **37+ security tools** - OSINT, CTI, reconnaissance, and pentesting
-- ✅ **3 managed runtimes + Python venv** - Node.js, Rust, Python venv (uses system Go for Go tools)
+- ✅ **3 managed runtimes** - Node.js, Rust, system Go/Python (no venv — pip install --user)
 - ✅ **Interactive menu** - Easy point-and-click installation
 - ✅ **CLI support** - Script automation and batch installation
 - ✅ **XDG compliant** - Follows Linux filesystem standards
@@ -182,8 +182,7 @@ After installation, your files will be organized as follows:
 ├── bin/                    # User executables (tools, wrappers)
 ├── lib/                    # User libraries
 ├── share/                  # User data
-│   └── virtualenvs/        # Python virtual environments
-│       └── tools/          # Security tools venv
+│   └── python3.13/         # Python tools (pip --user packages)
 └── state/                  # Application state & logs
     └── install_tools/
         └── logs/           # Installation logs
@@ -216,7 +215,7 @@ Comprehensive guides are available in the `docs/` directory:
 | Go installation | ~120 MB |
 | Node.js installation | ~50 MB |
 | Rust installation | ~800 MB |
-| Python venv + tools | ~80 MB |
+| Python tools (pip --user) | ~80 MB |
 | Go tools (compiled) | ~100 MB |
 | Node.js tools | ~80 MB |
 | Rust tools (compiled) | ~30 MB |
@@ -443,8 +442,8 @@ curl --socks5 localhost:9050 http://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt
 
 ### Python Tools
 ```bash
+# Update individual tools (no venv — installed directly via pip --user)
 pip install --user --upgrade sherlock-project holehe socialscan
-deactivate
 ```
 
 ### Go Tools
@@ -468,13 +467,14 @@ source ~/.bashrc  # Reload environment
 
 ### Python import errors
 ```bash
-# Check venv exists
-ls -la ~/.local/share/virtualenvs/tools/
+# Check user-space packages
+pip show sherlock-project holehe shodan
 
-# Manually activate and test
-source ~/.local/share/virtualenvs/tools/bin/activate
-sherlock --help
-deactivate
+# Reinstall a specific tool
+pip install --user --force-reinstall sherlock-project
+
+# Check ~/.local/bin for tool wrappers
+ls -la ~/.local/bin/sherlock holehe shodan
 ```
 
 ### Go tools not in PATH

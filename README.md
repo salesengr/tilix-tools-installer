@@ -1,7 +1,7 @@
 # Security Tools Installer
 
-**Version:** 1.4.0
-**Release Date:** April 1, 2026
+**Version:** 1.3.3
+**Release Date:** Feb 25 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
 
@@ -12,10 +12,8 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 ## 🎯 Features
 
 - ✅ **No sudo required** - Complete user-space installation
-- ✅ **41+ security tools** - OSINT, CTI, reconnaissance, pentesting, and web automation
-- ✅ **3 managed runtimes** - Node.js, Rust, system Go/Python (pip install --user, no venv)
-- ✅ **Pre-built binaries** - Fast installs via GitHub releases; compile-from-source as fallback only
-- ✅ **Web automation tools** - SeleniumBase, Playwright, Yandex Browser, Tor Browser
+- ✅ **37+ security tools** - OSINT, CTI, reconnaissance, and pentesting
+- ✅ **3 managed runtimes** - Node.js, Rust, system Go/Python (no venv — pip install --user)
 - ✅ **Interactive menu** - Easy point-and-click installation
 - ✅ **CLI support** - Script automation and batch installation
 - ✅ **XDG compliant** - Follows Linux filesystem standards
@@ -26,63 +24,61 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 ## 📦 What Gets Installed
 
-Tools are organized by use-case, not by runtime. Install an entire category with one command.
-
-### Passive OSINT (12 tools) — `--osint-tools`
-- **sherlock** - Username search across 300+ social networks
-- **holehe** - Email verification across websites
-- **socialscan** - Username/email availability checker
-- **theHarvester** - Multi-source OSINT gathering
-- **spiderfoot** - Automated OSINT collection
-- **photon** - Fast web crawler
-- **wappalyzer** - Technology profiler
-- **h8mail** - Email OSINT and breach hunting
-- **waybackurls** - Wayback Machine URL fetcher
-- **assetfinder** - Domain/subdomain finder
-- **subfinder** - Subdomain discovery tool
-- **git-hound** - GitHub reconnaissance
-
-### Domain & Subdomain Enumeration (3 tools) — `--domain-tools`
-- **sublist3r** - Subdomain enumeration
-- **gobuster** - Directory/DNS/vhost bruteforcing
-- **ffuf** - Fast web fuzzer
-
-### Active Recon & Scanning (4 tools) — `--recon-tools`
-- **httprobe** - HTTP/HTTPS service probe
-- **rustscan** - Modern fast port scanner
-- **feroxbuster** - Fast content discovery
-- **nuclei** - Vulnerability scanner
-
-### Cyber Threat Intelligence (5 tools) — `--cti-tools`
-- **shodan** - Internet device search engine CLI
-- **censys** - Internet-wide scanning data
-- **yara** - Pattern matching for malware research
-- **trufflehog** - Secret scanning in git repositories
-- **virustotal** - VirusTotal CLI
-
-### Security Testing (1 tool)
-- **jwt-cracker** - JWT token analysis
-
-### Utilities (6 tools) — `--utility-tools`
-- **ripgrep** (`rg`) - Fast recursive grep
-- **fd** - Fast file finder
-- **bat** - Cat with syntax highlighting
-- **sd** - Intuitive find & replace
-- **dog** - Modern DNS client
-- **aria2** - Multi-protocol download utility (HTTP/FTP/BitTorrent)
-
-### Web Automation (4 tools) — `--web-tools`
-- **SeleniumBase** - Browser automation with UC/CDP modes for bypassing bot-detection & CAPTCHAs
-- **Playwright** - Cross-browser automation (uses system Chrome — no 600MB download)
-- **Yandex Browser** - Chromium-based browser for Russian-language OSINT (amd64 only)
-- **Tor Browser** - Anonymous browsing via the Tor network
-
 ### Build Tools & Runtimes
-- **CMake** - Build system generator
-- **GitHub CLI** - Manage GitHub from the terminal
-- **Go Runtime** - Auto-installed if not present in system
-- **Node.js** - System Node.js used if available; tarball fallback
-- **Rust** - Installed via rustup for tools that require cargo compile
+- **CMake** 3.28.1 - Build system generator
+- **GitHub CLI** 2.53.0 - Manage GitHub from the terminal
+- **Go** (system prerequisite) - Used to build/install Go-based tools
+- **Node.js** 20.10.0 - JavaScript runtime
+- **Rust** (latest) - Systems programming language
+
+### Python Tools (12 tools)
+**OSINT/Reconnaissance:**
+- sherlock - Username search across 300+ social networks
+- holehe - Email verification across websites
+- socialscan - Username/email availability checker
+- theHarvester - Multi-source OSINT gathering
+- spiderfoot - Automated OSINT collection
+- sublist3r - Subdomain enumeration
+- photon - Fast web crawler
+
+**Cyber Threat Intelligence:**
+- shodan - Internet device search engine CLI
+- censys - Internet-wide scanning data
+- yara - Pattern matching for malware research
+- h8mail - Email OSINT and breach hunting
+
+### Go Tools (8 tools)
+**Active Reconnaissance:**
+- gobuster - Directory/DNS/vhost bruteforcing
+- ffuf - Fast web fuzzer
+- httprobe - HTTP/HTTPS service probe
+- nuclei - Vulnerability scanner
+
+**Passive Reconnaissance:**
+- waybackurls - Wayback Machine URL fetcher
+- assetfinder - Domain/subdomain finder
+- subfinder - Subdomain discovery tool
+
+**CTI:**
+- virustotal - VirusTotal CLI
+
+### Node.js Tools (3 tools)
+- trufflehog - Secret scanning in git repositories
+- git-hound - GitHub reconnaissance
+- jwt-cracker - JWT token analysis
+
+### Rust Tools (8 tools)
+**Reconnaissance:**
+- feroxbuster - Fast content discovery
+- rustscan - Modern fast port scanner
+
+**Utilities:**
+- ripgrep - Fast recursive grep
+- fd - Fast file finder
+- bat - Cat with syntax highlighting
+- sd - Intuitive find & replace
+- tokei - Code statistics analyzer
+- dog - Modern DNS client
 
 ## 🚀 Quick Start
 
@@ -212,20 +208,20 @@ Comprehensive guides are available in the `docs/` directory:
 
 ## 💾 Disk Space Requirements
 
-| Component | Size | Notes |
-|-----------|------|-------|
-| CMake | ~50 MB | |
-| GitHub CLI | ~90 MB | |
-| Rust toolchain | ~800 MB | Only if Rust tools selected |
-| Go runtime | ~120 MB | Only if not in system |
-| Node.js | ~0 MB | Uses system Node; tarball fallback ~50 MB |
-| Python tools (pip --user) | ~80 MB | No venv overhead |
-| Go tools (pre-built binaries) | ~100 MB | Downloaded, not compiled |
-| Rust tools (pre-built binaries) | ~30 MB | Downloaded, not compiled |
-| Web automation tools | ~120 MB | Tor Browser + SeleniumBase/Playwright packages |
-| **Total (typical)** | **~400-800 MB** | Depends on categories selected |
+| Component | Size |
+|-----------|------|
+| CMake | ~50 MB |
+| GitHub CLI | ~90 MB |
+| Go installation | ~120 MB |
+| Node.js installation | ~50 MB |
+| Rust installation | ~800 MB |
+| Python tools (pip --user) | ~80 MB |
+| Go tools (compiled) | ~100 MB |
+| Node.js tools | ~80 MB |
+| Rust tools (compiled) | ~30 MB |
+| **Total** | **~1.3-2 GB** |
 
-*Note: Pre-built binaries are used where available — no compile times for most tools. Rust toolchain (~800 MB) only needed if cargo compile fallback is triggered.*
+*Note: Rust is the largest component. You can skip Rust tools if space is limited.*
 
 ## ⏱️ Installation Time
 
@@ -235,8 +231,8 @@ Comprehensive guides are available in the `docs/` directory:
 | Python tools only | 5-10 minutes |
 | Go tools only | 5-15 minutes |
 | Node.js tools only | 2-5 minutes |
-| --recon-tools | ~6 minutes | Pre-built + some cargo |
-| --web-tools | ~5 minutes | pip install + apt |
+| Rust tools only | 20-30 minutes* |
+| **Everything** | **30-60 minutes** |
 
 *Rust tools compile from source and take significantly longer.*
 
@@ -305,7 +301,7 @@ aria2c --continue=true https://example.com/large.iso
 aria2c --enable-rpc --rpc-listen-all=true --daemon=true
 ```
 
-### Web Automation Tools
+### Web Tools
 
 #### SeleniumBase — Stealth Browser Automation
 SeleniumBase works with the Chrome browser already installed in the Tilix image.

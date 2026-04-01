@@ -24,61 +24,63 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 
 ## 📦 What Gets Installed
 
+Tools are organized by use-case. Install an entire category with one command.
+
+### Passive OSINT (12 tools) — `--osint-tools`
+- **sherlock** - Username search across 300+ social networks
+- **holehe** - Email verification across websites
+- **socialscan** - Username/email availability checker
+- **theHarvester** - Multi-source OSINT gathering
+- **spiderfoot** - Automated OSINT collection
+- **photon** - Fast web crawler
+- **wappalyzer** - Technology profiler
+- **h8mail** - Email OSINT and breach hunting
+- **waybackurls** - Wayback Machine URL fetcher
+- **assetfinder** - Domain/subdomain finder
+- **subfinder** - Subdomain discovery tool
+- **git-hound** - GitHub reconnaissance
+
+### Domain & Subdomain Enumeration (3 tools) — `--domain-tools`
+- **sublist3r** - Subdomain enumeration
+- **gobuster** - Directory/DNS/vhost bruteforcing
+- **ffuf** - Fast web fuzzer
+
+### Active Recon & Scanning (4 tools) — `--recon-tools`
+- **httprobe** - HTTP/HTTPS service probe
+- **rustscan** - Modern fast port scanner
+- **feroxbuster** - Fast content discovery
+- **nuclei** - Vulnerability scanner
+
+### Cyber Threat Intelligence (5 tools) — `--cti-tools`
+- **shodan** - Internet device search engine CLI
+- **censys** - Internet-wide scanning data
+- **yara** - Pattern matching for malware research
+- **trufflehog** - Secret scanning in git repositories
+- **virustotal** (`vt`) - VirusTotal CLI
+
+### Security Testing (1 tool)
+- **jwt-cracker** - JWT token analysis
+
+### Utilities (6 tools) — `--utility-tools`
+- **ripgrep** (`rg`) - Fast recursive grep
+- **fd** - Fast file finder
+- **bat** - Cat with syntax highlighting
+- **sd** - Intuitive find & replace
+- **dog** - Modern DNS client
+- **aria2** - Multi-protocol download utility (HTTP/FTP/BitTorrent)
+
+### Web Tools (4 tools) — `--web-tools`
+- **SeleniumBase** - Browser automation with UC/CDP modes for bypassing bot-detection & CAPTCHAs
+- **Playwright** - Cross-browser automation (uses system Chrome — no separate browser download)
+- **Yandex Browser** - Chromium-based browser for Russian-language OSINT (amd64 only)
+- **Tor Browser** - Anonymous browsing via the Tor network
+
 ### Build Tools & Runtimes
-- **CMake** 3.28.1 - Build system generator
-- **GitHub CLI** 2.53.0 - Manage GitHub from the terminal
-- **Go** (system prerequisite) - Used to build/install Go-based tools
-- **Node.js** 20.10.0 - JavaScript runtime
-- **Rust** (latest) - Systems programming language
-
-### Python Tools (12 tools)
-**OSINT/Reconnaissance:**
-- sherlock - Username search across 300+ social networks
-- holehe - Email verification across websites
-- socialscan - Username/email availability checker
-- theHarvester - Multi-source OSINT gathering
-- spiderfoot - Automated OSINT collection
-- sublist3r - Subdomain enumeration
-- photon - Fast web crawler
-
-**Cyber Threat Intelligence:**
-- shodan - Internet device search engine CLI
-- censys - Internet-wide scanning data
-- yara - Pattern matching for malware research
-- h8mail - Email OSINT and breach hunting
-
-### Go Tools (8 tools)
-**Active Reconnaissance:**
-- gobuster - Directory/DNS/vhost bruteforcing
-- ffuf - Fast web fuzzer
-- httprobe - HTTP/HTTPS service probe
-- nuclei - Vulnerability scanner
-
-**Passive Reconnaissance:**
-- waybackurls - Wayback Machine URL fetcher
-- assetfinder - Domain/subdomain finder
-- subfinder - Subdomain discovery tool
-
-**CTI:**
-- virustotal - VirusTotal CLI
-
-### Node.js Tools (3 tools)
-- trufflehog - Secret scanning in git repositories
-- git-hound - GitHub reconnaissance
-- jwt-cracker - JWT token analysis
-
-### Rust Tools (8 tools)
-**Reconnaissance:**
-- feroxbuster - Fast content discovery
-- rustscan - Modern fast port scanner
-
-**Utilities:**
-- ripgrep - Fast recursive grep
-- fd - Fast file finder
-- bat - Cat with syntax highlighting
-- sd - Intuitive find & replace
-- tokei - Code statistics analyzer
-- dog - Modern DNS client
+- **CMake** - Build system generator
+- **GitHub CLI** - Manage GitHub from the terminal
+- **Go Runtime** - Auto-installed to `~/opt/go` if not present system-wide
+- **Node.js** - Uses system Node.js (image-bundled); tarball fallback only
+- **Rust** - Installed via rustup for tools that require cargo compile
 
 ## 🚀 Quick Start
 
@@ -302,6 +304,23 @@ aria2c --enable-rpc --rpc-listen-all=true --daemon=true
 ```
 
 ### Web Tools
+
+The Tilix image ships **Google Chrome 146** at `/usr/bin/google-chrome`. All web automation tools use it directly — no separate browser download needed.
+
+#### Launching Chrome Directly
+```bash
+# Headless (no display required)
+google-chrome --headless --no-sandbox --disable-dev-shm-usage --dump-dom https://example.com
+
+# Screenshot
+google-chrome --headless --no-sandbox --screenshot=/tmp/screenshot.png https://example.com
+
+# With a specific user-data-dir (persistent session)
+google-chrome --headless --no-sandbox --user-data-dir=/tmp/chrome-session https://example.com
+
+# Interactive (requires VNC/display session in Tilix)
+google-chrome
+```
 
 #### SeleniumBase — Stealth Browser Automation
 SeleniumBase works with the Chrome browser already installed in the Tilix image.

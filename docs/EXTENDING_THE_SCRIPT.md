@@ -7,11 +7,14 @@ The installer is intentionally data-driven and modular: every tool is described 
 ## What Already Exists
 
 - **Build tools:** `cmake`, `github_cli`
-- **Runtimes:** `go`, `nodejs`, `rust`, `python_venv`
-- **Python apps (12):** sherlock, holehe, socialscan, h8mail, photon, sublist3r, shodan, censys, theHarvester, spiderfoot, yara, wappalyzer
-- **Go apps (8):** gobuster, ffuf, httprobe, waybackurls, assetfinder, subfinder, nuclei, virustotal
-- **Node.js apps (3):** trufflehog, git-hound, jwt-cracker
-- **Rust apps (8):** feroxbuster, rustscan, ripgrep, fd, bat, sd, tokei, dog
+- **Runtimes:** `go_runtime`, `nodejs`, `rust`, `python_venv`
+- **Passive OSINT (12):** sherlock, holehe, socialscan, h8mail, photon, wappalyzer, theHarvester, spiderfoot, waybackurls, assetfinder, subfinder, git-hound
+- **Domain Enum (3):** sublist3r, gobuster, ffuf
+- **Active Recon (4):** httprobe, rustscan, feroxbuster, nuclei
+- **CTI (5):** shodan, censys, yara, trufflehog, virustotal
+- **Security Testing (1):** jwt-cracker
+- **Utilities (6):** ripgrep, fd, bat, sd, dog, aria2
+- **Web Tools (4):** seleniumbase, playwright, yandex_browser, tor_browser
 
 ## Add or Modify a Tool (v1.4.0 Modular Process)
 
@@ -35,8 +38,8 @@ With the modular architecture, you'll work with these specific files:
    - Use the canonical command name as the key (e.g. `TOOL_INFO[feroxbuster]=...`).
 
 2. **Place it in a category** (`lib/data/tool-definitions.sh`)
-   - Append the tool name to the relevant array (`PYTHON_RECON_PASSIVE`, `GO_RECON_ACTIVE`, `NODE_TOOLS`, etc.).
-   - Categories power the bulk options (`--python-tools`, and menu bulk options 34-37).
+   - Append the tool name to the relevant use-case array (`PASSIVE_OSINT`, `DOMAIN_ENUM`, `ACTIVE_RECON`, `CTI_TOOLS`, `UTILITY_TOOLS`, `WEB_TOOLS`).
+   - Categories power the bulk options (`--osint-tools`, `--domain-tools`, etc. and menu bulk options 42-48).
 
 3. **Explain how to detect it** (`lib/core/verification.sh`)
    - Update `is_installed()` with the proper file location or `command -v` check.

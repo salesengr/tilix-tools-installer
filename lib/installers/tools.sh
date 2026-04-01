@@ -4,6 +4,7 @@
 # Purpose: Tool-specific installation logic and wrapper functions
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
+# shellcheck disable=SC2329  # Go fallback stubs called indirectly via _install_go_with_fallback
 # shellcheck disable=SC1091  # Source files in virtualenvs (dynamic paths)
 
 # ===== PYTHON TOOL WRAPPERS =====

@@ -284,11 +284,14 @@ install_go_runtime() {
 
         # Add to PATH in .bashrc if not already present
         if ! grep -q 'opt/go/bin' "$HOME/.bashrc" 2>/dev/null; then
-            echo '' >> "$HOME/.bashrc"
-            echo '# Go runtime (user-space install)' >> "$HOME/.bashrc"
-            echo 'export GOROOT="$HOME/opt/go"' >> "$HOME/.bashrc"
-            echo 'export GOPATH="$HOME/opt/gopath"' >> "$HOME/.bashrc"
-            echo 'export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"' >> "$HOME/.bashrc"
+            # shellcheck disable=SC2016  # Single quotes intentional: $HOME expands at shell startup, not write time
+            {
+                echo ''
+                echo '# Go runtime (user-space install)'
+                echo 'export GOROOT="$HOME/opt/go"'
+                echo 'export GOPATH="$HOME/opt/gopath"'
+                echo 'export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"'
+            } >> "$HOME/.bashrc"
         fi
 
         # Export for current session

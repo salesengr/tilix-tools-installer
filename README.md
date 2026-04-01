@@ -10,7 +10,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 
 ## 🎯 Features
 
-- ✅ **41+ security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
+- ✅ **36 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
 - ✅ **No sudo required** — complete user-space installation
 - ✅ **Pre-built binaries** — fast installs via GitHub releases; compile-from-source as fallback
 - ✅ **Use-case categories** — install exactly what you need with one command

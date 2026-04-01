@@ -3,7 +3,7 @@
 **Version:** 1.4.0
 **Release Date:** April 1, 2026
 
-A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 37+ tools including runtimes, build tools, and security applications.
+A comprehensive user-space installation system for OSINT/CTI/PenTest security tools that requires **no sudo access**. Installs 41+ tools including runtimes, build tools, security applications, and web automation.
 
 **Python support:** Validated with Python **3.13** (Python 3.13.8). No virtual environment required — tools install via `pip install --user` using the system Python.
 
@@ -12,8 +12,10 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest security to
 ## 🎯 Features
 
 - ✅ **No sudo required** - Complete user-space installation
-- ✅ **37+ security tools** - OSINT, CTI, reconnaissance, and pentesting
-- ✅ **3 managed runtimes** - Node.js, Rust, system Go/Python (no venv — pip install --user)
+- ✅ **41+ security tools** - OSINT, CTI, reconnaissance, pentesting, and web automation
+- ✅ **3 managed runtimes** - Node.js, Rust, system Go/Python (pip install --user, no venv)
+- ✅ **Pre-built binaries** - Fast installs via GitHub releases; compile-from-source as fallback only
+- ✅ **Web tools** - SeleniumBase, Playwright, Yandex Browser, Tor Browser
 - ✅ **Interactive menu** - Easy point-and-click installation
 - ✅ **CLI support** - Script automation and batch installation
 - ✅ **XDG compliant** - Follows Linux filesystem standards
@@ -152,20 +154,22 @@ bash install_security_tools.sh
 Then use the menu to select tools:
 - Individual tools by number
 - Categories (Python, Go, Node, Rust)
-- Install bulk categories from the menu (options 34-37)
+- Install bulk categories from the menu (options 42-48)
 
 **Command Line Mode**
 ```bash
 # Install specific tools
 bash install_security_tools.sh sherlock gobuster nuclei
 
-# Install entire categories
-bash install_security_tools.sh --python-tools
-bash install_security_tools.sh --go-tools
-bash install_security_tools.sh --node-tools
-bash install_security_tools.sh --rust-tools
+# Install by use-case category (v1.4.0+)
+bash install_security_tools.sh --osint-tools
+bash install_security_tools.sh --domain-tools
+bash install_security_tools.sh --recon-tools
+bash install_security_tools.sh --cti-tools
+bash install_security_tools.sh --utility-tools
+bash install_security_tools.sh --web-tools
 
-# Install everything (30-60 minutes)
+# Install everything
 bash install_security_tools.sh all
 
 # Dry run (preview what would be installed)
@@ -192,7 +196,7 @@ After installation, your files will be organized as follows:
 ~/opt/
 ├── gopath/                 # Go workspace (requires system Go)
 │   └── bin/               # Compiled Go tools
-├── node/                   # Node.js installation
+├── node/                   # Node.js (only if system Node absent)
 └── src/                    # Source code downloads
 
 ~/.local/share/cargo/       # Rust installation
@@ -210,37 +214,37 @@ Comprehensive guides are available in the `docs/` directory:
 
 ## 💾 Disk Space Requirements
 
-| Component | Size |
-|-----------|------|
-| CMake | ~50 MB |
-| GitHub CLI | ~90 MB |
-| Go installation | ~120 MB |
-| Node.js installation | ~50 MB |
-| Rust installation | ~800 MB |
-| Python tools (pip --user) | ~80 MB |
-| Go tools (compiled) | ~100 MB |
-| Node.js tools | ~80 MB |
-| Rust tools (compiled) | ~30 MB |
-| **Total** | **~1.3-2 GB** |
+| Component | Size | Notes |
+|-----------|------|-------|
+| CMake | ~50 MB | |
+| GitHub CLI | ~90 MB | |
+| Rust toolchain | ~800 MB | Only if Rust tools selected |
+| Go runtime | ~120 MB | Only if not present in system |
+| Node.js | ~0 MB | Uses system Node; tarball fallback ~50 MB |
+| Python tools (pip --user) | ~80 MB | No venv overhead |
+| Go tools (pre-built binaries) | ~100 MB | Downloaded, not compiled |
+| Rust tools (pre-built binaries) | ~30 MB | Downloaded, not compiled |
+| Web tools | ~120 MB | Tor Browser + SeleniumBase/Playwright packages |
+| **Total (typical)** | **~400-800 MB** | Depends on categories selected |
 
-*Note: Rust is the largest component. You can skip Rust tools if space is limited.*
+*Note: Pre-built binaries used where available — no long compile times for most tools.*
 
 ## ⏱️ Installation Time
 
-| Installation Type | Time Estimate |
-|-------------------|---------------|
-| XDG setup only | 1 minute |
-| Python tools only | 5-10 minutes |
-| Go tools only | 5-15 minutes |
-| Node.js tools only | 2-5 minutes |
-| Rust tools only | 20-30 minutes* |
-| **Everything** | **30-60 minutes** |
-
-*Rust tools compile from source and take significantly longer.*
+| Flag | Time Estimate | Notes |
+|------|---------------|-------|
+| XDG setup only | ~1 min | |
+| `--osint-tools` | ~3 min | Pre-built binaries |
+| `--domain-tools` | ~13 sec | Pre-built binaries |
+| `--recon-tools` | ~6 min | Pre-built + some cargo |
+| `--cti-tools` | ~4 min | pip --user + pre-built |
+| `--utility-tools` | ~2 min | Pre-built binaries |
+| `--web-tools` | ~5 min | pip install + apt |
+| **Everything** | **~20-30 min** | **vs 60+ min before v1.4.0** |
 
 ## 🔧 Usage Examples
 
-### Python Tools
+### Passive OSINT
 ```bash
 # Username search
 sherlock john_doe
@@ -255,7 +259,7 @@ h8mail -t victim@example.com
 sublist3r -d example.com
 ```
 
-### Go Tools
+### Domain & Active Recon
 ```bash
 # Directory bruteforce
 gobuster dir -u https://target.com -w wordlist.txt
@@ -270,7 +274,7 @@ subfinder -d target.com -o subdomains.txt
 nuclei -u https://target.com
 ```
 
-### Rust Tools
+### Active Recon
 ```bash
 # Fast port scan
 rustscan -a target.com
@@ -521,7 +525,7 @@ Check the detailed log files in `~/.local/state/install_tools/logs/` for specifi
 - All tools install to user space (`~/.local/`, `~/opt/`)
 - No system files are modified
 - No privileged operations are performed
-- Virtual environments isolate Python dependencies
+- pip --user installs are isolated to ~/.local/lib/python3.13
 - Each language runtime is self-contained
 
 ## 📊 Installation Logs

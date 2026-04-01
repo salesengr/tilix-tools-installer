@@ -22,7 +22,7 @@ ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
 CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
 SECURITY_TESTING=("jwt-cracker")
 UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "dog" "aria2")
-WEB_AUTOMATION=("seleniumbase" "playwright" "yandex_browser" "tor_browser")
+WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser")
 
 # ===== INTERNAL RUNTIME ARRAYS =====
 # Used internally for dependency resolution only (not exposed in menu).
@@ -242,23 +242,23 @@ define_tools() {
     TOOL_INSTALL_LOCATION[aria2]="$HOME/.local/bin/aria2c"
 }
 
-    # Web Automation Tools
-    TOOL_INFO[seleniumbase]="SeleniumBase|Browser automation with UC/CDP modes for bypassing bot-detection|Web Automation"
+    # Web Tools
+    TOOL_INFO[seleniumbase]="SeleniumBase|Browser automation with UC/CDP modes for bypassing bot-detection|Web Tools"
     TOOL_SIZES[seleniumbase]="50MB"
     TOOL_DEPENDENCIES[seleniumbase]=""
     TOOL_INSTALL_LOCATION[seleniumbase]="$HOME/.local/bin/sbase"
 
-    TOOL_INFO[playwright]="Playwright|Cross-browser automation framework (Chromium/Firefox/WebKit)|Web Automation"
+    TOOL_INFO[playwright]="Playwright|Cross-browser automation framework (Chromium/Firefox/WebKit)|Web Tools"
     TOOL_SIZES[playwright]="100MB"
     TOOL_DEPENDENCIES[playwright]=""
     TOOL_INSTALL_LOCATION[playwright]="$HOME/.local/bin/playwright"
 
-    TOOL_INFO[yandex_browser]="Yandex Browser|Chromium-based browser for Russian-language OSINT|Web Automation"
+    TOOL_INFO[yandex_browser]="Yandex Browser|Chromium-based browser for Russian-language OSINT|Web Tools"
     TOOL_SIZES[yandex_browser]="300MB"
     TOOL_DEPENDENCIES[yandex_browser]=""
     TOOL_INSTALL_LOCATION[yandex_browser]="/usr/bin/yandex-browser-beta"
 
-    TOOL_INFO[tor_browser]="Tor Browser|Anonymous browsing via Tor network|Web Automation"
+    TOOL_INFO[tor_browser]="Tor Browser|Anonymous browsing via Tor network|Web Tools"
     TOOL_SIZES[tor_browser]="100MB"
     TOOL_DEPENDENCIES[tor_browser]=""
     TOOL_INSTALL_LOCATION[tor_browser]="$HOME/opt/tor-browser/Browser/start-tor-browser"

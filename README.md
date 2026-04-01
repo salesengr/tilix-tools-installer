@@ -301,7 +301,7 @@ aria2c --continue=true https://example.com/large.iso
 aria2c --enable-rpc --rpc-listen-all=true --daemon=true
 ```
 
-### Web Automation Tools
+### Web Tools
 
 #### SeleniumBase — Stealth Browser Automation
 SeleniumBase works with the Chrome browser already installed in the Tilix image.

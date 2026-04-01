@@ -923,7 +923,7 @@ install_aria2() {
     fi
 }
 
-# ===== WEB AUTOMATION TOOLS =====
+# ===== WEB TOOLS =====
 
 # Function: install_seleniumbase
 # Purpose: Install SeleniumBase via pip --user

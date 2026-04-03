@@ -455,24 +455,47 @@ install_yara() {
                 rm -rf yara-4.5.0 "$filename"
 
                 if download_file "$url" "$filename"; then
-                    # Verify SHA256 before compiling — source tarballs execute code at build time
-                    # GitHub doesn't publish companion .sha256 for source archives, so this
-                    # uses the opportunistic helper and warns if unavailable
-                    verify_sha256 "$filename" "${url}.sha256" || return 1
-                    local _yara_built=0
-                    if tar -xzf "$filename" && cd yara-4.5.0; then
-                        if ./bootstrap.sh \
-                            && ./configure --prefix="$HOME/.local" \
-                            && make -j"$(nproc)" \
-                            && make install; then
-                            _yara_built=1
+                    # Source compilation runs arbitrary code — require SHA256 verification.
+                    # GitHub does not publish .sha256 for auto-generated source archives,
+                    # so if the companion is unavailable, skip the native build entirely
+                    # and fall through to the Python wrapper rather than compile unverified code.
+                    local sha256_tmp="${filename}.sha256"
+                    local _sha256_verified=false
+                    if curl --proto '=https' --tlsv1.2 -fsSL "${url}.sha256" \
+                            -o "$sha256_tmp" 2>/dev/null && [ -s "$sha256_tmp" ]; then
+                        local expected actual
+                        expected=$(awk '{print $1}' "$sha256_tmp")
+                        actual=$(sha256sum "$filename" | awk '{print $1}')
+                        rm -f "$sha256_tmp"
+                        if [ "$expected" = "$actual" ]; then
+                            echo "SHA256 verified OK"
+                            _sha256_verified=true
                         else
-                            echo "YARA native build failed — will use Python wrapper fallback"
+                            echo "ERROR: SHA256 mismatch for YARA source tarball — aborting"
+                            rm -rf "$filename"
+                            return 1
                         fi
                     else
-                        echo "YARA source extraction failed — will use Python wrapper fallback"
+                        rm -f "$sha256_tmp" 2>/dev/null || true
+                        echo "YARA source SHA256 unavailable — skipping native build (Python wrapper will be used)"
                     fi
-                    cd "$HOME/opt/src" || true
+
+                    local _yara_built=0
+                    if [ "$_sha256_verified" = true ]; then
+                        if tar -xzf "$filename" && cd yara-4.5.0; then
+                            if ./bootstrap.sh \
+                                && ./configure --prefix="$HOME/.local" \
+                                && make -j"$(nproc)" \
+                                && make install; then
+                                _yara_built=1
+                            else
+                                echo "YARA native build failed — will use Python wrapper fallback"
+                            fi
+                        else
+                            echo "YARA source extraction failed — will use Python wrapper fallback"
+                        fi
+                        cd "$HOME/opt/src" || true
+                    fi
                     rm -rf yara-4.5.0 "$filename"
                     [ "${_yara_built}" -eq 0 ] && true  # fall through to wrapper below
                 else
@@ -791,11 +814,11 @@ install_rustscan() {
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o rustscan.zip || return 1
         verify_sha256 "rustscan.zip" "${asset_url}.sha256" || return 1
-        unzip -q rustscan.zip 2>/dev/null || true
+        unzip -q rustscan.zip 2>/dev/null || { echo "ERROR: unzip failed for rustscan.zip"; rm -f rustscan.zip; return 1; }
         local tgz
         tgz=$(find . -name "*.tar.gz" | head -1)
         if [[ -n "$tgz" ]]; then
-            tar -xzf "$tgz" 2>/dev/null || true
+            tar -xzf "$tgz" 2>/dev/null || { echo "ERROR: tar extraction failed for $tgz"; rm -f rustscan.zip "$tgz"; return 1; }
         fi
         local bin
         bin=$(find . -name "rustscan" -type f 2>/dev/null | head -1)
@@ -885,25 +908,9 @@ install_aria2() {
                 ;;
         esac
 
-        # Fetch latest release tag from GitHub API
-        local latest_tag
-        latest_tag=$(curl -fsSL "https://api.github.com/repos/aria2/aria2/releases/latest" \
-            | grep -oP '"tag_name":\s*"\K[^"]+')
-
-        if [[ -z "$latest_tag" ]]; then
-            echo "ERROR: Could not determine latest aria2 release tag"
-            return 1
-        fi
-
-        echo "Latest aria2 release: $latest_tag"
-
-        # aria2 distributes static Linux binaries via GitHub Actions artifacts,
-        # but official release assets are source tarballs only.
-        # Use the abcguitar/aria2-static-build releases which provide
-        # pre-built static binaries, or fall back to building from source via apt.
-        # Simplest reliable approach for Debian/Ubuntu (Tilix base): use the
-        # system package manager to install into the user prefix.
-
+        # aria2 is installed via apt — the packaged version is used as-is.
+        # Official aria2 releases do not ship pre-built static binaries,
+        # and third-party binary sources were excluded on supply chain grounds.
         echo "Attempting install via system package manager..."
 
         if command -v apt-get &>/dev/null; then

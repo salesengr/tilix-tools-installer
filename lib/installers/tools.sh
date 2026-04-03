@@ -104,7 +104,7 @@ install_shodan() {
         if [ -f "$HOME/.local/bin/shodan" ]; then
             # If pkg_resources still missing, create a patched wrapper
             if ! "$python_bin" -c "import pkg_resources" 2>/dev/null; then
-                cat > "$HOME/.local/bin/shodan" << WRAPPER_EOF
+                cat > "$HOME/.local/bin/shodan" << WRAPPER_EOF || return 1
 #!/usr/bin/env python3
 import sys
 import types
@@ -117,6 +117,7 @@ except ImportError:
 import runpy
 runpy.run_module("shodan.__main__", run_name="__main__", alter_sys=True)
 WRAPPER_EOF
+                chmod +x "$HOME/.local/bin/shodan" || return 1
             fi
         fi
         echo "Completed: $(date)"
@@ -737,7 +738,8 @@ install_rustscan() {
         echo "Downloading: $asset_url"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o rustscan.zip || return 1
-        verify_sha256 "rustscan.zip" "${asset_url}.sha256" || return 1
+        # rc=1 mismatch is fatal; rc=2 companion unavailable is non-fatal (RustScan may not publish)
+        verify_sha256 "rustscan.zip" "${asset_url}.sha256"; [ $? -eq 1 ] && return 1
         unzip -q rustscan.zip 2>/dev/null || { echo "ERROR: unzip failed for rustscan.zip"; rm -f rustscan.zip; return 1; }
         local tgz
         tgz=$(find . -name "*.tar.gz" | head -1)
@@ -1120,7 +1122,8 @@ install_sd() {
         mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o sd-musl.tar.gz || return 1
-        verify_sha256 "sd-musl.tar.gz" "${asset_url}.sha256" || return 1
+        # rc=1 mismatch is fatal; rc=2 companion unavailable is non-fatal
+        verify_sha256 "sd-musl.tar.gz" "${asset_url}.sha256"; [ $? -eq 1 ] && return 1
         tar -xzf sd-musl.tar.gz 2>/dev/null || true
         local found; found=$(find . -name "sd" -type f ! -name "*.tar.gz" 2>/dev/null | head -1)
         if [[ -n "$found" ]]; then
@@ -1181,8 +1184,8 @@ install_qtox() {
         cd "$HOME/opt" || return 1
         curl -fsSL "$asset_url" -o qtox.AppImage || return 1
 
-        # Verify SHA256 if companion file is published
-        verify_sha256 "qtox.AppImage" "${asset_url}.sha256" || return 1
+        # rc=1 mismatch is fatal; rc=2 companion unavailable is non-fatal (qTox may not publish)
+        verify_sha256 "qtox.AppImage" "${asset_url}.sha256"; [ $? -eq 1 ] && return 1
         chmod +x qtox.AppImage
 
         # Extract AppImage without FUSE (container-compatible)

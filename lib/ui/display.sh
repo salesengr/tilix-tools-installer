@@ -120,7 +120,7 @@ show_installation_summary() {
         echo ""
         echo -e "${RED}Failed installations:${NC}"
         for tool in "${FAILED_INSTALLS[@]}"; do
-            local logfile="${FAILED_INSTALL_LOGS[$tool]}"
+            local logfile="${FAILED_INSTALL_LOGS[$tool]:-}"
             echo -e "  ${RED}[FAIL]${NC} $tool"
             echo "    Log: $logfile"
             echo "    View: cat $logfile"

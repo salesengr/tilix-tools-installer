@@ -11,7 +11,7 @@
 # Returns: 0 if all dependencies satisfied, 1 on failure
 check_dependencies() {
     local tool=$1
-    local deps=${TOOL_DEPENDENCIES[$tool]}
+    local deps=${TOOL_DEPENDENCIES[$tool]:-}
 
     if [[ -z "$deps" ]]; then
         return 0

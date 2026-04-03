@@ -92,20 +92,7 @@ install_python_tool() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }
 
 # Function: install_go_tool
@@ -159,20 +146,7 @@ install_go_tool() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }
 
 # Function: install_node_tool
@@ -208,20 +182,7 @@ install_node_tool() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }
 
 # Function: install_rust_tool
@@ -411,18 +372,5 @@ install_rust_tool() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }

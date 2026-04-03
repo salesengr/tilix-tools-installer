@@ -81,20 +81,7 @@ WRAPPER_EOF
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "photon"; then
-        echo -e "${SUCCESS}${CHECK} photon installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("photon")
-        log_installation "photon" "success" "$logfile"
-        cleanup_old_logs "photon"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} photon installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("photon")
-        FAILED_INSTALL_LOGS["photon"]="$logfile"
-        log_installation "photon" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "photon" "$logfile"
 }
 install_sublist3r() { install_python_tool "sublist3r" "sublist3r"; }
 install_shodan() {
@@ -134,18 +121,7 @@ WRAPPER_EOF
         fi
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
-    if is_installed "shodan"; then
-        echo -e "${SUCCESS}${CHECK} shodan installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("shodan")
-        log_installation "shodan" "success" "$logfile"
-        cleanup_old_logs "shodan"
-        return 0
-    fi
-    echo -e "${ERROR}${CROSS} shodan installation failed — see $logfile${NC}"
-    FAILED_INSTALLS+=("shodan")
-    FAILED_INSTALL_LOGS["shodan"]="$logfile"
-    log_installation "shodan" "failure" "$logfile"
-    return 1
+    _record_install_result "shodan" "$logfile"
 }
 install_censys() { install_python_tool "censys" "censys"; }
 # Function: install_theHarvester
@@ -181,20 +157,7 @@ install_theHarvester() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "theHarvester"; then
-        echo -e "${SUCCESS}${CHECK} theHarvester installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("theHarvester")
-        log_installation "theHarvester" "success" "$logfile"
-        cleanup_old_logs "theHarvester"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} theHarvester installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("theHarvester")
-        FAILED_INSTALL_LOGS["theHarvester"]="$logfile"
-        log_installation "theHarvester" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "theHarvester" "$logfile"
 }
 # Function: install_spiderfoot
 # Purpose: Install SpiderFoot from upstream source and use Python 3.13-friendly deps
@@ -297,20 +260,7 @@ WRAPPER_EOF
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "spiderfoot"; then
-        echo -e "${SUCCESS}${CHECK} spiderfoot installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("spiderfoot")
-        log_installation "spiderfoot" "success" "$logfile"
-        cleanup_old_logs "spiderfoot"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} spiderfoot installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("spiderfoot")
-        FAILED_INSTALL_LOGS["spiderfoot"]="$logfile"
-        log_installation "spiderfoot" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "spiderfoot" "$logfile"
 }
 # Function: install_wappalyzer
 # Purpose: Install python-Wappalyzer and provide a usable CLI wrapper
@@ -383,20 +333,7 @@ WRAPPER_EOF
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "wappalyzer"; then
-        echo -e "${SUCCESS}${CHECK} wappalyzer installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("wappalyzer")
-        log_installation "wappalyzer" "success" "$logfile"
-        cleanup_old_logs "wappalyzer"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} wappalyzer installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("wappalyzer")
-        FAILED_INSTALL_LOGS["wappalyzer"]="$logfile"
-        log_installation "wappalyzer" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "wappalyzer" "$logfile"
 }
 
 # ===== YARA (Special Python Tool with CLI Build/Wrapping Fallback) =====
@@ -585,20 +522,7 @@ WRAPPER_EOF
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "yara"; then
-        echo -e "${SUCCESS}${CHECK} YARA installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("yara")
-        log_installation "yara" "success" "$logfile"
-        cleanup_old_logs "yara"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} YARA installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("yara")
-        FAILED_INSTALL_LOGS["yara"]="$logfile"
-        log_installation "yara" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "yara" "$logfile"
 }
 
 # ===== GO TOOL WRAPPERS — Pre-built binaries primary, go install fallback =====
@@ -965,22 +889,7 @@ install_aria2() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "aria2"; then
-        local version
-        version=$("$HOME/.local/bin/aria2c" --version 2>/dev/null | head -1 || echo "unknown")
-        echo -e "${SUCCESS}${CHECK} aria2 installed successfully ($version)${NC}"
-        SUCCESSFUL_INSTALLS+=("aria2")
-        log_installation "aria2" "success" "$logfile"
-        cleanup_old_logs "aria2"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} aria2 installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("aria2")
-        FAILED_INSTALL_LOGS["aria2"]="$logfile"
-        log_installation "aria2" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "aria2" "$logfile"
 }
 
 # ===== WEB TOOLS =====
@@ -1004,18 +913,7 @@ install_seleniumbase() {
         "$python_bin" -m pip install --user --quiet seleniumbase || return 1
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
-    if is_installed "seleniumbase"; then
-        echo -e "${SUCCESS}${CHECK} SeleniumBase installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("seleniumbase")
-        log_installation "seleniumbase" "success" "$logfile"
-        cleanup_old_logs "seleniumbase"
-        return 0
-    fi
-    echo -e "${ERROR}${CROSS} SeleniumBase installation failed — see $logfile${NC}"
-    FAILED_INSTALLS+=("seleniumbase")
-    FAILED_INSTALL_LOGS["seleniumbase"]="$logfile"
-    log_installation "seleniumbase" "failure" "$logfile"
-    return 1
+    _record_install_result "seleniumbase" "$logfile"
 }
 
 # Function: install_playwright
@@ -1053,18 +951,7 @@ WRAPPER
 
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
-    if is_installed "playwright"; then
-        echo -e "${SUCCESS}${CHECK} Playwright installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("playwright")
-        log_installation "playwright" "success" "$logfile"
-        cleanup_old_logs "playwright"
-        return 0
-    fi
-    echo -e "${ERROR}${CROSS} Playwright installation failed — see $logfile${NC}"
-    FAILED_INSTALLS+=("playwright")
-    FAILED_INSTALL_LOGS["playwright"]="$logfile"
-    log_installation "playwright" "failure" "$logfile"
-    return 1
+    _record_install_result "playwright" "$logfile"
 }
 
 # Function: install_yandex_browser
@@ -1125,18 +1012,7 @@ WRAPPER
 
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
-    if is_installed "yandex_browser"; then
-        echo -e "${SUCCESS}${CHECK} Yandex Browser installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("yandex_browser")
-        log_installation "yandex_browser" "success" "$logfile"
-        cleanup_old_logs "yandex_browser"
-        return 0
-    fi
-    echo -e "${ERROR}${CROSS} Yandex Browser installation failed — see $logfile${NC}"
-    FAILED_INSTALLS+=("yandex_browser")
-    FAILED_INSTALL_LOGS["yandex_browser"]="$logfile"
-    log_installation "yandex_browser" "failure" "$logfile"
-    return 1
+    _record_install_result "yandex_browser" "$logfile"
 }
 
 # Function: install_tor_browser
@@ -1223,18 +1099,7 @@ WRAPPER
         echo "Tor Browser $version installed to ~/opt/tor-browser"
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
-    if is_installed "tor_browser"; then
-        echo -e "${SUCCESS}${CHECK} Tor Browser installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("tor_browser")
-        log_installation "tor_browser" "success" "$logfile"
-        cleanup_old_logs "tor_browser"
-        return 0
-    fi
-    echo -e "${ERROR}${CROSS} Tor Browser installation failed — see $logfile${NC}"
-    FAILED_INSTALLS+=("tor_browser")
-    FAILED_INSTALL_LOGS["tor_browser"]="$logfile"
-    log_installation "tor_browser" "failure" "$logfile"
-    return 1
+    _record_install_result "tor_browser" "$logfile"
 }
 
 install_sd() {
@@ -1348,16 +1213,5 @@ WRAPPER
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
 
-    if is_installed "qtox"; then
-        echo -e "${SUCCESS}${CHECK} qTox installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("qtox")
-        log_installation "qtox" "success" "$logfile"
-        cleanup_old_logs "qtox"
-        return 0
-    fi
-    echo -e "${ERROR}${CROSS} qTox installation failed — see $logfile${NC}"
-    FAILED_INSTALLS+=("qtox")
-    FAILED_INSTALL_LOGS["qtox"]="$logfile"
-    log_installation "qtox" "failure" "$logfile"
-    return 1
+    _record_install_result "qtox" "$logfile"
 }

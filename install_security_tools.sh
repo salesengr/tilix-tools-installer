@@ -264,7 +264,7 @@ main() {
     done
 
     # Remove flags from arguments
-    args=()
+    local args=()
     for arg in "$@"; do
         if [[ "$arg" != "--dry-run" ]] && [[ "$arg" != "--check-updates" ]]; then
             args+=("$arg")

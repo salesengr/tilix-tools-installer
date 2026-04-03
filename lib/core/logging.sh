@@ -2,6 +2,7 @@
 # Security Tools Installer - Logging Module
 # Version: 1.4.0
 # Purpose: Centralized logging operations for installation tracking and history
+# shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in sourced installer modules
 
 # ===== LOGGING FUNCTIONS =====
 
@@ -42,6 +43,29 @@ cleanup_old_logs() {
 #   $2 - status (success/failure)
 #   $3 - logfile path
 # Returns: Always succeeds
+# Function: _record_install_result
+# Purpose: Record success/failure after an install block completes.
+#          Centralizes SUCCESSFUL_INSTALLS / FAILED_INSTALLS bookkeeping.
+# Parameters: $1 - tool name, $2 - logfile path
+# Returns: 0 on success, 1 on failure (mirrors is_installed result)
+_record_install_result() {
+    local tool=$1 logfile=$2
+    if is_installed "$tool"; then
+        echo -e "${SUCCESS}${CHECK} ${tool} installed successfully${NC}"
+        SUCCESSFUL_INSTALLS+=("$tool")
+        log_installation "$tool" "success" "$logfile"
+        cleanup_old_logs "$tool"
+        return 0
+    else
+        echo -e "${ERROR}${CROSS} ${tool} installation failed${NC}"
+        echo "  See log: $logfile"
+        FAILED_INSTALLS+=("$tool")
+        FAILED_INSTALL_LOGS["$tool"]="$logfile"
+        log_installation "$tool" "failure" "$logfile"
+        return 1
+    fi
+}
+
 log_installation() {
     local tool=$1
     local status=$2

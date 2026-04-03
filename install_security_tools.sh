@@ -284,7 +284,7 @@ main() {
         exit 1
     fi
 
-    if [ -z "$XDG_DATA_HOME" ] || [ -z "$XDG_CONFIG_HOME" ] || [ -z "$XDG_CACHE_HOME" ]; then
+    if [ -z "${XDG_DATA_HOME:-}" ] || [ -z "${XDG_CONFIG_HOME:-}" ] || [ -z "${XDG_CACHE_HOME:-}" ]; then
         echo -e "${YELLOW}[WARN] XDG environment variables not set${NC}"
         echo "Loading from defaults..."
         echo -e "${YELLOW}Note: Run 'source ~/.bashrc' after xdg_setup.sh${NC}"

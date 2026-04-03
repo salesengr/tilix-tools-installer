@@ -304,7 +304,7 @@ install_prebuilt_binary() {
         echo "Extracting..."
         case "$archive_type" in
             tar.gz)
-                tar -xzf "$filename" 2>/dev/null || echo "WARNING: tar extraction exited non-zero for $filename"
+                tar -xzf "$filename" 2>/dev/null || { echo "ERROR: tar extraction failed for $filename"; rm -f "$filename"; return 1; }
                 # Find binary in extracted contents
                 local found_bin
                 found_bin=$(find . -name "$binary_name" -type f ! -name "*.md" ! -name "*.txt" 2>/dev/null | head -1)
@@ -323,7 +323,7 @@ install_prebuilt_binary() {
                 fi
                 ;;
             zip)
-                unzip -q "$filename" 2>/dev/null || echo "WARNING: unzip exited non-zero for $filename"
+                unzip -q "$filename" 2>/dev/null || { echo "ERROR: unzip extraction failed for $filename"; rm -f "$filename"; return 1; }
                 local found_bin
                 found_bin=$(find . -name "$binary_name" -type f 2>/dev/null | head -1)
                 if [[ -n "$found_bin" ]]; then

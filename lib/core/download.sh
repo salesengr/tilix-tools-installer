@@ -65,10 +65,6 @@ download_file() {
 #   0 — verified OK
 #   1 — hash mismatch (file is corrupt or tampered — abort install)
 #   2 — companion unavailable (upstream doesn't publish one — caller decides)
-#
-# Callers where the companion SHOULD always exist (Go, CMake) use || return 1
-# so rc=2 is treated as fatal. Callers where it MAY not exist (rustscan, sd,
-# qtox) check [ $? -eq 1 ] so rc=2 is non-fatal.
 verify_sha256() {
     local filename=$1
     local sha256_url=${2:-}

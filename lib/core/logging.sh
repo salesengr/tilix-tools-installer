@@ -30,9 +30,8 @@ create_tool_log() {
 # Returns: Always succeeds
 cleanup_old_logs() {
     local tool=$1
-    cd "$LOG_DIR" 2>/dev/null || return
-    # Keep only the 10 most recent logs for this tool
-    find . -maxdepth 1 -name "${tool}-*.log" -type f -printf '%T@ %p\n' 2>/dev/null | \
+    # Use absolute path to avoid cd-based directory side effects
+    find "${LOG_DIR}" -maxdepth 1 -name "${tool}-*.log" -type f -printf '%T@ %p\n' 2>/dev/null | \
         sort -rn | tail -n +11 | cut -d' ' -f2- | xargs -r rm
 }
 

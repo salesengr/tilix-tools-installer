@@ -230,24 +230,41 @@ install_spiderfoot() {
 
         echo "Creating wrapper script..."
         cat > "$HOME/.local/bin/spiderfoot" << 'WRAPPER_EOF'
-#!/bin/bash
-XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+#!/usr/bin/env bash
+# SpiderFoot launcher — starts web UI detached from terminal.
+# Override host/port via SF_HOST / SF_PORT environment variables.
 TOOL_PY="$(command -v python3.13 || command -v python3)"
 TOOL_SCRIPT="$HOME/opt/src/spiderfoot/sf.py"
+SF_HOST="${SF_HOST:-127.0.0.1}"
+SF_PORT="${SF_PORT:-5001}"
 
-if [ ! -x "$TOOL_PY" ]; then
-    echo "Error: Python not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
+if [ ! -x "${TOOL_PY}" ]; then
+    echo "Error: Python not found" >&2
+    echo "Run: bash install_security_tools.sh python_venv" >&2
     exit 1
 fi
 
-if [ ! -f "$TOOL_SCRIPT" ]; then
-    echo "Error: SpiderFoot script not found at $TOOL_SCRIPT" >&2
+if [ ! -f "${TOOL_SCRIPT}" ]; then
+    echo "Error: SpiderFoot not found at ${TOOL_SCRIPT}" >&2
     echo "Run: bash install_security_tools.sh spiderfoot" >&2
     exit 1
 fi
 
-exec "$TOOL_PY" "$TOOL_SCRIPT" "$@"
+echo ""
+echo "Starting SpiderFoot web UI..."
+echo "  URL : http://${SF_HOST}:${SF_PORT}"
+echo ""
+echo "  Open in Chrome:"
+echo "  chrome http://${SF_HOST}:${SF_PORT}"
+echo ""
+
+nohup "${TOOL_PY}" "${TOOL_SCRIPT}" -l "${SF_HOST}:${SF_PORT}" "$@" &>/dev/null &
+SF_PID=$!
+disown
+
+echo "SpiderFoot started (PID ${SF_PID})"
+echo "To stop: kill ${SF_PID}  or  pkill -f sf.py"
+echo ""
 WRAPPER_EOF
         chmod +x "$HOME/.local/bin/spiderfoot"
 

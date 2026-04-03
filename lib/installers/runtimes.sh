@@ -63,20 +63,7 @@ install_cmake() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "cmake"; then
-        echo -e "${GREEN}[OK] CMake installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("cmake")
-        log_installation "cmake" "success" "$logfile"
-        cleanup_old_logs "cmake"
-        return 0
-    else
-        echo -e "${RED}[FAIL] CMake installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("cmake")
-        FAILED_INSTALL_LOGS["cmake"]="$logfile"
-        log_installation "cmake" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "cmake" "$logfile"
 }
 
 # Function: install_github_cli
@@ -162,20 +149,7 @@ install_github_cli() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "github_cli"; then
-        echo -e "${GREEN}✓ GitHub CLI installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("github_cli")
-        log_installation "github_cli" "success" "$logfile"
-        cleanup_old_logs "github_cli"
-        return 0
-    else
-        echo -e "${RED}✗ GitHub CLI installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("github_cli")
-        FAILED_INSTALL_LOGS["github_cli"]="$logfile"
-        log_installation "github_cli" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "github_cli" "$logfile"
 }
 
 # ===== LANGUAGE RUNTIMES =====
@@ -250,21 +224,8 @@ install_nodejs() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "nodejs"; then
-        echo -e "${GREEN}[OK] Node.js installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("nodejs")
-        log_installation "nodejs" "success" "$logfile"
-        cleanup_old_logs "nodejs"
-        export PATH="$HOME/opt/node/bin:$PATH"
-        return 0
-    else
-        echo -e "${RED}[FAIL] Node.js installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("nodejs")
-        FAILED_INSTALL_LOGS["nodejs"]="$logfile"
-        log_installation "nodejs" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "nodejs" "$logfile" || return 1
+    export PATH="$HOME/opt/node/bin:$PATH"
 }
 
 # Function: install_go_runtime
@@ -480,23 +441,10 @@ install_rust() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "rust"; then
-        echo -e "${GREEN}[OK] Rust installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("rust")
-        log_installation "rust" "success" "$logfile"
-        cleanup_old_logs "rust"
-        export CARGO_HOME="$HOME/.local/share/cargo"
-        export RUSTUP_HOME="$HOME/.local/share/rustup"
-        export PATH="$CARGO_HOME/bin:$PATH"
-        return 0
-    else
-        echo -e "${RED}[FAIL] Rust installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("rust")
-        FAILED_INSTALL_LOGS["rust"]="$logfile"
-        log_installation "rust" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "rust" "$logfile" || return 1
+    export CARGO_HOME="$HOME/.local/share/cargo"
+    export RUSTUP_HOME="$HOME/.local/share/rustup"
+    export PATH="$CARGO_HOME/bin:$PATH"
 }
 
 # Function: install_python_venv
@@ -517,17 +465,7 @@ install_python_venv() {
 
         # Resolve best available Python (prefer 3.13 for tool compatibility)
         local python_bin
-        if command -v python3.13 &>/dev/null; then
-            python_bin="python3.13"
-        elif command -v python3.11 &>/dev/null; then
-            python_bin="python3.11"
-        elif command -v python3.10 &>/dev/null; then
-            python_bin="python3.10"
-        elif command -v python3.9 &>/dev/null; then
-            python_bin="python3.9"
-        else
-            python_bin="python3"
-        fi
+        python_bin=$(_get_python_bin)
 
         echo "Using Python: $python_bin ($($python_bin --version 2>&1))"
 

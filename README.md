@@ -200,6 +200,4 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ## 📄 License
 
-[MIT License](LICENSE) — Copyright (c) 2026 salesengr
-
 Provided as-is for educational and professional security testing. Always obtain proper authorization before testing systems you don't own.

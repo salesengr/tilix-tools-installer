@@ -262,8 +262,14 @@ nohup "${TOOL_PY}" "${TOOL_SCRIPT}" -l "${SF_HOST}:${SF_PORT}" "$@" &>/dev/null 
 SF_PID=$!
 disown
 
-echo "SpiderFoot started (PID ${SF_PID})"
-echo "To stop: kill ${SF_PID}  or  pkill -f sf.py"
+sleep 1
+if kill -0 "${SF_PID}" 2>/dev/null; then
+    echo "SpiderFoot started (PID ${SF_PID})"
+    echo "To stop: kill ${SF_PID}  or  pkill -f sf.py"
+else
+    echo "Error: SpiderFoot failed to start — check dependencies are installed" >&2
+    exit 1
+fi
 echo ""
 WRAPPER_EOF
         chmod +x "$HOME/.local/bin/spiderfoot"
@@ -431,14 +437,24 @@ install_yara() {
                 rm -rf yara-4.5.0 "$filename"
 
                 if download_file "$url" "$filename"; then
-                    tar -xzf "$filename" || true
-                    cd yara-4.5.0 || true
-                    ./bootstrap.sh || true
-                    ./configure --prefix="$HOME/.local" || true
-                    make -j"$(nproc)" || true
-                    make install || true
+                    local _yara_built=0
+                    if tar -xzf "$filename" && cd yara-4.5.0; then
+                        if ./bootstrap.sh \
+                            && ./configure --prefix="$HOME/.local" \
+                            && make -j"$(nproc)" \
+                            && make install; then
+                            _yara_built=1
+                        else
+                            echo "YARA native build failed — will use Python wrapper fallback"
+                        fi
+                    else
+                        echo "YARA source extraction failed — will use Python wrapper fallback"
+                    fi
                     cd "$HOME/opt/src" || true
                     rm -rf yara-4.5.0 "$filename"
+                    [ "${_yara_built}" -eq 0 ] && true  # fall through to wrapper below
+                else
+                    echo "YARA source download failed — will use Python wrapper fallback"
                 fi
             else
                 echo "autoreconf not found; skipping native YARA build"

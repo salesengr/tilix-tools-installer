@@ -281,7 +281,7 @@ install_prebuilt_binary() {
         # Attempt SHA256 verification if companion file is published
         local sha256_url="${asset_url}.sha256"
         local sha256_file="${filename}.sha256"
-        if curl -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
+        if curl --proto '=https' --tlsv1.2 -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
             echo "Verifying SHA256 checksum..."
             local expected_hash actual_hash
             expected_hash=$(awk '{print $1}' "$sha256_file")

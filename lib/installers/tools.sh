@@ -978,6 +978,19 @@ install_playwright() {
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 "$python_bin" -m pip install --user --quiet playwright || return 1
         echo "NOTE: Using system Chrome at /usr/bin/google-chrome"
         echo "      Pass executable_path='/usr/bin/google-chrome' to launch()"
+
+        # Create a detached launcher so `chrome` can be opened from the terminal
+        # without keeping the shell attached. Uses nohup + disown, same pattern
+        # as yandex-browser and qtox. The system google-chrome binary is left
+        # untouched for programmatic use by Playwright and SeleniumBase.
+        cat > "$HOME/.local/bin/chrome" << 'WRAPPER'
+#!/usr/bin/env bash
+# Chrome launcher — runs detached from terminal
+nohup /usr/bin/google-chrome "$@" &>/dev/null &
+disown
+WRAPPER
+        chmod +x "$HOME/.local/bin/chrome"
+
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
     if is_installed "playwright"; then

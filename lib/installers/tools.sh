@@ -44,7 +44,7 @@ install_photon() {
         fi
 
         echo "Installing Photon dependencies..."
-        python3 -m pip install --user --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
+        "$python_bin" -m pip install --user --quiet -r "$HOME/opt/src/Photon/requirements.txt" || return 1
 
 
         echo "Creating wrapper script..."
@@ -161,7 +161,7 @@ install_theHarvester() {
         local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing latest theHarvester from GitHub..."
-        python3 -m pip install --user --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
+        "$python_bin" -m pip install --user --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
 
 
         echo "Creating wrapper script..."
@@ -228,7 +228,7 @@ install_spiderfoot() {
         }' "$HOME/opt/src/spiderfoot/requirements.txt" > "$HOME/opt/src/spiderfoot/requirements.py313.txt"
 
         echo "Installing SpiderFoot dependencies..."
-        python3 -m pip install --user --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
+        "$python_bin" -m pip install --user --quiet -r "$HOME/opt/src/spiderfoot/requirements.py313.txt" || return 1
 
 
         echo "Creating wrapper script..."
@@ -316,7 +316,7 @@ install_wappalyzer() {
         local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing python-Wappalyzer..."
-        python3 -m pip install --user --quiet "python-Wappalyzer" || return 1
+        "$python_bin" -m pip install --user --quiet "python-Wappalyzer" || return 1
 
 
         echo "Creating wrapper script..."
@@ -418,10 +418,10 @@ install_yara() {
         local python_bin; python_bin=$(_get_python_bin)
 
         echo "Installing yara-python..."
-        python3 -m pip install --user --quiet yara-python || return 1
+        "$python_bin" -m pip install --user --quiet yara-python || return 1
 
         # Confirm Python module availability.
-        python3 -c "import yara" >/dev/null 2>&1 || return 1
+        "$python_bin" -c "import yara" >/dev/null 2>&1 || return 1
 
 
         # yara-python does not provide a native yara CLI binary.

@@ -254,11 +254,11 @@ main() {
         case "$arg" in
             --dry-run)
                 DRY_RUN=true
-                shift
+                # shift has no effect inside a for loop over "$@"; flag
+                # filtering happens in the argument collection loop below
                 ;;
             --check-updates)
                 CHECK_UPDATES=true
-                shift
                 ;;
         esac
     done

@@ -140,7 +140,7 @@ Web automation tools enable browser-based OSINT, stealth scraping, captcha bypas
 |------|--------------------|--------------------|
 | SeleniumBase | `pip install --user seleniumbase` | `~/.local/bin/sbase` |
 | Playwright | `pip install --user playwright` + `playwright install chromium` | `~/.local/bin/playwright` + `~/.local/share/ms-playwright/` |
-| Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` |
+| Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` + `~/.local/bin/yandex-browser` |
 | Tor Browser | tarball from `torproject.org/dist/torbrowser/` | `~/opt/tor-browser/Browser/start-tor-browser` + `~/.local/bin/tor-browser` |
 | qTox | AppImage extract from `github.com/TokTok/qTox` | `~/opt/qtox/squashfs-root/AppRun` + `~/.local/bin/qtox` |
 
@@ -166,18 +166,19 @@ playwright codegen https://target   # Record browser actions as code
 
 ### Yandex Browser
 Chromium-based, amd64 only. Installed system-wide via the official Yandex APT repository. Useful for Russian-language OSINT — Yandex Search, reverse image search, Maps, and accessing Russian social media with appropriate locale.
+
+Includes a convenience launcher at `~/.local/bin/yandex-browser` that automatically backgrounds the process using `nohup` + `disown`, so it doesn't block the terminal.
 ```bash
-yandex-browser-beta                 # Launch (requires VNC/display)
-yandex-browser-beta --version       # Check version
+yandex-browser                      # Launch detached from terminal (requires VNC/display)
+yandex-browser-beta --version       # Check version (direct binary)
 ```
 
 ### Tor Browser
-Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser`.
+Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser` that uses Tor's built-in `--detach` flag to separate from the terminal.
 
 **Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
 ```bash
-tor-browser                         # Launch with GUI (requires VNC)
-~/opt/tor-browser/Browser/start-tor-browser --detach  # Background
+tor-browser                         # Launch detached from terminal via --detach (requires VNC)
 ```
 
 ### qTox

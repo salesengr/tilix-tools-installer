@@ -1028,6 +1028,16 @@ install_yandex_browser() {
         apt-get update -qq 2>/dev/null || true
         apt-get install -y --no-install-recommends yandex-browser-beta 2>/dev/null || return 1
 
+        # Create launcher wrapper in ~/.local/bin
+        mkdir -p "$HOME/.local/bin"
+        cat > "$HOME/.local/bin/yandex-browser" << 'WRAPPER'
+#!/usr/bin/env bash
+# Yandex Browser launcher — runs detached from terminal
+nohup /usr/bin/yandex-browser-beta "$@" &>/dev/null &
+disown
+WRAPPER
+        chmod +x "$HOME/.local/bin/yandex-browser"
+
         echo "Completed: $(date)"
     } > "$logfile" 2>&1
     if is_installed "yandex_browser"; then

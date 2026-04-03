@@ -102,7 +102,10 @@ install_shodan() {
         mkdir -p "$HOME/.local/bin"
         export PATH="$HOME/.local/bin:$PATH"
         # Install setuptools<70 which still ships pkg_resources (removed in newer versions)
-        "$python_bin" -m pip install --user --quiet "setuptools<70" ||             "$python_bin" -m pip install --user --quiet "setuptools" || true
+        # Log but do not abort if setuptools install fails — shodan install below will catch it
+        "$python_bin" -m pip install --user --quiet "setuptools<70" \
+            || "$python_bin" -m pip install --user --quiet "setuptools" \
+            || echo "WARNING: Could not install setuptools; shodan may fail at runtime"
         "$python_bin" -m pip install --user --quiet "shodan" || return 1
         # Patch the shodan wrapper to inject setuptools path if needed
         if [ -f "$HOME/.local/bin/shodan" ]; then
@@ -853,7 +856,7 @@ install_aria2() {
         # Fetch latest release tag from GitHub API
         local latest_tag
         latest_tag=$(curl -fsSL "https://api.github.com/repos/aria2/aria2/releases/latest" \
-            | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"//;s/".*//')
+            | grep -oP '"tag_name":\s*"\K[^"]+')
 
         if [[ -z "$latest_tag" ]]; then
             echo "ERROR: Could not determine latest aria2 release tag"
@@ -1144,6 +1147,12 @@ install_tor_browser() {
                 echo "ERROR: Could not import Tor Browser signing key"
                 return 1
             }
+            # Verify the imported key matches the expected fingerprint to prevent
+            # key substitution attacks (e.g. a rogue key returned by the server)
+            if ! gpg --list-keys "${TOR_KEY_FP}" &>/dev/null; then
+                echo "ERROR: Imported key fingerprint does not match ${TOR_KEY_FP}"
+                return 1
+            fi
         fi
 
         cd "$HOME/opt" || return 1

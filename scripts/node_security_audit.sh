@@ -26,7 +26,7 @@ mkdir -p "$WORKDIR"
 cd "$WORKDIR"
 
 if [ "${#available[@]}" -gt 0 ]; then
-  python3 - <<'PY' "${available[@]}"
+  python3 - <<'PY' "${available[@]}" > package.json
 import json, sys
 pkgs = sys.argv[1:]
 print(json.dumps({
@@ -36,7 +36,7 @@ print(json.dumps({
   "dependencies": {p: "latest" for p in pkgs}
 }, indent=2))
 PY
-fi > package.json
+fi
 
 AUDIT_JSON='{}'
 if [ "${#available[@]}" -gt 0 ]; then

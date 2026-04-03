@@ -18,9 +18,11 @@ _tool_status_line() {
     local tool="$1"
     local in_failed=false
     local t
-    for t in "${FAILED_INSTALLS[@]:-}"; do
-        [[ "$t" == "$tool" ]] && in_failed=true && break
-    done
+    if [ "${#FAILED_INSTALLS[@]}" -gt 0 ]; then
+        for t in "${FAILED_INSTALLS[@]}"; do
+            [[ "$t" == "$tool" ]] && in_failed=true && break
+        done
+    fi
 
     if [[ "${INSTALLED_STATUS[$tool]:-false}" == "true" ]]; then
         echo -e "  ${GREEN}[OK]${NC} $tool"

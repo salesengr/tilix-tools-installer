@@ -158,10 +158,14 @@ python3 -m seleniumbase             # Python module usage
 
 ### Playwright
 Cross-browser automation supporting Chromium, Firefox, and WebKit. Browser binaries stored in `~/.local/share/ms-playwright/`.
+
+Also creates `~/.local/bin/chrome` — a detached launcher for the system Chrome (`/usr/bin/google-chrome`) using `nohup` + `disown`. The `google-chrome` binary is left untouched for programmatic use by Playwright and SeleniumBase.
 ```bash
 playwright install --list           # List installed browsers
 playwright install chromium         # Install/update Chromium
 playwright codegen https://target   # Record browser actions as code
+chrome                              # Launch Chrome detached from terminal (requires VNC/display)
+google-chrome --version             # Check version (direct binary)
 ```
 
 ### Yandex Browser

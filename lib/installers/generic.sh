@@ -239,28 +239,8 @@ install_prebuilt_binary() {
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o "$filename" || return 1
 
-        # Attempt SHA256 verification if companion file is published
-        local sha256_url="${asset_url}.sha256"
-        local sha256_file="${filename}.sha256"
-        if curl --proto '=https' --tlsv1.2 -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
-            echo "Verifying SHA256 checksum..."
-            local expected_hash actual_hash
-            expected_hash=$(awk '{print $1}' "$sha256_file")
-            actual_hash=$(sha256sum "$filename" | awk '{print $1}')
-            if [ "$expected_hash" != "$actual_hash" ]; then
-                echo "ERROR: SHA256 verification FAILED for $filename"
-                echo "  Expected: $expected_hash"
-                echo "  Got:      $actual_hash"
-                rm -f "$filename" "$sha256_file"
-                return 1
-            fi
-            echo "SHA256 verified OK"
-            rm -f "$sha256_file"
-        else
-            rm -f "$sha256_file" 2>/dev/null || true
-            echo "WARNING: No SHA256 companion file published by ${repo} for ${filename}"
-            echo "         Binary installed without integrity verification — review upstream release page"
-        fi
+        # Verify SHA256 if companion file is published (rc=2 means unavailable — non-fatal for GitHub releases)
+        verify_sha256 "$filename" "${asset_url}.sha256"; _rc=$?; [ "$_rc" -eq 1 ] && { rm -f "$filename"; return 1; }
 
         echo "Extracting..."
         case "$archive_type" in
@@ -360,19 +340,17 @@ install_rust_tool() {
             cargo install "$crate" || return 1
         fi
 
-        # Symlink only this tool's binary — not all CARGO_HOME/bin contents
-        # Note: crate binary name may differ from tool name (e.g. ripgrep → rg);
-        # is_installed() in verification.sh knows the actual binary path per tool.
+        # Symlink only this tool's binary — probe directly rather than iterating all of CARGO_HOME/bin.
+        # Note: crate binary name may differ from tool name (e.g. ripgrep crate → rg binary).
         mkdir -p "$HOME/.local/bin"
-        for cargobin in "$CARGO_HOME"/bin/*; do
-            [ -f "$cargobin" ] || continue
-            binname=$(basename "$cargobin")
-            # Only symlink if name matches the tool or is a known alias
-            if [ "$binname" = "$tool" ] || [ "$binname" = "$crate" ]; then
-                ln -sf "$cargobin" "$HOME/.local/bin/$binname"
-                echo "Symlinked $binname to ~/.local/bin/"
-            fi
-        done
+        if [ -f "$CARGO_HOME/bin/$tool" ]; then
+            ln -sf "$CARGO_HOME/bin/$tool" "$HOME/.local/bin/$tool"
+            echo "Symlinked $tool to ~/.local/bin/"
+        fi
+        if [ "$crate" != "$tool" ] && [ -f "$CARGO_HOME/bin/$crate" ]; then
+            ln -sf "$CARGO_HOME/bin/$crate" "$HOME/.local/bin/$crate"
+            echo "Symlinked $crate to ~/.local/bin/"
+        fi
 
         echo "=========================================="
         echo "Completed: $(date)"

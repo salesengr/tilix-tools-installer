@@ -153,8 +153,6 @@ install_release_binary_with_log() {
         mkdir -p "$HOME/.local/bin"
         install -m 0755 "$extracted_binary" "$HOME/.local/bin/$output_binary" || return 1
 
-        rm -rf "$tmpdir"
-
         echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
@@ -190,10 +188,6 @@ CHECKSUM_TRUFFLEHOG="62af52009a462a50421ca723424e41e0b3a1c8725d74b56de10e49d215c
 CHECKSUM_GIT_HOUND="8d4ed7284d072af6b54953cbd840752a288d6b115f7be25a03776a62d0345281"
 CHECKSUM_DOG="6093525fccf5de5b7ed66f920c9b6d2d16221adde8a44589dc3e4c47245039a0"
 
-# LOAD-ORDER NOTE: install_trufflehog, install_git-hound, and install_dog below
-# intentionally override the base definitions in lib/installers/tools.sh (sourced
-# above at line ~76). These versions add SHA256-verified release binary fallbacks.
-# If sourcing tools.sh standalone (e.g. in a test harness), the base versions run.
 install_trufflehog() {
     # Preserve existing behavior first.
     install_node_tool "trufflehog" "@trufflesecurity/trufflehog" && return 0

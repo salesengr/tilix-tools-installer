@@ -49,7 +49,7 @@ All Python tools are installed via `pip install --user` using the system Python 
 | shodan | `shodan` | `~/.local/bin/shodan` | pip --user package `shodan` (with pkg_resources shim). |
 | censys | `censys` | `~/.local/bin/censys` | pip --user package `censys`. |
 | theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | pip --user package `theHarvester`. |
-| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | pip --user package `spiderfoot`. |
+| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | Cloned from GitHub; launcher starts web UI detached on `127.0.0.1:5001`. |
 | yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings in `~/.local/lib/python3.13/site-packages/`. |
 | wappalyzer | `python-Wappalyzer` | `~/.local/bin/wappalyzer` | pip --user package `python-Wappalyzer`. |
 
@@ -183,6 +183,17 @@ Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. I
 **Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
 ```bash
 tor-browser                         # Launch detached from terminal via --detach (requires VNC)
+```
+
+### SpiderFoot
+Automated OSINT collection platform with a web-based UI. The launcher starts the web server detached from the terminal using `nohup` + `disown`, prints the URL, and shows the `chrome` command to open it. Default host/port can be overridden via `SF_HOST` and `SF_PORT` environment variables.
+
+```bash
+spiderfoot                          # Start web UI (backgrounds automatically)
+                                    # Prints: chrome http://127.0.0.1:5001
+
+SF_PORT=8080 spiderfoot             # Start on a custom port
+pkill -f sf.py                      # Stop SpiderFoot
 ```
 
 ### qTox

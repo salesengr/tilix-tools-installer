@@ -368,11 +368,16 @@ install_rust() {
         local RUST_KEY_FP="108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE"
         if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
             echo "Importing Rust signing key ${RUST_KEY_FP}..."
-            curl --proto '=https' --tlsv1.2 -sSf \
-                "https://keybase.io/rust/key.asc" | gpg --import 2>&1 || {
-                echo "ERROR: Could not import Rust signing key"
-                return 1
-            }
+            # Prefer canonical source; fall back to keybase.io if unavailable
+            if ! curl --proto '=https' --tlsv1.2 -sSf \
+                    "https://static.rust-lang.org/rust-key.gpg.asc" | gpg --import 2>&1; then
+                echo "WARNING: canonical key source unavailable, trying keybase.io..."
+                curl --proto '=https' --tlsv1.2 -sSf \
+                    "https://keybase.io/rust/key.asc" | gpg --import 2>&1 || {
+                    echo "ERROR: Could not import Rust signing key from any source"
+                    return 1
+                }
+            fi
             if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
                 echo "ERROR: Imported key fingerprint does not match ${RUST_KEY_FP}"
                 return 1
@@ -487,7 +492,8 @@ install_python_venv() {
         echo "$python_bin" > "$HOME/.local/share/.python_bin"
 
         # Upgrade pip and setuptools in user space
-        "$python_bin" -m pip install --user --quiet --upgrade pip "setuptools<81" wheel 2>/dev/null || true
+        "$python_bin" -m pip install --user --quiet --upgrade pip "setuptools<81" wheel 2>/dev/null \
+            || echo "WARNING: pip/setuptools/wheel upgrade failed (non-fatal — continuing)"
 
         echo "Python user-space install configured: $python_bin"
         echo "Install target: $HOME/.local/lib/$(${python_bin} -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')/site-packages/"

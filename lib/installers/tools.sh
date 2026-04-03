@@ -38,7 +38,9 @@ install_photon() {
         local PHOTON_VERSION="v1.3.3"
         if [ -d "$HOME/opt/src/Photon/.git" ]; then
             echo "Updating existing Photon checkout to ${PHOTON_VERSION}..."
-            git -C "$HOME/opt/src/Photon" fetch --tags || return 1
+            # --unshallow ensures tags are available in shallow clones
+            git -C "$HOME/opt/src/Photon" fetch --tags --unshallow 2>/dev/null \
+                || git -C "$HOME/opt/src/Photon" fetch --tags || return 1
             git -C "$HOME/opt/src/Photon" checkout "${PHOTON_VERSION}" || return 1
         else
             echo "Cloning Photon ${PHOTON_VERSION} from GitHub..."
@@ -218,7 +220,9 @@ install_spiderfoot() {
         local SPIDERFOOT_VERSION="v4.0"
         if [ -d "$HOME/opt/src/spiderfoot/.git" ]; then
             echo "Updating existing SpiderFoot checkout to ${SPIDERFOOT_VERSION}..."
-            git -C "$HOME/opt/src/spiderfoot" fetch --tags || return 1
+            # --unshallow ensures tags are available in shallow clones
+            git -C "$HOME/opt/src/spiderfoot" fetch --tags --unshallow 2>/dev/null \
+                || git -C "$HOME/opt/src/spiderfoot" fetch --tags || return 1
             git -C "$HOME/opt/src/spiderfoot" checkout "${SPIDERFOOT_VERSION}" || return 1
         else
             echo "Cloning SpiderFoot ${SPIDERFOOT_VERSION} from GitHub..."
@@ -693,6 +697,10 @@ _install_node_with_fallback() {
     return 1
 }
 
+# NOTE: install_trufflehog and install_git-hound below are superseded at runtime
+# by the versions defined in install_security_tools.sh (sourced after this file),
+# which add SHA256-verified release binary fallbacks. These definitions serve as
+# the base fallback if tools.sh is ever used standalone.
 install_trufflehog() {
     _install_node_with_fallback "trufflehog" \
         "trufflesecurity/trufflehog" \
@@ -788,6 +796,7 @@ install_rustscan() {
             cp "$bin" "$HOME/.local/bin/rustscan"
             chmod +x "$HOME/.local/bin/rustscan"
         else
+            rm -f rustscan.zip "$tgz"
             echo "ERROR: rustscan binary not found"; return 1
         fi
         rm -f rustscan.zip "$tgz"
@@ -1073,8 +1082,8 @@ install_yandex_browser() {
         # since Ubuntu 22.04 and removed in Debian bookworm).
         # /etc/apt/keyrings/ requires root — fail clearly if not writable.
         local keyring="/etc/apt/keyrings/yandex-browser.gpg"
-        if [ ! -w /etc/apt/keyrings ] && [ ! -w /etc/apt ] && [ "$(id -u)" != "0" ]; then
-            echo "ERROR: Cannot write to /etc/apt/keyrings — re-run as root or with sudo"
+        if [ "$(id -u)" != "0" ] && [ ! -w /etc/apt ]; then
+            echo "ERROR: Cannot write to /etc/apt — re-run as root or with sudo"
             return 1
         fi
         mkdir -p /etc/apt/keyrings

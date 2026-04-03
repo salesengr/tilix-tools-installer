@@ -56,6 +56,44 @@ download_file() {
     return 1
 }
 
+# Function: verify_sha256
+# Purpose: Verify a downloaded file against a SHA256 companion URL.
+#          If the companion file cannot be fetched, logs a warning and
+#          returns 0 (non-fatal) so callers can decide whether to abort.
+# Parameters:
+#   $1 - local filename to verify
+#   $2 - URL of the .sha256 companion file (or empty to skip)
+# Returns: 0 on verified OK or companion unavailable, 1 on mismatch
+verify_sha256() {
+    local filename=$1
+    local sha256_url=${2:-}
+    local sha256_file="${filename}.sha256"
+
+    if [[ -z "$sha256_url" ]]; then
+        echo "WARNING: No SHA256 URL provided for ${filename} — skipping checksum verification"
+        return 0
+    fi
+
+    if curl -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
+        local expected actual
+        expected=$(awk '{print $1}' "$sha256_file")
+        actual=$(sha256sum "$filename" | awk '{print $1}')
+        rm -f "$sha256_file"
+        if [ "$expected" != "$actual" ]; then
+            echo "ERROR: SHA256 verification FAILED for $filename"
+            echo "  Expected: $expected"
+            echo "  Got:      $actual"
+            return 1
+        fi
+        echo "SHA256 verified OK"
+        return 0
+    fi
+
+    rm -f "$sha256_file" 2>/dev/null || true
+    echo "WARNING: SHA256 companion not available at ${sha256_url} — skipping checksum verification"
+    return 0
+}
+
 # Function: verify_file_exists
 # Purpose: Verify file exists and has valid size before processing
 # Parameters:

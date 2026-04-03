@@ -344,24 +344,77 @@ install_rust() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        echo "Downloading rustup installer script..."
-        local rustup_script
-        rustup_script=$(mktemp)
-
-        if ! curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o "$rustup_script"; then
-            echo "ERROR: Failed to download rustup installer"
-            rm -f "$rustup_script"
+        # GPG is required for signature verification
+        if ! command -v gpg &>/dev/null; then
+            echo "ERROR: gpg not found — required for rustup-init signature verification"
             return 1
         fi
 
-        chmod +x "$rustup_script"
-        if ! sh "$rustup_script" -y --no-modify-path; then
+        # Resolve target triple for this host
+        local arch
+        arch=$(uname -m)
+        local arch_triple
+        case "$arch" in
+            x86_64)  arch_triple="x86_64-unknown-linux-gnu" ;;
+            aarch64) arch_triple="aarch64-unknown-linux-gnu" ;;
+            *)
+                echo "ERROR: Unsupported architecture for rustup: $arch"
+                return 1
+                ;;
+        esac
+
+        # Import Rust release signing key if not already in keyring
+        # Fingerprint: 108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE (rust-lang.org)
+        local RUST_KEY_FP="108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE"
+        if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
+            echo "Importing Rust signing key ${RUST_KEY_FP}..."
+            curl --proto '=https' --tlsv1.2 -sSf \
+                "https://keybase.io/rust/key.asc" | gpg --import 2>&1 || {
+                echo "ERROR: Could not import Rust signing key"
+                return 1
+            }
+            if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
+                echo "ERROR: Imported key fingerprint does not match ${RUST_KEY_FP}"
+                return 1
+            fi
+        fi
+
+        # Download rustup-init binary and detached signature directly
+        # This bypasses the sh.rustup.rs shell script middleman
+        local base_url="https://static.rust-lang.org/rustup/dist/${arch_triple}"
+        local rustup_init
+        rustup_init=$(mktemp)
+
+        echo "Downloading rustup-init for ${arch_triple}..."
+        curl --proto '=https' --tlsv1.2 -sSf "${base_url}/rustup-init" -o "${rustup_init}" || {
+            echo "ERROR: Failed to download rustup-init"
+            rm -f "${rustup_init}"
+            return 1
+        }
+        curl --proto '=https' --tlsv1.2 -sSf "${base_url}/rustup-init.asc" -o "${rustup_init}.asc" || {
+            echo "ERROR: Failed to download rustup-init signature"
+            rm -f "${rustup_init}" "${rustup_init}.asc"
+            return 1
+        }
+
+        # Verify detached GPG signature before executing
+        echo "Verifying rustup-init GPG signature..."
+        if ! gpg --verify "${rustup_init}.asc" "${rustup_init}" 2>&1; then
+            echo "ERROR: GPG signature verification FAILED — aborting Rust installation"
+            rm -f "${rustup_init}" "${rustup_init}.asc"
+            return 1
+        fi
+        echo "GPG signature OK"
+        rm -f "${rustup_init}.asc"
+
+        chmod +x "${rustup_init}"
+        if ! "${rustup_init}" -y --no-modify-path; then
             echo "ERROR: Failed to install Rust"
-            rm -f "$rustup_script"
+            rm -f "${rustup_init}"
             return 1
         fi
 
-        rm -f "$rustup_script"
+        rm -f "${rustup_init}"
 
         echo "Setting up environment..."
         export CARGO_HOME="$HOME/.local/share/cargo"

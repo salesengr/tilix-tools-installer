@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Menu Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Interactive user interface
 
 # ===== MENU FUNCTIONS =====

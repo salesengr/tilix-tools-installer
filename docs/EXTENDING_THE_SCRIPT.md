@@ -5,7 +5,7 @@
 
 
 
-**Version:** 1.4.0 (Modular Architecture)
+**Version:** 1.4.1
 
 The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 

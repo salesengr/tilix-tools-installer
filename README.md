@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.4.0 | **Release Date:** April 1, 2026
+**Version:** 1.4.1 | **Release Date:** April 3, 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest and web automation tools. No sudo required — everything installs to `~/.local/`.
 

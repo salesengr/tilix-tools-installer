@@ -240,7 +240,8 @@ install_prebuilt_binary() {
         curl -fsSL "$asset_url" -o "$filename" || return 1
 
         # Verify SHA256 if companion file is published (rc=2 means unavailable — non-fatal for GitHub releases)
-        verify_sha256 "$filename" "${asset_url}.sha256"; _rc=$?; [ "$_rc" -eq 1 ] && { rm -f "$filename"; return 1; }
+        local _rc; verify_sha256 "$filename" "${asset_url}.sha256"; _rc=$?
+        [ "$_rc" -eq 1 ] && { rm -f "$filename"; return 1; }
 
         echo "Extracting..."
         case "$archive_type" in

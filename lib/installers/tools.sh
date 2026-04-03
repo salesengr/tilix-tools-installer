@@ -397,24 +397,15 @@ install_yara() {
                     # GitHub does not publish .sha256 for auto-generated source archives,
                     # so if the companion is unavailable, skip the native build entirely
                     # and fall through to the Python wrapper rather than compile unverified code.
-                    local sha256_tmp="${filename}.sha256"
-                    local _sha256_verified=false
-                    if curl --proto '=https' --tlsv1.2 -fsSL "${url}.sha256" \
-                            -o "$sha256_tmp" 2>/dev/null && [ -s "$sha256_tmp" ]; then
-                        local expected actual
-                        expected=$(awk '{print $1}' "$sha256_tmp")
-                        actual=$(sha256sum "$filename" | awk '{print $1}')
-                        rm -f "$sha256_tmp"
-                        if [ "$expected" = "$actual" ]; then
-                            echo "SHA256 verified OK"
-                            _sha256_verified=true
-                        else
-                            echo "ERROR: SHA256 mismatch for YARA source tarball — aborting"
-                            rm -rf "$filename"
-                            return 1
-                        fi
+                    local _yara_rc _sha256_verified=false
+                    verify_sha256 "$filename" "${url}.sha256"; _yara_rc=$?
+                    if [ "$_yara_rc" -eq 1 ]; then
+                        echo "ERROR: SHA256 mismatch for YARA source tarball — aborting"
+                        rm -rf "$filename"
+                        return 1
+                    elif [ "$_yara_rc" -eq 0 ]; then
+                        _sha256_verified=true
                     else
-                        rm -f "$sha256_tmp" 2>/dev/null || true
                         echo "YARA source SHA256 unavailable — skipping native build (Python wrapper will be used)"
                     fi
 
@@ -738,7 +729,8 @@ install_rustscan() {
         echo "Downloading: $asset_url"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o rustscan.zip || return 1
-        verify_sha256 "rustscan.zip" "${asset_url}.sha256"; _rc=$?; [ "$_rc" -eq 1 ] && return 1
+        local _rc; verify_sha256 "rustscan.zip" "${asset_url}.sha256"; _rc=$?
+        [ "$_rc" -eq 1 ] && { rm -f rustscan.zip; return 1; }
         unzip -q rustscan.zip 2>/dev/null || { echo "ERROR: unzip failed for rustscan.zip"; rm -f rustscan.zip; return 1; }
         local tgz
         tgz=$(find . -name "*.tar.gz" | head -1)
@@ -1121,7 +1113,8 @@ install_sd() {
         mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o sd-musl.tar.gz || return 1
-        verify_sha256 "sd-musl.tar.gz" "${asset_url}.sha256"; _rc=$?; [ "$_rc" -eq 1 ] && return 1
+        local _rc; verify_sha256 "sd-musl.tar.gz" "${asset_url}.sha256"; _rc=$?
+        [ "$_rc" -eq 1 ] && { rm -f sd-musl.tar.gz; return 1; }
         tar -xzf sd-musl.tar.gz 2>/dev/null || true
         local found; found=$(find . -name "sd" -type f ! -name "*.tar.gz" 2>/dev/null | head -1)
         if [[ -n "$found" ]]; then
@@ -1182,7 +1175,8 @@ install_qtox() {
         cd "$HOME/opt" || return 1
         curl -fsSL "$asset_url" -o qtox.AppImage || return 1
 
-        verify_sha256 "qtox.AppImage" "${asset_url}.sha256"; _rc=$?; [ "$_rc" -eq 1 ] && return 1
+        local _rc; verify_sha256 "qtox.AppImage" "${asset_url}.sha256"; _rc=$?
+        [ "$_rc" -eq 1 ] && { rm -f qtox.AppImage; return 1; }
         chmod +x qtox.AppImage
 
         # Extract AppImage without FUSE (container-compatible)

@@ -3,7 +3,7 @@
 # Version: 1.4.0
 # Usage: bash installer.sh
 
-set -e
+set -euo pipefail
 
 # Check if running in an interactive terminal
 if [ ! -t 0 ]; then

@@ -112,13 +112,14 @@ process_menu_selection() {
         36) install_tool "dog" ;;
         37) install_tool "aria2" ;;
 
-        # WEB TOOLS (38-41)
+        # WEB TOOLS (38-42)
         38) install_tool "seleniumbase" ;;
         39) install_tool "playwright" ;;
         40) install_tool "yandex_browser" ;;
         41) install_tool "tor_browser" ;;
+        42) install_tool "qtox" ;;
 
-        # BULK INSTALL (42-48)
+        # BULK INSTALL (43-48)
         43)
             install_tool "python_venv"
             for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done

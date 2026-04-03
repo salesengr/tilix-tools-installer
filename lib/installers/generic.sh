@@ -34,14 +34,14 @@ create_python_wrapper() {
     python_bin=$(_get_python_bin)
 
     # If pip --user already placed an entry point, nothing to do
-    if [ -x "$HOME/.local/bin/$binary_name" ] || [ -x "$HOME/.local/bin/$tool" ]; then
+    if [ -x "$HOME/.local/bin/$tool" ]; then
         return 0
     fi
 
     # Create a minimal wrapper that invokes the module directly
     cat > "$HOME/.local/bin/$tool" << WRAPPER_EOF
-#!/bin/bash
-exec $(_get_python_bin) -m $tool "\$@"
+#!/usr/bin/env bash
+exec "$(_get_python_bin)" -m "${tool}" "\$@"
 WRAPPER_EOF
 
     chmod +x "$HOME/.local/bin/$tool"

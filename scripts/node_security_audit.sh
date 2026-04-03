@@ -63,6 +63,8 @@ if [ "${#available[@]}" -gt 0 ]; then
   fi
 fi
 
+# AUDIT_JSON is passed as a positional arg — safe for this 3-package scope.
+# If the package list expands significantly, switch to a tempfile to avoid ARG_MAX limits.
 python3 - <<'PY' "$REPORT_PATH" "$REGISTRY" "$AUDIT_JSON" "${available[@]}" -- "${unavailable[@]}"
 import json, sys
 report_path = sys.argv[1]

@@ -74,7 +74,7 @@ verify_sha256() {
         return 0
     fi
 
-    if curl -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
+    if curl --proto '=https' --tlsv1.2 -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
         local expected actual
         expected=$(awk '{print $1}' "$sha256_file")
         actual=$(sha256sum "$filename" | awk '{print $1}')

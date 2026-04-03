@@ -111,9 +111,9 @@ install_github_cli() {
         # gh CLI publishes a checksums.txt file per release with sha256 entries
         local checksums_url="https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_checksums.txt"
         local checksums_file="gh_checksums.txt"
-        if curl -fsSL "$checksums_url" -o "$checksums_file" 2>/dev/null && [ -s "$checksums_file" ]; then
+        if curl --proto '=https' --tlsv1.2 -fsSL "$checksums_url" -o "$checksums_file" 2>/dev/null && [ -s "$checksums_file" ]; then
             local expected actual
-            expected=$(grep "$filename" "$checksums_file" | awk '{print $1}')
+            expected=$(grep -w "$filename" "$checksums_file" | awk '{print $1}')
             actual=$(sha256sum "$filename" | awk '{print $1}')
             rm -f "$checksums_file"
             if [ -n "$expected" ] && [ "$expected" != "$actual" ]; then
@@ -219,6 +219,28 @@ install_nodejs() {
             return 1
         fi
 
+        # Node.js publishes SHA256 sums at SHASUMS256.txt — multi-entry file,
+        # so grep for the specific filename rather than using verify_sha256()
+        local shasums_url="https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt"
+        local shasums_file="node_SHASUMS256.txt"
+        if curl --proto '=https' --tlsv1.2 -fsSL "$shasums_url" -o "$shasums_file" 2>/dev/null \
+                && [ -s "$shasums_file" ]; then
+            local expected actual
+            expected=$(grep -w "$filename" "$shasums_file" | awk '{print $1}')
+            actual=$(sha256sum "$filename" | awk '{print $1}')
+            rm -f "$shasums_file"
+            if [ -n "$expected" ] && [ "$expected" != "$actual" ]; then
+                echo "ERROR: SHA256 verification FAILED for $filename"
+                echo "  Expected: $expected"
+                echo "  Got:      $actual"
+                return 1
+            fi
+            [ -n "$expected" ] && echo "SHA256 verified OK"
+        else
+            rm -f "$shasums_file" 2>/dev/null || true
+            echo "WARNING: Could not fetch Node.js SHASUMS256.txt — skipping SHA256 verification"
+        fi
+
         tar -xJf "$filename" || return 1
         mv "node-v${NODE_VERSION}-linux-x64" node
         rm -f "$filename"
@@ -275,9 +297,14 @@ install_go_runtime() {
 
         # Fetch latest stable Go version
         local go_version
-        go_version=$(curl -fsSL "https://go.dev/VERSION?m=text" 2>/dev/null | head -1)
+        go_version=$(curl --proto '=https' --tlsv1.2 -fsSL "https://go.dev/VERSION?m=text" 2>/dev/null | head -1)
         if [[ -z "$go_version" ]]; then
             echo "ERROR: Could not determine latest Go version"
+            return 1
+        fi
+        # Validate format before using in a URL — reject unexpected responses
+        if [[ ! "$go_version" =~ ^go[0-9]+\.[0-9]+(\.[0-9]+)?(rc[0-9]+)?$ ]]; then
+            echo "ERROR: Unexpected Go version format: $go_version"
             return 1
         fi
 

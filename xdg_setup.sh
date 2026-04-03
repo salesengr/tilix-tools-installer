@@ -1,6 +1,6 @@
 #!/bin/bash
 # XDG Base Directory Setup Script
-# Version: 1.4.0
+# Version: 1.4.1
 # For Ubuntu 20.04+ container without sudo access
 #
 # This script creates a fully XDG Base Directory Specification compliant
@@ -13,7 +13,7 @@
 # shellcheck disable=SC2034  # Color codes used in conditional branches
 # shellcheck disable=SC1090  # .bashrc is user-specific, can't follow
 
-set -e  # Exit on error
+set -euo pipefail
 
 echo "=========================================="
 echo "XDG Base Directory Setup"

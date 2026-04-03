@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Menu Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Interactive user interface
 
 # ===== MENU FUNCTIONS =====
@@ -40,11 +40,12 @@ show_menu() {
     echo ""
     echo -e "${CATEGORY}WEB TOOLS:${NC}"
     echo "  [38] seleniumbase  [39] playwright      [40] yandex-browser  [41] tor-browser"
+    echo "  [42] qtox"
     echo ""
     echo -e "${CATEGORY}BULK INSTALL:${NC}"
-    echo "  [42] All Passive OSINT    [43] All Domain/Subdomain    [44] All Active Recon"
-    echo "  [45] All CTI              [46] All Utilities           [47] All Web Tools"
-    echo "  [48] Install Everything"
+    echo "  [43] All Passive OSINT    [44] All Domain/Subdomain    [45] All Active Recon"
+    echo "  [46] All CTI              [47] All Utilities           [48] All Web Tools"
+    echo "  [49] Install Everything"
     echo ""
     echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools  [L] Show Logs  [Q] Quit"
     echo ""
@@ -111,38 +112,39 @@ process_menu_selection() {
         36) install_tool "dog" ;;
         37) install_tool "aria2" ;;
 
-        # WEB TOOLS (38-41)
+        # WEB TOOLS (38-42)
         38) install_tool "seleniumbase" ;;
         39) install_tool "playwright" ;;
         40) install_tool "yandex_browser" ;;
         41) install_tool "tor_browser" ;;
+        42) install_tool "qtox" ;;
 
-        # BULK INSTALL (42-48)
-        42)
+        # BULK INSTALL (43-48)
+        43)
             install_tool "python_venv"
             for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
             ;;
-        43)
+        44)
             install_tool "python_venv"
             for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
             ;;
-        44)
+        45)
             install_tool "rust"
             for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
             ;;
-        45)
+        46)
             install_tool "python_venv"
             install_tool "nodejs"
             for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
             ;;
-        46)
+        47)
             install_tool "rust"
             for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
             ;;
-        47)
+        48)
             for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
             ;;
-        48)
+        49)
             echo -e "${WARNING}${WARN} Installing ALL tools — this will take 30-60 minutes${NC}"
             read -r -p "Continue? (yes/no): " confirm
             if [[ "$confirm" == "yes" ]]; then

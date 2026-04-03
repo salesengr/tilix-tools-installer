@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Generic Installers Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Reusable generic installers for each language ecosystem
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
@@ -34,14 +34,14 @@ create_python_wrapper() {
     python_bin=$(_get_python_bin)
 
     # If pip --user already placed an entry point, nothing to do
-    if [ -x "$HOME/.local/bin/$binary_name" ] || [ -x "$HOME/.local/bin/$tool" ]; then
+    if [ -x "$HOME/.local/bin/$tool" ]; then
         return 0
     fi
 
     # Create a minimal wrapper that invokes the module directly
     cat > "$HOME/.local/bin/$tool" << WRAPPER_EOF
-#!/bin/bash
-exec $(_get_python_bin) -m $tool "\$@"
+#!/usr/bin/env bash
+exec "$(_get_python_bin)" -m "${tool}" "\$@"
 WRAPPER_EOF
 
     chmod +x "$HOME/.local/bin/$tool"
@@ -92,20 +92,7 @@ install_python_tool() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }
 
 # Function: install_go_tool
@@ -147,32 +134,19 @@ install_go_tool() {
         echo "Compiling $tool from source..."
         go install "$repo@latest" || return 1
 
-        # Symlink all binaries in GOPATH/bin to ~/.local/bin so they are on PATH
+        # Symlink only this tool's binary — not all GOPATH/bin contents
         mkdir -p "$HOME/.local/bin"
-        for gobin in "$GOPATH"/bin/*; do
-            [ -f "$gobin" ] && ln -sf "$gobin" "$HOME/.local/bin/$(basename "$gobin")"
-        done
-        echo "Symlinked GOPATH binaries to ~/.local/bin/"
+        if [ -f "$GOPATH/bin/$tool" ]; then
+            ln -sf "$GOPATH/bin/$tool" "$HOME/.local/bin/$tool"
+            echo "Symlinked $tool to ~/.local/bin/"
+        fi
 
         echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }
 
 # Function: install_node_tool
@@ -208,20 +182,7 @@ install_node_tool() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }
 
 # Function: install_rust_tool
@@ -262,11 +223,10 @@ install_prebuilt_binary() {
         local api_url="https://api.github.com/repos/${repo}/releases/latest"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
-            | grep "browser_download_url" \
+            | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep -iE "$asset_pattern" \
             | grep -v "\.sha256\|\.sig\|\.minisig" \
-            | head -1 \
-            | sed 's/.*"browser_download_url": *"//;s/".*//')
+            | head -1)
 
         if [[ -z "$asset_url" ]]; then
             echo "ERROR: Could not find release asset matching '$asset_pattern' in $repo"
@@ -279,10 +239,14 @@ install_prebuilt_binary() {
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o "$filename" || return 1
 
+        # Verify SHA256 if companion file is published (rc=2 means unavailable — non-fatal for GitHub releases)
+        local _rc; verify_sha256 "$filename" "${asset_url}.sha256"; _rc=$?
+        [ "$_rc" -eq 1 ] && { rm -f "$filename"; return 1; }
+
         echo "Extracting..."
         case "$archive_type" in
             tar.gz)
-                tar -xzf "$filename" 2>/dev/null || true
+                tar -xzf "$filename" 2>/dev/null || { echo "ERROR: tar extraction failed for $filename"; rm -f "$filename"; return 1; }
                 # Find binary in extracted contents
                 local found_bin
                 found_bin=$(find . -name "$binary_name" -type f ! -name "*.md" ! -name "*.txt" 2>/dev/null | head -1)
@@ -301,7 +265,7 @@ install_prebuilt_binary() {
                 fi
                 ;;
             zip)
-                unzip -q "$filename" 2>/dev/null || true
+                unzip -q "$filename" 2>/dev/null || { echo "ERROR: unzip extraction failed for $filename"; rm -f "$filename"; return 1; }
                 local found_bin
                 found_bin=$(find . -name "$binary_name" -type f 2>/dev/null | head -1)
                 if [[ -n "$found_bin" ]]; then
@@ -337,6 +301,7 @@ install_prebuilt_binary() {
 install_rust_tool() {
     local tool=$1
     local crate=$2
+    local version=${3:-}   # optional pinned version; empty = latest
     local logfile
     logfile=$(create_tool_log "$tool")
 
@@ -368,33 +333,30 @@ install_rust_tool() {
             echo "gcc installed successfully"
         fi
 
-        echo "Compiling $crate from source..."
-        cargo install "$crate" || return 1
+        if [[ -n "$version" ]]; then
+            echo "Compiling $crate==${version} from source..."
+            cargo install "$crate" --version "$version" || return 1
+        else
+            echo "Compiling $crate from source (unpinned)..."
+            cargo install "$crate" || return 1
+        fi
 
-        # Symlink all new cargo binaries to ~/.local/bin so they are on PATH
+        # Symlink only this tool's binary — probe directly rather than iterating all of CARGO_HOME/bin.
+        # Note: crate binary name may differ from tool name (e.g. ripgrep crate → rg binary).
         mkdir -p "$HOME/.local/bin"
-        for cargobin in "$CARGO_HOME"/bin/*; do
-            [ -f "$cargobin" ] && ln -sf "$cargobin" "$HOME/.local/bin/$(basename "$cargobin")"
-        done
-        echo "Symlinked cargo binaries to ~/.local/bin/"
+        if [ -f "$CARGO_HOME/bin/$tool" ]; then
+            ln -sf "$CARGO_HOME/bin/$tool" "$HOME/.local/bin/$tool"
+            echo "Symlinked $tool to ~/.local/bin/"
+        fi
+        if [ "$crate" != "$tool" ] && [ -f "$CARGO_HOME/bin/$crate" ]; then
+            ln -sf "$CARGO_HOME/bin/$crate" "$HOME/.local/bin/$crate"
+            echo "Symlinked $crate to ~/.local/bin/"
+        fi
 
         echo "=========================================="
         echo "Completed: $(date)"
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "$tool"; then
-        echo -e "${SUCCESS}${CHECK} $tool installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("$tool")
-        log_installation "$tool" "success" "$logfile"
-        cleanup_old_logs "$tool"
-        return 0
-    else
-        echo -e "${ERROR}${CROSS} $tool installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("$tool")
-        FAILED_INSTALL_LOGS["$tool"]="$logfile"
-        log_installation "$tool" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "$tool" "$logfile"
 }

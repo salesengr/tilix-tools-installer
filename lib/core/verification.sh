@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Verification Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Installation status checking and environment validation
 
 # shellcheck disable=SC2034  # INSTALLED_STATUS used in parent script
@@ -73,6 +73,9 @@ is_installed() {
             command -v yandex-browser-beta &>/dev/null && return 0 ;;
         tor_browser)
             [ -f "$HOME/opt/tor-browser/Browser/start-tor-browser" ] && return 0 ;;
+        qtox)
+            [ -f "$HOME/opt/qtox/squashfs-root/AppRun" ] && return 0
+            [ -f "$HOME/.local/bin/qtox" ] && return 0 ;;
     esac
 
     return 1

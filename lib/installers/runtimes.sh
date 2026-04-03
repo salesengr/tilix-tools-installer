@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Runtimes Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Language runtime and build tool installation
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script
@@ -22,8 +22,8 @@ install_cmake() {
         echo "=========================================="
 
         mkdir -p "$HOME/opt/src"
-        cd "$HOME/opt/src" || exit 1
-        CMAKE_VERSION="3.28.1"
+        cd "$HOME/opt/src" || return 1
+        local CMAKE_VERSION="3.28.1"
         local filename="cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"
         local url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${filename}"
 
@@ -36,6 +36,9 @@ install_cmake() {
         if ! verify_file_exists "$filename" "CMake tarball"; then
             return 1
         fi
+
+        # CMake publishes SHA256 companion files alongside releases
+        verify_sha256 "$filename" "${url}.sha256" || return 1
 
         echo "Extracting..."
         if ! tar -xzf "$filename"; then
@@ -60,20 +63,7 @@ install_cmake() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "cmake"; then
-        echo -e "${GREEN}[OK] CMake installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("cmake")
-        log_installation "cmake" "success" "$logfile"
-        cleanup_old_logs "cmake"
-        return 0
-    else
-        echo -e "${RED}[FAIL] CMake installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("cmake")
-        FAILED_INSTALL_LOGS["cmake"]="$logfile"
-        log_installation "cmake" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "cmake" "$logfile"
 }
 
 # Function: install_github_cli
@@ -90,8 +80,8 @@ install_github_cli() {
         echo "=========================================="
 
         mkdir -p "$HOME/opt/src"
-        cd "$HOME/opt/src" || exit 1
-        GH_CLI_VERSION="2.53.0"
+        cd "$HOME/opt/src" || return 1
+        local GH_CLI_VERSION="2.53.0"
         local filename="gh_${GH_CLI_VERSION}_linux_amd64.tar.gz"
         local url="https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${filename}"
 
@@ -103,6 +93,26 @@ install_github_cli() {
 
         if ! verify_file_exists "$filename" "GitHub CLI tarball"; then
             return 1
+        fi
+
+        # gh CLI publishes a checksums.txt file per release with sha256 entries
+        local checksums_url="https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_checksums.txt"
+        local checksums_file="gh_checksums.txt"
+        if curl --proto '=https' --tlsv1.2 -fsSL "$checksums_url" -o "$checksums_file" 2>/dev/null && [ -s "$checksums_file" ]; then
+            local expected actual
+            expected=$(grep -w "$filename" "$checksums_file" | awk '{print $1}')
+            actual=$(sha256sum "$filename" | awk '{print $1}')
+            rm -f "$checksums_file"
+            if [ -n "$expected" ] && [ "$expected" != "$actual" ]; then
+                echo "ERROR: SHA256 verification FAILED for $filename"
+                echo "  Expected: $expected"
+                echo "  Got:      $actual"
+                return 1
+            fi
+            [ -n "$expected" ] && echo "SHA256 verified OK"
+        else
+            rm -f "$checksums_file" 2>/dev/null || true
+            echo "WARNING: Could not fetch gh CLI checksums — skipping SHA256 verification"
         fi
 
         echo "Extracting..."
@@ -139,20 +149,7 @@ install_github_cli() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "github_cli"; then
-        echo -e "${GREEN}✓ GitHub CLI installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("github_cli")
-        log_installation "github_cli" "success" "$logfile"
-        cleanup_old_logs "github_cli"
-        return 0
-    else
-        echo -e "${RED}✗ GitHub CLI installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("github_cli")
-        FAILED_INSTALL_LOGS["github_cli"]="$logfile"
-        log_installation "github_cli" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "github_cli" "$logfile"
 }
 
 # ===== LANGUAGE RUNTIMES =====
@@ -185,8 +182,8 @@ install_nodejs() {
         echo "=========================================="
 
         mkdir -p "$HOME/opt"
-        cd "$HOME/opt" || exit 1
-        NODE_VERSION="20.10.0"
+        cd "$HOME/opt" || return 1
+        local NODE_VERSION="20.10.0"
         local filename="node-v${NODE_VERSION}-linux-x64.tar.xz"
         local url="https://nodejs.org/dist/v${NODE_VERSION}/${filename}"
 
@@ -194,6 +191,28 @@ install_nodejs() {
         if ! download_file "$url" "$filename"; then
             echo "ERROR: Failed to download Node.js"
             return 1
+        fi
+
+        # Node.js publishes SHA256 sums at SHASUMS256.txt — multi-entry file,
+        # so grep for the specific filename rather than using verify_sha256()
+        local shasums_url="https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt"
+        local shasums_file="node_SHASUMS256.txt"
+        if curl --proto '=https' --tlsv1.2 -fsSL "$shasums_url" -o "$shasums_file" 2>/dev/null \
+                && [ -s "$shasums_file" ]; then
+            local expected actual
+            expected=$(grep -w "$filename" "$shasums_file" | awk '{print $1}')
+            actual=$(sha256sum "$filename" | awk '{print $1}')
+            rm -f "$shasums_file"
+            if [ -n "$expected" ] && [ "$expected" != "$actual" ]; then
+                echo "ERROR: SHA256 verification FAILED for $filename"
+                echo "  Expected: $expected"
+                echo "  Got:      $actual"
+                return 1
+            fi
+            [ -n "$expected" ] && echo "SHA256 verified OK"
+        else
+            rm -f "$shasums_file" 2>/dev/null || true
+            echo "WARNING: Could not fetch Node.js SHASUMS256.txt — skipping SHA256 verification"
         fi
 
         tar -xJf "$filename" || return 1
@@ -205,21 +224,8 @@ install_nodejs() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "nodejs"; then
-        echo -e "${GREEN}[OK] Node.js installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("nodejs")
-        log_installation "nodejs" "success" "$logfile"
-        cleanup_old_logs "nodejs"
-        export PATH="$HOME/opt/node/bin:$PATH"
-        return 0
-    else
-        echo -e "${RED}[FAIL] Node.js installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("nodejs")
-        FAILED_INSTALL_LOGS["nodejs"]="$logfile"
-        log_installation "nodejs" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "nodejs" "$logfile" || return 1
+    export PATH="$HOME/opt/node/bin:$PATH"
 }
 
 # Function: install_go_runtime
@@ -252,9 +258,14 @@ install_go_runtime() {
 
         # Fetch latest stable Go version
         local go_version
-        go_version=$(curl -fsSL "https://go.dev/VERSION?m=text" 2>/dev/null | head -1)
+        go_version=$(curl --proto '=https' --tlsv1.2 -fsSL "https://go.dev/VERSION?m=text" 2>/dev/null | head -1)
         if [[ -z "$go_version" ]]; then
             echo "ERROR: Could not determine latest Go version"
+            return 1
+        fi
+        # Validate format before using in a URL — reject unexpected responses
+        if [[ ! "$go_version" =~ ^go[0-9]+\.[0-9]+(\.[0-9]+)?(rc[0-9]+)?$ ]]; then
+            echo "ERROR: Unexpected Go version format: $go_version"
             return 1
         fi
 
@@ -272,6 +283,9 @@ install_go_runtime() {
             echo "ERROR: Failed to download Go"
             return 1
         fi
+
+        # Go publishes SHA256 companion files at the same URL + .sha256
+        verify_sha256 "$filename" "${url}.sha256" || return 1
 
         echo "Extracting to $install_dir..."
         rm -rf "$install_dir"
@@ -344,24 +358,78 @@ install_rust() {
         echo "Started: $(date)"
         echo "=========================================="
 
-        echo "Downloading rustup installer script..."
-        local rustup_script
-        rustup_script=$(mktemp)
-
-        if ! curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o "$rustup_script"; then
-            echo "ERROR: Failed to download rustup installer"
-            rm -f "$rustup_script"
+        # GPG is required for signature verification
+        if ! command -v gpg &>/dev/null; then
+            echo "ERROR: gpg not found — required for rustup-init signature verification"
             return 1
         fi
 
-        chmod +x "$rustup_script"
-        if ! sh "$rustup_script" -y --no-modify-path; then
+        # Resolve target triple for this host
+        local arch
+        arch=$(uname -m)
+        local arch_triple
+        case "$arch" in
+            x86_64)  arch_triple="x86_64-unknown-linux-gnu" ;;
+            aarch64) arch_triple="aarch64-unknown-linux-gnu" ;;
+            *)
+                echo "ERROR: Unsupported architecture for rustup: $arch"
+                return 1
+                ;;
+        esac
+
+        # Import Rust release signing key if not already in keyring
+        # Fingerprint: 108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE (rust-lang.org)
+        local RUST_KEY_FP="108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE"
+        if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
+            echo "Importing Rust signing key ${RUST_KEY_FP}..."
+            # Import from canonical source only — no third-party fallback
+            curl --proto '=https' --tlsv1.2 -sSf \
+                "https://static.rust-lang.org/rust-key.gpg.asc" | gpg --import 2>&1 || {
+                echo "ERROR: Could not import Rust signing key from static.rust-lang.org"
+                return 1
+            }
+            if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
+                echo "ERROR: Imported key fingerprint does not match ${RUST_KEY_FP}"
+                return 1
+            fi
+        fi
+
+        # Download rustup-init binary and detached signature directly
+        # This bypasses the sh.rustup.rs shell script middleman
+        local base_url="https://static.rust-lang.org/rustup/dist/${arch_triple}"
+        local rustup_init
+        rustup_init=$(mktemp)
+
+        echo "Downloading rustup-init for ${arch_triple}..."
+        curl --proto '=https' --tlsv1.2 -sSf "${base_url}/rustup-init" -o "${rustup_init}" || {
+            echo "ERROR: Failed to download rustup-init"
+            rm -f "${rustup_init}"
+            return 1
+        }
+        curl --proto '=https' --tlsv1.2 -sSf "${base_url}/rustup-init.asc" -o "${rustup_init}.asc" || {
+            echo "ERROR: Failed to download rustup-init signature"
+            rm -f "${rustup_init}" "${rustup_init}.asc"
+            return 1
+        }
+
+        # Verify detached GPG signature before executing
+        echo "Verifying rustup-init GPG signature..."
+        if ! gpg --verify "${rustup_init}.asc" "${rustup_init}" 2>&1; then
+            echo "ERROR: GPG signature verification FAILED — aborting Rust installation"
+            rm -f "${rustup_init}" "${rustup_init}.asc"
+            return 1
+        fi
+        echo "GPG signature OK"
+        rm -f "${rustup_init}.asc"
+
+        chmod +x "${rustup_init}"
+        if ! "${rustup_init}" -y --no-modify-path; then
             echo "ERROR: Failed to install Rust"
-            rm -f "$rustup_script"
+            rm -f "${rustup_init}"
             return 1
         fi
 
-        rm -f "$rustup_script"
+        rm -f "${rustup_init}"
 
         echo "Setting up environment..."
         export CARGO_HOME="$HOME/.local/share/cargo"
@@ -373,23 +441,10 @@ install_rust() {
         echo "=========================================="
     } > "$logfile" 2>&1
 
-    if is_installed "rust"; then
-        echo -e "${GREEN}[OK] Rust installed successfully${NC}"
-        SUCCESSFUL_INSTALLS+=("rust")
-        log_installation "rust" "success" "$logfile"
-        cleanup_old_logs "rust"
-        export CARGO_HOME="$HOME/.local/share/cargo"
-        export RUSTUP_HOME="$HOME/.local/share/rustup"
-        export PATH="$CARGO_HOME/bin:$PATH"
-        return 0
-    else
-        echo -e "${RED}[FAIL] Rust installation failed${NC}"
-        echo "  See log: $logfile"
-        FAILED_INSTALLS+=("rust")
-        FAILED_INSTALL_LOGS["rust"]="$logfile"
-        log_installation "rust" "failure" "$logfile"
-        return 1
-    fi
+    _record_install_result "rust" "$logfile" || return 1
+    export CARGO_HOME="$HOME/.local/share/cargo"
+    export RUSTUP_HOME="$HOME/.local/share/rustup"
+    export PATH="$CARGO_HOME/bin:$PATH"
 }
 
 # Function: install_python_venv
@@ -410,17 +465,7 @@ install_python_venv() {
 
         # Resolve best available Python (prefer 3.13 for tool compatibility)
         local python_bin
-        if command -v python3.13 &>/dev/null; then
-            python_bin="python3.13"
-        elif command -v python3.11 &>/dev/null; then
-            python_bin="python3.11"
-        elif command -v python3.10 &>/dev/null; then
-            python_bin="python3.10"
-        elif command -v python3.9 &>/dev/null; then
-            python_bin="python3.9"
-        else
-            python_bin="python3"
-        fi
+        python_bin=$(_get_python_bin)
 
         echo "Using Python: $python_bin ($($python_bin --version 2>&1))"
 
@@ -434,7 +479,8 @@ install_python_venv() {
         echo "$python_bin" > "$HOME/.local/share/.python_bin"
 
         # Upgrade pip and setuptools in user space
-        "$python_bin" -m pip install --user --quiet --upgrade pip "setuptools<81" wheel 2>/dev/null || true
+        "$python_bin" -m pip install --user --quiet --upgrade pip "setuptools<81" wheel 2>/dev/null \
+            || echo "WARNING: pip/setuptools/wheel upgrade failed (non-fatal — continuing)"
 
         echo "Python user-space install configured: $python_bin"
         echo "Install target: $HOME/.local/lib/$(${python_bin} -c 'import sys; print(f"python{sys.version_info.major}.{sys.version_info.minor}")')/site-packages/"

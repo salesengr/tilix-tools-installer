@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer (OSINT/CTI/PenTest)
-# Version: 1.4.0
+# Version: 1.4.1
 # For Ubuntu 20.04+ container without sudo access
 #
 # PREREQUISITE: Run xdg_setup.sh first
@@ -15,8 +15,8 @@
 # shellcheck disable=SC2034  # Variables used in sourced library modules
 # shellcheck disable=SC1091  # Source files not specified (modular architecture)
 
-# Disable exit on error for better error handling
-set +e
+# Per-function return 1 handles errors; -uo pipefail catches unset vars and broken pipes
+set -uo pipefail
 
 # ===== SCRIPT DIRECTORY =====
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -47,7 +47,7 @@ WARN='\u26a0'            # ⚠
 INFOSYM='\u2139'         # ℹ
 
 # ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.4.0"
+SCRIPT_VERSION="1.4.1"
 DRY_RUN=false
 CHECK_UPDATES=false
 SUCCESSFUL_INSTALLS=()
@@ -117,6 +117,8 @@ install_release_binary_with_log() {
 
         local tmpdir
         tmpdir=$(mktemp -d)
+        # shellcheck disable=SC2064  # expand tmpdir now so trap uses the right value
+        trap "rm -rf '${tmpdir}'" RETURN
 
         cd "$tmpdir" || return 1
         echo "Downloading: $url"
@@ -150,8 +152,6 @@ install_release_binary_with_log() {
 
         mkdir -p "$HOME/.local/bin"
         install -m 0755 "$extracted_binary" "$HOME/.local/bin/$output_binary" || return 1
-
-        rm -rf "$tmpdir"
 
         echo "=========================================="
         echo "Completed: $(date)"
@@ -254,17 +254,17 @@ main() {
         case "$arg" in
             --dry-run)
                 DRY_RUN=true
-                shift
+                # shift has no effect inside a for loop over "$@"; flag
+                # filtering happens in the argument collection loop below
                 ;;
             --check-updates)
                 CHECK_UPDATES=true
-                shift
                 ;;
         esac
     done
 
     # Remove flags from arguments
-    args=()
+    local args=()
     for arg in "$@"; do
         if [[ "$arg" != "--dry-run" ]] && [[ "$arg" != "--check-updates" ]]; then
             args+=("$arg")
@@ -284,7 +284,7 @@ main() {
         exit 1
     fi
 
-    if [ -z "$XDG_DATA_HOME" ] || [ -z "$XDG_CONFIG_HOME" ] || [ -z "$XDG_CACHE_HOME" ]; then
+    if [ -z "${XDG_DATA_HOME:-}" ] || [ -z "${XDG_CONFIG_HOME:-}" ] || [ -z "${XDG_CACHE_HOME:-}" ]; then
         echo -e "${YELLOW}[WARN] XDG environment variables not set${NC}"
         echo "Loading from defaults..."
         echo -e "${YELLOW}Note: Run 'source ~/.bashrc' after xdg_setup.sh${NC}"

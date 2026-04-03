@@ -58,12 +58,17 @@ download_file() {
 
 # Function: verify_sha256
 # Purpose: Verify a downloaded file against a SHA256 companion URL.
-#          If the companion file cannot be fetched, logs a warning and
-#          returns 0 (non-fatal) so callers can decide whether to abort.
 # Parameters:
 #   $1 - local filename to verify
 #   $2 - URL of the .sha256 companion file (or empty to skip)
-# Returns: 0 on verified OK or companion unavailable, 1 on mismatch
+# Returns:
+#   0 — verified OK
+#   1 — hash mismatch (file is corrupt or tampered — abort install)
+#   2 — companion unavailable (upstream doesn't publish one — caller decides)
+#
+# Callers where the companion SHOULD always exist (Go, CMake) use || return 1
+# so rc=2 is treated as fatal. Callers where it MAY not exist (rustscan, sd,
+# qtox) check [ $? -eq 1 ] so rc=2 is non-fatal.
 verify_sha256() {
     local filename=$1
     local sha256_url=${2:-}
@@ -71,7 +76,7 @@ verify_sha256() {
 
     if [[ -z "$sha256_url" ]]; then
         echo "WARNING: No SHA256 URL provided for ${filename} — skipping checksum verification"
-        return 0
+        return 2
     fi
 
     if curl --proto '=https' --tlsv1.2 -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
@@ -91,7 +96,7 @@ verify_sha256() {
 
     rm -f "$sha256_file" 2>/dev/null || true
     echo "WARNING: SHA256 companion not available at ${sha256_url} — skipping checksum verification"
-    return 0
+    return 2
 }
 
 # Function: verify_file_exists

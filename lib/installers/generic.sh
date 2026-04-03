@@ -134,12 +134,12 @@ install_go_tool() {
         echo "Compiling $tool from source..."
         go install "$repo@latest" || return 1
 
-        # Symlink all binaries in GOPATH/bin to ~/.local/bin so they are on PATH
+        # Symlink only this tool's binary — not all GOPATH/bin contents
         mkdir -p "$HOME/.local/bin"
-        for gobin in "$GOPATH"/bin/*; do
-            [ -f "$gobin" ] && ln -sf "$gobin" "$HOME/.local/bin/$(basename "$gobin")"
-        done
-        echo "Symlinked GOPATH binaries to ~/.local/bin/"
+        if [ -f "$GOPATH/bin/$tool" ]; then
+            ln -sf "$GOPATH/bin/$tool" "$HOME/.local/bin/$tool"
+            echo "Symlinked $tool to ~/.local/bin/"
+        fi
 
         echo "=========================================="
         echo "Completed: $(date)"
@@ -360,12 +360,19 @@ install_rust_tool() {
             cargo install "$crate" || return 1
         fi
 
-        # Symlink all new cargo binaries to ~/.local/bin so they are on PATH
+        # Symlink only this tool's binary — not all CARGO_HOME/bin contents
+        # Note: crate binary name may differ from tool name (e.g. ripgrep → rg);
+        # is_installed() in verification.sh knows the actual binary path per tool.
         mkdir -p "$HOME/.local/bin"
         for cargobin in "$CARGO_HOME"/bin/*; do
-            [ -f "$cargobin" ] && ln -sf "$cargobin" "$HOME/.local/bin/$(basename "$cargobin")"
+            [ -f "$cargobin" ] || continue
+            binname=$(basename "$cargobin")
+            # Only symlink if name matches the tool or is a known alias
+            if [ "$binname" = "$tool" ] || [ "$binname" = "$crate" ]; then
+                ln -sf "$cargobin" "$HOME/.local/bin/$binname"
+                echo "Symlinked $binname to ~/.local/bin/"
+            fi
         done
-        echo "Symlinked cargo binaries to ~/.local/bin/"
 
         echo "=========================================="
         echo "Completed: $(date)"

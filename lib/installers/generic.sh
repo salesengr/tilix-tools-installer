@@ -296,8 +296,9 @@ install_prebuilt_binary() {
             echo "SHA256 verified OK"
             rm -f "$sha256_file"
         else
-            echo "WARNING: No SHA256 companion file at ${sha256_url} — skipping checksum verification"
             rm -f "$sha256_file" 2>/dev/null || true
+            echo "WARNING: No SHA256 companion file published by ${repo} for ${filename}"
+            echo "         Binary installed without integrity verification — review upstream release page"
         fi
 
         echo "Extracting..."

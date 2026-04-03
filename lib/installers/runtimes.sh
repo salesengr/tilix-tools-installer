@@ -37,6 +37,9 @@ install_cmake() {
             return 1
         fi
 
+        # CMake publishes SHA256 companion files alongside releases
+        verify_sha256 "$filename" "${url}.sha256" || return 1
+
         echo "Extracting..."
         if ! tar -xzf "$filename"; then
             echo "ERROR: Failed to extract CMake"
@@ -103,6 +106,26 @@ install_github_cli() {
 
         if ! verify_file_exists "$filename" "GitHub CLI tarball"; then
             return 1
+        fi
+
+        # gh CLI publishes a checksums.txt file per release with sha256 entries
+        local checksums_url="https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_checksums.txt"
+        local checksums_file="gh_checksums.txt"
+        if curl -fsSL "$checksums_url" -o "$checksums_file" 2>/dev/null && [ -s "$checksums_file" ]; then
+            local expected actual
+            expected=$(grep "$filename" "$checksums_file" | awk '{print $1}')
+            actual=$(sha256sum "$filename" | awk '{print $1}')
+            rm -f "$checksums_file"
+            if [ -n "$expected" ] && [ "$expected" != "$actual" ]; then
+                echo "ERROR: SHA256 verification FAILED for $filename"
+                echo "  Expected: $expected"
+                echo "  Got:      $actual"
+                return 1
+            fi
+            [ -n "$expected" ] && echo "SHA256 verified OK"
+        else
+            rm -f "$checksums_file" 2>/dev/null || true
+            echo "WARNING: Could not fetch gh CLI checksums — skipping SHA256 verification"
         fi
 
         echo "Extracting..."
@@ -273,6 +296,9 @@ install_go_runtime() {
             return 1
         fi
 
+        # Go publishes SHA256 companion files at the same URL + .sha256
+        verify_sha256 "$filename" "${url}.sha256" || return 1
+
         echo "Extracting to $install_dir..."
         rm -rf "$install_dir"
         mkdir -p "$HOME/opt"
@@ -368,16 +394,12 @@ install_rust() {
         local RUST_KEY_FP="108F66205EAEB0AAA8DD5E1C85AB96E6FA1BE5FE"
         if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
             echo "Importing Rust signing key ${RUST_KEY_FP}..."
-            # Prefer canonical source; fall back to keybase.io if unavailable
-            if ! curl --proto '=https' --tlsv1.2 -sSf \
-                    "https://static.rust-lang.org/rust-key.gpg.asc" | gpg --import 2>&1; then
-                echo "WARNING: canonical key source unavailable, trying keybase.io..."
-                curl --proto '=https' --tlsv1.2 -sSf \
-                    "https://keybase.io/rust/key.asc" | gpg --import 2>&1 || {
-                    echo "ERROR: Could not import Rust signing key from any source"
-                    return 1
-                }
-            fi
+            # Import from canonical source only — no third-party fallback
+            curl --proto '=https' --tlsv1.2 -sSf \
+                "https://static.rust-lang.org/rust-key.gpg.asc" | gpg --import 2>&1 || {
+                echo "ERROR: Could not import Rust signing key from static.rust-lang.org"
+                return 1
+            }
             if ! gpg --list-keys "${RUST_KEY_FP}" &>/dev/null; then
                 echo "ERROR: Imported key fingerprint does not match ${RUST_KEY_FP}"
                 return 1

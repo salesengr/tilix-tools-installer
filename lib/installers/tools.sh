@@ -455,6 +455,10 @@ install_yara() {
                 rm -rf yara-4.5.0 "$filename"
 
                 if download_file "$url" "$filename"; then
+                    # Verify SHA256 before compiling — source tarballs execute code at build time
+                    # GitHub doesn't publish companion .sha256 for source archives, so this
+                    # uses the opportunistic helper and warns if unavailable
+                    verify_sha256 "$filename" "${url}.sha256" || return 1
                     local _yara_built=0
                     if tar -xzf "$filename" && cd yara-4.5.0; then
                         if ./bootstrap.sh \
@@ -774,16 +778,19 @@ install_rustscan() {
     {
         echo "Installing rustscan"; echo "Started: $(date)"
         mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
-        local api_url="https://api.github.com/repos/RustScan/RustScan/releases/latest"
+        # Pinned to match the cargo fallback version — update deliberately after review
+        local RUSTSCAN_VERSION="v2.3.0"
+        local api_url="https://api.github.com/repos/RustScan/RustScan/releases/tags/${RUSTSCAN_VERSION}"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
             | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep "x86_64-linux-rustscan\.tar\.gz\.zip" \
             | head -1)
-        if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found"; return 1; fi
+        if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found for ${RUSTSCAN_VERSION}"; return 1; fi
         echo "Downloading: $asset_url"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o rustscan.zip || return 1
+        verify_sha256 "rustscan.zip" "${asset_url}.sha256" || return 1
         unzip -q rustscan.zip 2>/dev/null || true
         local tgz
         tgz=$(find . -name "*.tar.gz" | head -1)
@@ -1093,7 +1100,7 @@ install_yandex_browser() {
             return 1
         }
         chmod 644 "${keyring}"
-        echo "deb [arch=amd64 signed-by=${keyring}] http://repo.yandex.ru/yandex-browser/deb beta main" \
+        echo "deb [arch=amd64 signed-by=${keyring}] https://repo.yandex.ru/yandex-browser/deb beta main" \
             > /etc/apt/sources.list.d/yandex-browser.list
 
         apt-get update -qq 2>/dev/null || true
@@ -1229,16 +1236,19 @@ install_sd() {
     echo -e "${INFO}⬇ Installing sd (pre-built musl binary)...${NC}"
     {
         echo "Installing sd"; echo "Started: $(date)"
-        local api_url="https://api.github.com/repos/chmln/sd/releases/latest"
+        # Pinned to match the cargo fallback version — update deliberately after review
+        local SD_VERSION="v1.0.0"
+        local api_url="https://api.github.com/repos/chmln/sd/releases/tags/${SD_VERSION}"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
             | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep "x86_64-unknown-linux-musl\.tar\.gz" \
             | head -1)
-        echo "Downloading musl: $asset_url"
+        echo "Downloading musl ${SD_VERSION}: $asset_url"
         mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o sd-musl.tar.gz || return 1
+        verify_sha256 "sd-musl.tar.gz" "${asset_url}.sha256" || return 1
         tar -xzf sd-musl.tar.gz 2>/dev/null || true
         local found; found=$(find . -name "sd" -type f ! -name "*.tar.gz" 2>/dev/null | head -1)
         if [[ -n "$found" ]]; then
@@ -1280,7 +1290,9 @@ install_qtox() {
         mkdir -p "$HOME/opt" "$HOME/.local/bin"
 
         # Fetch latest release asset URL
-        local api_url="https://api.github.com/repos/TokTok/qTox/releases/latest"
+        # Pinned to a specific release — update deliberately after review
+        local QTOX_VERSION="v1.17.6"
+        local api_url="https://api.github.com/repos/TokTok/qTox/releases/tags/${QTOX_VERSION}"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
             | grep -oP '"browser_download_url":\s*"\K[^"]+' \
@@ -1289,13 +1301,16 @@ install_qtox() {
             | head -1)
 
         if [[ -z "$asset_url" ]]; then
-            echo "ERROR: Could not find qTox AppImage asset"
+            echo "ERROR: Could not find qTox AppImage asset for ${QTOX_VERSION}"
             return 1
         fi
 
         echo "Downloading: $asset_url"
         cd "$HOME/opt" || return 1
         curl -fsSL "$asset_url" -o qtox.AppImage || return 1
+
+        # Verify SHA256 if companion file is published
+        verify_sha256 "qtox.AppImage" "${asset_url}.sha256" || return 1
         chmod +x qtox.AppImage
 
         # Extract AppImage without FUSE (container-compatible)

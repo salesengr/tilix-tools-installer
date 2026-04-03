@@ -1053,10 +1053,22 @@ install_yandex_browser() {
         apt-get update -qq 2>/dev/null || true
         apt-get install -y --no-install-recommends gnupg2 curl 2>/dev/null || true
 
-        # Add Yandex GPG key and repo
+        # Add Yandex GPG key using the modern signed-by method (apt-key is deprecated
+        # since Ubuntu 22.04 and removed in Debian bookworm).
+        # /etc/apt/keyrings/ requires root — fail clearly if not writable.
+        local keyring="/etc/apt/keyrings/yandex-browser.gpg"
+        if [ ! -w /etc/apt/keyrings ] && [ ! -w /etc/apt ] && [ "$(id -u)" != "0" ]; then
+            echo "ERROR: Cannot write to /etc/apt/keyrings — re-run as root or with sudo"
+            return 1
+        fi
+        mkdir -p /etc/apt/keyrings
         curl -fsSL "https://repo.yandex.ru/yandex-browser/YANDEX-BROWSER-KEY.GPG" \
-            | apt-key add - 2>/dev/null || true
-        echo "deb [arch=amd64] http://repo.yandex.ru/yandex-browser/deb beta main" \
+            | gpg --dearmor -o "${keyring}" || {
+            echo "ERROR: Failed to import Yandex Browser GPG key"
+            return 1
+        }
+        chmod 644 "${keyring}"
+        echo "deb [arch=amd64 signed-by=${keyring}] http://repo.yandex.ru/yandex-browser/deb beta main" \
             > /etc/apt/sources.list.d/yandex-browser.list
 
         apt-get update -qq 2>/dev/null || true

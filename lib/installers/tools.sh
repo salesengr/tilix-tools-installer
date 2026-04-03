@@ -753,9 +753,9 @@ install_rustscan() {
         local api_url="https://api.github.com/repos/RustScan/RustScan/releases/latest"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
-            | grep "browser_download_url" \
+            | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep "x86_64-linux-rustscan\.tar\.gz\.zip" \
-            | head -1 | sed 's/.*"browser_download_url": *"//;s/".*//')
+            | head -1)
         if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found"; return 1; fi
         echo "Downloading: $asset_url"
         cd "$HOME/opt/src" || return 1
@@ -1189,10 +1189,9 @@ install_sd() {
         local api_url="https://api.github.com/repos/chmln/sd/releases/latest"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
-            | grep "browser_download_url" \
+            | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep "x86_64-unknown-linux-musl\.tar\.gz" \
-            | head -1 \
-            | sed 's/.*"browser_download_url": *"//;s/".*//')
+            | head -1)
         echo "Downloading musl: $asset_url"
         mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
         cd "$HOME/opt/src" || return 1
@@ -1241,11 +1240,10 @@ install_qtox() {
         local api_url="https://api.github.com/repos/TokTok/qTox/releases/latest"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
-            | grep "browser_download_url" \
-            | grep "x86_64\.AppImage\"" \
+            | grep -oP '"browser_download_url":\s*"\K[^"]+' \
+            | grep "x86_64\.AppImage" \
             | grep -v "\.asc\|\.sha256\|\.zsync" \
-            | head -1 \
-            | sed 's/.*"browser_download_url": *"//;s/".*//')
+            | head -1)
 
         if [[ -z "$asset_url" ]]; then
             echo "ERROR: Could not find qTox AppImage asset"

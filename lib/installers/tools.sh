@@ -718,9 +718,10 @@ install_jwt-cracker() { install_node_tool "jwt-cracker" "jwt-cracker"; }
 
 # Function: _install_rust_with_fallback
 # Purpose: Try pre-built binary first, fall back to cargo compile
-# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=crate
+# Parameters: $1=tool $2=repo $3=asset_pattern $4=binary_name $5=archive $6=crate $7=crate_version (optional)
 _install_rust_with_fallback() {
     local tool=$1 repo=$2 pattern=$3 binname=$4 archive=$5 crate=$6
+    local crate_version=${7:-}   # optional pinned crate version for cargo fallback
     local logfile
     logfile=$(create_tool_log "$tool")
 
@@ -737,7 +738,7 @@ _install_rust_with_fallback() {
     fi
 
     echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo compile...${NC}"
-    if install_rust_tool "$tool" "$crate"; then
+    if install_rust_tool "$tool" "$crate" "$crate_version"; then
         return 0
     fi
 
@@ -753,7 +754,8 @@ install_feroxbuster() {
         "x86_64-linux.*\.tar\.gz" \
         "feroxbuster" \
         "tar.gz" \
-        "feroxbuster"
+        "feroxbuster" \
+        "2.10.4"
 }
 
 install_rustscan() {
@@ -799,7 +801,7 @@ install_rustscan() {
         return 0
     fi
     echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo...${NC}"
-    install_rust_tool "rustscan" "rustscan"
+    install_rust_tool "rustscan" "rustscan" "2.3.0"
 }
 
 install_ripgrep() {
@@ -808,7 +810,8 @@ install_ripgrep() {
         "x86_64-unknown-linux-musl\.tar\.gz" \
         "rg" \
         "tar.gz" \
-        "ripgrep"
+        "ripgrep" \
+        "14.1.1"
 }
 
 install_fd() {
@@ -817,7 +820,8 @@ install_fd() {
         "x86_64-unknown-linux-musl\.tar\.gz" \
         "fd" \
         "tar.gz" \
-        "fd-find"
+        "fd-find" \
+        "10.2.0"
 }
 
 install_bat() {
@@ -826,7 +830,8 @@ install_bat() {
         "x86_64-unknown-linux-musl\.tar\.gz" \
         "bat" \
         "tar.gz" \
-        "bat"
+        "bat" \
+        "0.24.0"
 }
 
 
@@ -1240,13 +1245,13 @@ install_sd() {
         SUCCESSFUL_INSTALLS+=("sd"); log_installation "sd" "success" "$logfile"; cleanup_old_logs "sd"; return 0
     fi
     echo -e "${WARNING}${WARN} musl download failed, falling back to cargo...${NC}"
-    install_rust_tool "sd" "sd"
+    install_rust_tool "sd" "sd" "1.0.0"
 }
 
 install_dog() {
     # dog has no musl build; gnu binary requires GLIBC_2.32 (Ubuntu 20.04 has 2.31)
     # Compile from cargo — gcc is available in the Tilix image
-    install_rust_tool "dog" "dog"
+    install_rust_tool "dog" "dog" "0.1.0"
 }
 
 # Function: install_qtox

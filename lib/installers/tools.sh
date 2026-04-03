@@ -1100,8 +1100,42 @@ install_tor_browser() {
         local filename="tor-browser-linux-x86_64-${version}.tar.xz"
         local url="https://www.torproject.org/dist/torbrowser/${version}/${filename}"
 
+        # GPG is required for signature verification
+        if ! command -v gpg &>/dev/null; then
+            echo "ERROR: gpg not found — required for Tor Browser signature verification"
+            return 1
+        fi
+
+        # Import Tor Browser Team signing key if not already in keyring
+        # Fingerprint: EF6E286DDA85EA2A4BA7DE684E2C6E8793298290 (torproject.org)
+        local TOR_KEY_FP="EF6E286DDA85EA2A4BA7DE684E2C6E8793298290"
+        if ! gpg --list-keys "${TOR_KEY_FP}" &>/dev/null; then
+            echo "Importing Tor Browser signing key ${TOR_KEY_FP}..."
+            curl -fsSL "https://keys.openpgp.org/vks/v1/by-fingerprint/${TOR_KEY_FP}" \
+                | gpg --import 2>&1 || {
+                echo "ERROR: Could not import Tor Browser signing key"
+                return 1
+            }
+        fi
+
         cd "$HOME/opt" || return 1
         curl -fsSL "$url" -o "$filename" || return 1
+        curl -fsSL "${url}.asc" -o "${filename}.asc" || {
+            echo "ERROR: Could not download signature file"
+            rm -f "$filename"
+            return 1
+        }
+
+        # Verify detached signature — fail hard on mismatch
+        echo "Verifying GPG signature..."
+        if ! gpg --verify "${filename}.asc" "$filename" 2>&1; then
+            echo "ERROR: GPG signature verification FAILED — aborting installation"
+            rm -f "$filename" "${filename}.asc"
+            return 1
+        fi
+        echo "GPG signature OK"
+        rm -f "${filename}.asc"
+
         tar -xJf "$filename" 2>/dev/null || return 1
         rm -f "$filename"
 

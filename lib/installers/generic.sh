@@ -278,6 +278,28 @@ install_prebuilt_binary() {
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o "$filename" || return 1
 
+        # Attempt SHA256 verification if companion file is published
+        local sha256_url="${asset_url}.sha256"
+        local sha256_file="${filename}.sha256"
+        if curl -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
+            echo "Verifying SHA256 checksum..."
+            local expected_hash actual_hash
+            expected_hash=$(awk '{print $1}' "$sha256_file")
+            actual_hash=$(sha256sum "$filename" | awk '{print $1}')
+            if [ "$expected_hash" != "$actual_hash" ]; then
+                echo "ERROR: SHA256 verification FAILED for $filename"
+                echo "  Expected: $expected_hash"
+                echo "  Got:      $actual_hash"
+                rm -f "$filename" "$sha256_file"
+                return 1
+            fi
+            echo "SHA256 verified OK"
+            rm -f "$sha256_file"
+        else
+            echo "WARNING: No SHA256 companion file at ${sha256_url} — skipping checksum verification"
+            rm -f "$sha256_file" 2>/dev/null || true
+        fi
+
         echo "Extracting..."
         case "$archive_type" in
             tar.gz)

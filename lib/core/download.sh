@@ -20,7 +20,7 @@ download_file() {
     while [ $retry -lt $max_retries ]; do
         echo -e "${INFO}⬇ Downloading... (attempt $((retry + 1))/$max_retries)${NC}"
 
-        if wget --progress=bar:force --show-progress "$url" -O "$output" 2>&1; then
+        if wget --https-only --secure-protocol=TLSv1_2 --progress=bar:force --show-progress "$url" -O "$output" 2>&1; then
             if [ -f "$output" ]; then
                 # Verify file size (detect truncated/failed downloads)
                 local filesize

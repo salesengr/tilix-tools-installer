@@ -34,13 +34,17 @@ install_photon() {
 
         mkdir -p "$HOME/opt/src"
 
+        # Pinned to a specific tag — update deliberately after review
+        local PHOTON_VERSION="v1.3.3"
         if [ -d "$HOME/opt/src/Photon/.git" ]; then
-            echo "Updating existing Photon checkout..."
-            git -C "$HOME/opt/src/Photon" pull --ff-only || return 1
+            echo "Updating existing Photon checkout to ${PHOTON_VERSION}..."
+            git -C "$HOME/opt/src/Photon" fetch --tags || return 1
+            git -C "$HOME/opt/src/Photon" checkout "${PHOTON_VERSION}" || return 1
         else
-            echo "Cloning Photon from GitHub..."
+            echo "Cloning Photon ${PHOTON_VERSION} from GitHub..."
             rm -rf "$HOME/opt/src/Photon"
-            git clone --depth 1 "https://github.com/s0md3v/Photon.git" "$HOME/opt/src/Photon" || return 1
+            git clone --depth 1 --branch "${PHOTON_VERSION}" \
+                "https://github.com/s0md3v/Photon.git" "$HOME/opt/src/Photon" || return 1
         fi
 
         echo "Installing Photon dependencies..."
@@ -160,8 +164,11 @@ install_theHarvester() {
         # No venv — using pip --user with system Python
         local python_bin; python_bin=$(_get_python_bin)
 
-        echo "Installing latest theHarvester from GitHub..."
-        "$python_bin" -m pip install --user --quiet "git+https://github.com/laramies/theHarvester.git" || return 1
+        # Pinned to a specific tag — update deliberately after review
+        local THEHARVESTER_VERSION="v4.6.0"
+        echo "Installing theHarvester ${THEHARVESTER_VERSION} from GitHub..."
+        "$python_bin" -m pip install --user --quiet \
+            "git+https://github.com/laramies/theHarvester.git@${THEHARVESTER_VERSION}" || return 1
 
 
         echo "Creating wrapper script..."
@@ -207,13 +214,17 @@ install_spiderfoot() {
 
         mkdir -p "$HOME/opt/src"
 
+        # Pinned to a specific tag — update deliberately after review
+        local SPIDERFOOT_VERSION="v4.0"
         if [ -d "$HOME/opt/src/spiderfoot/.git" ]; then
-            echo "Updating existing SpiderFoot checkout..."
-            git -C "$HOME/opt/src/spiderfoot" pull --ff-only || return 1
+            echo "Updating existing SpiderFoot checkout to ${SPIDERFOOT_VERSION}..."
+            git -C "$HOME/opt/src/spiderfoot" fetch --tags || return 1
+            git -C "$HOME/opt/src/spiderfoot" checkout "${SPIDERFOOT_VERSION}" || return 1
         else
-            echo "Cloning SpiderFoot from GitHub..."
+            echo "Cloning SpiderFoot ${SPIDERFOOT_VERSION} from GitHub..."
             rm -rf "$HOME/opt/src/spiderfoot"
-            git clone --depth 1 "https://github.com/smicallef/spiderfoot.git" "$HOME/opt/src/spiderfoot" || return 1
+            git clone --depth 1 --branch "${SPIDERFOOT_VERSION}" \
+                "https://github.com/smicallef/spiderfoot.git" "$HOME/opt/src/spiderfoot" || return 1
         fi
 
         # SpiderFoot pins many upper bounds for older Python; strip only the
@@ -906,16 +917,13 @@ install_aria2() {
             fi
         fi
 
-        # Strategy 3: static build from p3ng0s/static-aria2 (community maintained)
+        # No further fallback — community-maintained third-party binaries (e.g.
+        # p3ng0s/static-aria2) are excluded on supply chain grounds: no provenance
+        # guarantee, no checksum, no affiliation with the upstream aria2 project.
+        # If apt strategies above both failed, report clearly.
         if [ ! -f "$HOME/.local/bin/aria2c" ]; then
-            echo "Trying static build from p3ng0s/static-aria2..."
-            local static_url="https://github.com/p3ng0s/static-aria2/releases/latest/download/aria2c-linux-${arch_tag}"
-            if curl -fsSL "$static_url" -o "$HOME/.local/bin/aria2c" 2>/dev/null; then
-                chmod +x "$HOME/.local/bin/aria2c"
-                echo "aria2c installed from static build"
-            else
-                echo "Static build download failed"
-            fi
+            echo "ERROR: aria2 could not be installed via apt — ensure apt-get is available and the package index is populated"
+            return 1
         fi
 
         # Create convenience symlink aria2 -> aria2c

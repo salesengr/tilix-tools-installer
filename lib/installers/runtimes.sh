@@ -22,7 +22,7 @@ install_cmake() {
         echo "=========================================="
 
         mkdir -p "$HOME/opt/src"
-        cd "$HOME/opt/src" || exit 1
+        cd "$HOME/opt/src" || return 1
         CMAKE_VERSION="3.28.1"
         local filename="cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"
         local url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${filename}"
@@ -90,7 +90,7 @@ install_github_cli() {
         echo "=========================================="
 
         mkdir -p "$HOME/opt/src"
-        cd "$HOME/opt/src" || exit 1
+        cd "$HOME/opt/src" || return 1
         GH_CLI_VERSION="2.53.0"
         local filename="gh_${GH_CLI_VERSION}_linux_amd64.tar.gz"
         local url="https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${filename}"
@@ -185,7 +185,7 @@ install_nodejs() {
         echo "=========================================="
 
         mkdir -p "$HOME/opt"
-        cd "$HOME/opt" || exit 1
+        cd "$HOME/opt" || return 1
         NODE_VERSION="20.10.0"
         local filename="node-v${NODE_VERSION}-linux-x64.tar.xz"
         local url="https://nodejs.org/dist/v${NODE_VERSION}/${filename}"

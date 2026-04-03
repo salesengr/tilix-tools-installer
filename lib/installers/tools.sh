@@ -109,17 +109,17 @@ install_shodan() {
             # If pkg_resources still missing, create a patched wrapper
             if ! "$python_bin" -c "import pkg_resources" 2>/dev/null; then
                 cat > "$HOME/.local/bin/shodan" << WRAPPER_EOF
-#!/bin/bash
+#!/usr/bin/env python3
 import sys
-import importlib
+import types
 try:
     import pkg_resources
 except ImportError:
-    import types
     pkg_resources = types.ModuleType("pkg_resources")
     pkg_resources.require = lambda *a, **kw: None
     sys.modules["pkg_resources"] = pkg_resources
-exec open("/root/.local/lib/python3.13/site-packages/shodan/__main__.py").read()
+import runpy
+runpy.run_module("shodan.__main__", run_name="__main__", alter_sys=True)
 WRAPPER_EOF
             fi
         fi
@@ -539,18 +539,6 @@ WRAPPER_EOF
         return 1
     fi
 }
-
-# ===== GO TOOL WRAPPERS =====
-
-# Convenience wrappers for Go tools using generic installer
-install_gobuster() { install_go_tool "gobuster" "github.com/OJ/gobuster/v3"; }
-install_ffuf() { install_go_tool "ffuf" "github.com/ffuf/ffuf/v2"; }
-install_httprobe() { install_go_tool "httprobe" "github.com/tomnomnom/httprobe"; }
-install_waybackurls() { install_go_tool "waybackurls" "github.com/tomnomnom/waybackurls"; }
-install_assetfinder() { install_go_tool "assetfinder" "github.com/tomnomnom/assetfinder"; }
-install_subfinder() { install_go_tool "subfinder" "github.com/projectdiscovery/subfinder/v2/cmd/subfinder"; }
-install_nuclei() { install_go_tool "nuclei" "github.com/projectdiscovery/nuclei/v3/cmd/nuclei"; }
-install_virustotal() { install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"; }
 
 # ===== GO TOOL WRAPPERS — Pre-built binaries primary, go install fallback =====
 
@@ -1118,9 +1106,10 @@ install_tor_browser() {
         rm -f "$filename"
 
         # Create launcher wrapper in ~/.local/bin
-        cat > "$HOME/.local/bin/tor-browser" << 'WRAPPER'
-#!/bin/bash
-exec "$HOME/opt/tor-browser/Browser/start-tor-browser" --detach "$@"
+        # Unquoted heredoc so $HOME expands at write time; \$@ escapes for runtime
+        cat > "$HOME/.local/bin/tor-browser" << WRAPPER
+#!/usr/bin/env bash
+exec "${HOME}/opt/tor-browser/Browser/start-tor-browser" --detach "\$@"
 WRAPPER
         chmod +x "$HOME/.local/bin/tor-browser"
 
@@ -1233,10 +1222,11 @@ install_qtox() {
         fi
 
         # Create launcher wrapper
-        cat > "$HOME/.local/bin/qtox" << 'WRAPPER'
-#!/bin/bash
+        # Unquoted heredoc so $HOME expands at write time; \$@ escapes for runtime
+        cat > "$HOME/.local/bin/qtox" << WRAPPER
+#!/usr/bin/env bash
 # qTox launcher — runs extracted AppImage without FUSE, detached from terminal
-nohup "$HOME/opt/qtox/squashfs-root/AppRun" "$@" &>/dev/null &
+nohup "${HOME}/opt/qtox/squashfs-root/AppRun" "\$@" &>/dev/null &
 disown
 WRAPPER
         chmod +x "$HOME/.local/bin/qtox"

@@ -15,8 +15,8 @@
 # shellcheck disable=SC2034  # Variables used in sourced library modules
 # shellcheck disable=SC1091  # Source files not specified (modular architecture)
 
-# Disable exit on error for better error handling
-set +e
+# Per-function return 1 handles errors; -uo pipefail catches unset vars and broken pipes
+set -uo pipefail
 
 # ===== SCRIPT DIRECTORY =====
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

@@ -19,6 +19,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 - ✅ **Interactive menu** — point-and-click installation
 - ✅ **XDG compliant** — follows Linux filesystem standards
 - ✅ **Shellcheck clean** — zero warnings across all scripts
+- ✅ **Detached GUI launchers** — GUI tools (`chrome`, `yandex-browser`, `tor-browser`, `qtox`, `spiderfoot`) background automatically so they don't block the terminal
 
 ---
 
@@ -89,10 +90,11 @@ bash install_security_tools.sh --osint-tools --cti-tools
 ## 📁 Directory Structure
 
 ```
-~/.local/bin/               # All tool binaries and wrappers
+~/.local/bin/               # All tool binaries and wrappers (including GUI launchers)
 ~/.local/lib/python3.13/    # Python tools (pip --user)
 ~/.local/state/install_tools/logs/  # Installation logs
 ~/opt/gopath/bin/           # Go tool binaries (symlinked to ~/.local/bin)
+~/opt/src/spiderfoot/       # SpiderFoot source
 ~/opt/tor-browser/          # Tor Browser
 ~/opt/qtox/squashfs-root/   # qTox (AppImage extracted)
 ~/.local/share/cargo/bin/   # Rust tool binaries (symlinked to ~/.local/bin)
@@ -138,15 +140,18 @@ Typical install: **400-800 MB** (vs 1.3-2 GB before v1.4.0)
 # OSINT
 sherlock john_doe                              # username search
 theHarvester -d example.com -b all           # domain intel
+spiderfoot                                    # start web UI → chrome http://127.0.0.1:5001
 
 # Recon
 gobuster dir -u https://target.com -w wordlist.txt
 nuclei -u https://target.com
 
-# Web Tools
-google-chrome --version                       # check Chrome version
-sbase get https://example.com --headless      # SeleniumBase screenshot
-qtox                                          # launch qTox (backgrounds automatically)
+# Web Tools (all GUI launchers background automatically)
+chrome                                        # launch Chrome detached
+yandex-browser                               # launch Yandex Browser detached
+tor-browser                                  # launch Tor Browser detached (--detach)
+qtox                                         # launch qTox detached
+sbase get https://example.com --headless      # SeleniumBase headless screenshot
 ```
 
 → **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)**

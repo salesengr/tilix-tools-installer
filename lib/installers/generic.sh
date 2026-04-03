@@ -358,6 +358,7 @@ install_prebuilt_binary() {
 install_rust_tool() {
     local tool=$1
     local crate=$2
+    local version=${3:-}   # optional pinned version; empty = latest
     local logfile
     logfile=$(create_tool_log "$tool")
 
@@ -389,8 +390,13 @@ install_rust_tool() {
             echo "gcc installed successfully"
         fi
 
-        echo "Compiling $crate from source..."
-        cargo install "$crate" || return 1
+        if [[ -n "$version" ]]; then
+            echo "Compiling $crate==${version} from source..."
+            cargo install "$crate" --version "$version" || return 1
+        else
+            echo "Compiling $crate from source (unpinned)..."
+            cargo install "$crate" || return 1
+        fi
 
         # Symlink all new cargo binaries to ~/.local/bin so they are on PATH
         mkdir -p "$HOME/.local/bin"

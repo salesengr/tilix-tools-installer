@@ -262,11 +262,10 @@ install_prebuilt_binary() {
         local api_url="https://api.github.com/repos/${repo}/releases/latest"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
-            | grep "browser_download_url" \
+            | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep -iE "$asset_pattern" \
             | grep -v "\.sha256\|\.sig\|\.minisig" \
-            | head -1 \
-            | sed 's/.*"browser_download_url": *"//;s/".*//')
+            | head -1)
 
         if [[ -z "$asset_url" ]]; then
             echo "ERROR: Could not find release asset matching '$asset_pattern' in $repo"

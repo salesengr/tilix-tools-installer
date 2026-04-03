@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Tool-Specific Installers Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Tool-specific installation logic and wrapper functions
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script

@@ -7,13 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-04-03
+
 ### Added
-- **qTox** encrypted peer-to-peer chat client (Tox protocol) added to Web Tools category
-  - Installs via AppImage extraction (FUSE-free, container-compatible)
-  - Launcher at `~/.local/bin/qtox` — backgrounds automatically on launch (`nohup` + `disown`)
+- **Detached GUI launchers** — `chrome`, `yandex-browser`, `tor-browser`, `qtox`, and `spiderfoot` all background automatically so they don't block the terminal
+  - `chrome` — `nohup` + `disown` wrapper created during Playwright install
+  - `yandex-browser` — `nohup` + `disown` wrapper, consistent with qTox pattern
+  - `tor-browser` — uses Tor's built-in `--detach` flag
+  - `spiderfoot` — web server launcher prints URL + `chrome` command, verifies PID after start
+- **qTox** encrypted peer-to-peer chat client (Tox protocol) added to Web Tools
+- **`_record_install_result()` helper** in `lib/core/logging.sh` — consolidates install epilogue bookkeeping; replaces 17 copy-pasted blocks (~236 line reduction)
+- **`verify_sha256()` helper** in `lib/core/download.sh` — shared SHA256 companion verification with TLS-enforced fetch; used across Go, CMake, gh CLI, Node.js, qtox, sd, rustscan, YARA
+
+### Security
+- **GPG verification** for Tor Browser (fingerprint validated after import, detached `.asc` verified before extract)
+- **GPG verification** for rustup-init (key from `static.rust-lang.org` only; detached `.asc` verified before execute; `keybase.io` fallback removed)
+- **SHA256 verification** added to `install_prebuilt_binary`, Go runtime, CMake, gh CLI (checksums.txt), Node.js (SHASUMS256.txt), qtox, sd, rustscan
+- **YARA** native build gated on SHA256 availability — skips compilation if companion unavailable rather than running unverified code
+- **Supply chain pinning**: theHarvester `v4.6.0`, Photon `v1.3.3`, SpiderFoot `v4.0`; qtox `v1.17.6`, sd `v1.0.0`, rustscan `v2.3.0`; all 7 Rust cargo tools pinned to exact versions
+- **Yandex Browser** APT source migrated from deprecated `apt-key` to `gpg --dearmor` + `signed-by=`; APT source URL changed from `http://` to `https://`
+- **wget** enforces `--https-only --secure-protocol=TLSv1_2`; all companion file `curl` fetches use `--proto '=https' --tlsv1.2`
+- **p3ng0s/static-aria2** community binary fallback removed (no provenance guarantee)
+- VNC `VNC_PASSWORD` must be set explicitly; not printed to stdout; binds to localhost by default via `VNC_LOCALHOST` variable
 
 ### Fixed
-- qTox launcher wrapper now uses `nohup ... &>/dev/null & disown` instead of `exec`, allowing it to run detached from the terminal
+- `set -uo pipefail` in all entrypoints — catches unset variable references and broken pipelines
+- Associative array lookups guarded with `:-` defaults to prevent `unbound variable` errors under `set -u`
+- `exit 1` → `return 1` in all library functions (prevents killing the parent session on `cd` failure)
+- Fatal extraction errors for `tar` and `unzip` — was `|| true`, now `|| return 1`
+- `cleanup_old_logs` uses absolute `${LOG_DIR}` path instead of `cd + find .`
+- Dead code removed: stale Go one-liner stubs, no-op `shift` calls, misleading aria2 GitHub API tag fetch
+- `$python_bin` used consistently across all Python installers (was bare `python3` in some)
+- `args` declared `local` in `main()`
+- CI: `${XDG_DATA_HOME:-}` safe reference; CI step sources `~/.bashrc` before dry-run
 
 ## [1.4.0] - 2026-03-31
 

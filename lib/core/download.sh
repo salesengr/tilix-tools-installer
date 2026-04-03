@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Download Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Reliable file downloads with retry logic and verification
 
 # ===== DOWNLOAD FUNCTIONS =====

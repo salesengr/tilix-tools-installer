@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.4.0 | **Release Date:** April 1, 2026
+**Version:** 1.4.1 | **Release Date:** April 3, 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest and web automation tools. No sudo required — everything installs to `~/.local/`.
 
@@ -10,7 +10,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 
 ## 🎯 Features
 
-- ✅ **41+ security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
+- ✅ **36 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
 - ✅ **No sudo required** — complete user-space installation
 - ✅ **Pre-built binaries** — fast installs via GitHub releases; compile-from-source as fallback
 - ✅ **Use-case categories** — install exactly what you need with one command
@@ -19,6 +19,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 - ✅ **Interactive menu** — point-and-click installation
 - ✅ **XDG compliant** — follows Linux filesystem standards
 - ✅ **Shellcheck clean** — zero warnings across all scripts
+- ✅ **Detached GUI launchers** — GUI tools (`chrome`, `yandex-browser`, `tor-browser`, `qtox`, `spiderfoot`) background automatically so they don't block the terminal
 
 ---
 
@@ -38,7 +39,7 @@ bash install_security_tools.sh --domain-tools     # Domain & Subdomain Enum (3 t
 bash install_security_tools.sh --recon-tools      # Active Recon & Scanning (4 tools)
 bash install_security_tools.sh --cti-tools        # Cyber Threat Intel (5 tools)
 bash install_security_tools.sh --utility-tools    # Utilities (6 tools)
-bash install_security_tools.sh --web-tools        # Web Tools (4 tools)
+bash install_security_tools.sh --web-tools        # Web Tools (5 tools)
 bash install_security_tools.sh all               # Everything
 ```
 
@@ -58,7 +59,7 @@ Tools are organized by use-case. → **[Full tool list with descriptions](https:
 | Cyber Threat Intelligence | shodan, censys, yara, trufflehog, virustotal | `--cti-tools` |
 | Security Testing | jwt-cracker | — |
 | Utilities | ripgrep, fd, bat, sd, dog, aria2 | `--utility-tools` |
-| Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser | `--web-tools` |
+| Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox | `--web-tools` |
 
 ---
 
@@ -89,11 +90,13 @@ bash install_security_tools.sh --osint-tools --cti-tools
 ## 📁 Directory Structure
 
 ```
-~/.local/bin/               # All tool binaries and wrappers
+~/.local/bin/               # All tool binaries and wrappers (including GUI launchers)
 ~/.local/lib/python3.13/    # Python tools (pip --user)
 ~/.local/state/install_tools/logs/  # Installation logs
 ~/opt/gopath/bin/           # Go tool binaries (symlinked to ~/.local/bin)
+~/opt/src/spiderfoot/       # SpiderFoot source
 ~/opt/tor-browser/          # Tor Browser
+~/opt/qtox/squashfs-root/   # qTox (AppImage extracted)
 ~/.local/share/cargo/bin/   # Rust tool binaries (symlinked to ~/.local/bin)
 ```
 
@@ -107,7 +110,7 @@ bash install_security_tools.sh --osint-tools --cti-tools
 | **[Wiki: Tool Categories](https://github.com/salesengr/tilix-tools-installer/wiki/Tool-Categories)** | Full tool list with descriptions |
 | **[Wiki: CLI Reference](https://github.com/salesengr/tilix-tools-installer/wiki/CLI-Reference)** | All flags, options, examples |
 | **[Wiki: Usage Examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)** | Practical examples for every tool |
-| **[Wiki: Web Tools](https://github.com/salesengr/tilix-tools-installer/wiki/Web-Tools)** | Chrome, SeleniumBase, Playwright, Tor |
+| **[Wiki: Web Tools](https://github.com/salesengr/tilix-tools-installer/wiki/Web-Tools)** | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox |
 | **[Wiki: Troubleshooting](https://github.com/salesengr/tilix-tools-installer/wiki/Troubleshooting)** | Common issues and fixes |
 | **[Wiki: Disk Space & Performance](https://github.com/salesengr/tilix-tools-installer/wiki/Disk-Space-and-Performance)** | Sizes and install times |
 | **[docs/EXTENDING_THE_SCRIPT.md](docs/EXTENDING_THE_SCRIPT.md)** | How to add new tools (versioned) |
@@ -137,14 +140,18 @@ Typical install: **400-800 MB** (vs 1.3-2 GB before v1.4.0)
 # OSINT
 sherlock john_doe                              # username search
 theHarvester -d example.com -b all           # domain intel
+spiderfoot                                    # start web UI → chrome http://127.0.0.1:5001
 
 # Recon
 gobuster dir -u https://target.com -w wordlist.txt
 nuclei -u https://target.com
 
-# Web Tools
-google-chrome --version                       # check Chrome version
-sbase get https://example.com --headless      # SeleniumBase screenshot
+# Web Tools (all GUI launchers background automatically)
+chrome                                        # launch Chrome detached
+yandex-browser                               # launch Yandex Browser detached
+tor-browser                                  # launch Tor Browser detached (--detach)
+qtox                                         # launch qTox detached
+sbase get https://example.com --headless      # SeleniumBase headless screenshot
 ```
 
 → **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)**
@@ -192,5 +199,7 @@ tail -20 ~/.local/state/install_tools/installation_history.log
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ## 📄 License
+
+[MIT License](LICENSE) — Copyright (c) 2026 salesengr
 
 Provided as-is for educational and professional security testing. Always obtain proper authorization before testing systems you don't own.

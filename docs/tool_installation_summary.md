@@ -49,7 +49,7 @@ All Python tools are installed via `pip install --user` using the system Python 
 | shodan | `shodan` | `~/.local/bin/shodan` | pip --user package `shodan` (with pkg_resources shim). |
 | censys | `censys` | `~/.local/bin/censys` | pip --user package `censys`. |
 | theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | pip --user package `theHarvester`. |
-| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | pip --user package `spiderfoot`. |
+| spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | Cloned from GitHub; launcher starts web UI detached on `127.0.0.1:5001`. |
 | yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings in `~/.local/lib/python3.13/site-packages/`. |
 | wappalyzer | `python-Wappalyzer` | `~/.local/bin/wappalyzer` | pip --user package `python-Wappalyzer`. |
 
@@ -140,8 +140,9 @@ Web automation tools enable browser-based OSINT, stealth scraping, captcha bypas
 |------|--------------------|--------------------|
 | SeleniumBase | `pip install --user seleniumbase` | `~/.local/bin/sbase` |
 | Playwright | `pip install --user playwright` + `playwright install chromium` | `~/.local/bin/playwright` + `~/.local/share/ms-playwright/` |
-| Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` |
+| Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` + `~/.local/bin/yandex-browser` |
 | Tor Browser | tarball from `torproject.org/dist/torbrowser/` | `~/opt/tor-browser/Browser/start-tor-browser` + `~/.local/bin/tor-browser` |
+| qTox | AppImage extract from `github.com/TokTok/qTox` | `~/opt/qtox/squashfs-root/AppRun` + `~/.local/bin/qtox` |
 
 ### SeleniumBase
 Works with the system Chrome already in the Tilix image. Three modes:
@@ -157,24 +158,49 @@ python3 -m seleniumbase             # Python module usage
 
 ### Playwright
 Cross-browser automation supporting Chromium, Firefox, and WebKit. Browser binaries stored in `~/.local/share/ms-playwright/`.
+
+Also creates `~/.local/bin/chrome` — a detached launcher for the system Chrome (`/usr/bin/google-chrome`) using `nohup` + `disown`. The `google-chrome` binary is left untouched for programmatic use by Playwright and SeleniumBase.
 ```bash
 playwright install --list           # List installed browsers
 playwright install chromium         # Install/update Chromium
 playwright codegen https://target   # Record browser actions as code
+chrome                              # Launch Chrome detached from terminal (requires VNC/display)
+google-chrome --version             # Check version (direct binary)
 ```
 
 ### Yandex Browser
 Chromium-based, amd64 only. Installed system-wide via the official Yandex APT repository. Useful for Russian-language OSINT — Yandex Search, reverse image search, Maps, and accessing Russian social media with appropriate locale.
+
+Includes a convenience launcher at `~/.local/bin/yandex-browser` that automatically backgrounds the process using `nohup` + `disown`, so it doesn't block the terminal.
 ```bash
-yandex-browser-beta                 # Launch (requires VNC/display)
-yandex-browser-beta --version       # Check version
+yandex-browser                      # Launch detached from terminal (requires VNC/display)
+yandex-browser-beta --version       # Check version (direct binary)
 ```
 
 ### Tor Browser
-Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser`.
+Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser` that uses Tor's built-in `--detach` flag to separate from the terminal.
 
 **Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
 ```bash
-tor-browser                         # Launch with GUI (requires VNC)
-~/opt/tor-browser/Browser/start-tor-browser --detach  # Background
+tor-browser                         # Launch detached from terminal via --detach (requires VNC)
+```
+
+### SpiderFoot
+Automated OSINT collection platform with a web-based UI. The launcher starts the web server detached from the terminal using `nohup` + `disown`, prints the URL, and shows the `chrome` command to open it. Default host/port can be overridden via `SF_HOST` and `SF_PORT` environment variables.
+
+```bash
+spiderfoot                          # Start web UI (backgrounds automatically)
+                                    # Prints: chrome http://127.0.0.1:5001
+
+SF_PORT=8080 spiderfoot             # Start on a custom port
+pkill -f sf.py                      # Stop SpiderFoot
+```
+
+### qTox
+Encrypted peer-to-peer chat client using the [Tox protocol](https://tox.chat). No central servers — all communication is end-to-end encrypted. Installed via AppImage extraction (FUSE-free, container-compatible) to `~/opt/qtox/squashfs-root/`.
+
+Includes a convenience launcher at `~/.local/bin/qtox` that automatically backgrounds the process using `nohup` + `disown`, so it doesn't block the terminal.
+
+```bash
+qtox                                # Launch qTox (backgrounds automatically)
 ```

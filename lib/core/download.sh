@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Download Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Reliable file downloads with retry logic and verification
 
 # ===== DOWNLOAD FUNCTIONS =====
@@ -20,7 +20,7 @@ download_file() {
     while [ $retry -lt $max_retries ]; do
         echo -e "${INFO}⬇ Downloading... (attempt $((retry + 1))/$max_retries)${NC}"
 
-        if wget --progress=bar:force --show-progress "$url" -O "$output" 2>&1; then
+        if wget --https-only --secure-protocol=TLSv1_2 --progress=bar:force --show-progress "$url" -O "$output" 2>&1; then
             if [ -f "$output" ]; then
                 # Verify file size (detect truncated/failed downloads)
                 local filesize
@@ -54,6 +54,45 @@ download_file() {
     echo -e "${ERROR}${CROSS} Failed to download after $max_retries attempts${NC}"
     echo "  URL: $url"
     return 1
+}
+
+# Function: verify_sha256
+# Purpose: Verify a downloaded file against a SHA256 companion URL.
+# Parameters:
+#   $1 - local filename to verify
+#   $2 - URL of the .sha256 companion file (or empty to skip)
+# Returns:
+#   0 — verified OK
+#   1 — hash mismatch (file is corrupt or tampered — abort install)
+#   2 — companion unavailable (upstream doesn't publish one — caller decides)
+verify_sha256() {
+    local filename=$1
+    local sha256_url=${2:-}
+    local sha256_file="${filename}.sha256"
+
+    if [[ -z "$sha256_url" ]]; then
+        echo "WARNING: No SHA256 URL provided for ${filename} — skipping checksum verification"
+        return 2
+    fi
+
+    if curl --proto '=https' --tlsv1.2 -fsSL "$sha256_url" -o "$sha256_file" 2>/dev/null && [ -s "$sha256_file" ]; then
+        local expected actual
+        expected=$(awk '{print $1}' "$sha256_file")
+        actual=$(sha256sum "$filename" | awk '{print $1}')
+        rm -f "$sha256_file"
+        if [ "$expected" != "$actual" ]; then
+            echo "ERROR: SHA256 verification FAILED for $filename"
+            echo "  Expected: $expected"
+            echo "  Got:      $actual"
+            return 1
+        fi
+        echo "SHA256 verified OK"
+        return 0
+    fi
+
+    rm -f "$sha256_file" 2>/dev/null || true
+    echo "WARNING: SHA256 companion not available at ${sha256_url} — skipping checksum verification"
+    return 2
 }
 
 # Function: verify_file_exists

@@ -5,7 +5,7 @@
 
 
 
-**Version:** 1.4.0 (Modular Architecture)
+**Version:** 1.4.1
 
 The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 
@@ -19,7 +19,7 @@ The installer is intentionally data-driven and modular: every tool is described 
 - **CTI (5):** shodan, censys, yara, trufflehog, virustotal
 - **Security Testing (1):** jwt-cracker
 - **Utilities (6):** ripgrep, fd, bat, sd, dog, aria2
-- **Web Tools (4):** seleniumbase, playwright, yandex_browser, tor_browser
+- **Web Tools (5):** seleniumbase, playwright, yandex_browser, tor_browser, qtox
 
 ## Add or Modify a Tool (v1.4.0 Modular Process)
 
@@ -100,6 +100,66 @@ bash install_security_tools.sh --dry-run all
 make lint
 make fmt-check
 ```
+
+## GUI Tool Launchers (nohup pattern)
+
+If the tool you're adding opens as a separate GUI window or web server — not a CLI that reads/writes stdin/stdout — create a detached launcher so it doesn't keep the terminal attached.
+
+### When to use this pattern
+
+- **GUI window tools:** browsers, chat clients, desktop apps (Yandex Browser, qTox, Chrome)
+- **Web server tools:** tools that start a local HTTP server the user accesses via browser (SpiderFoot)
+
+### Standard launcher template
+
+```bash
+cat > "$HOME/.local/bin/mytool" << 'WRAPPER'
+#!/usr/bin/env bash
+# mytool launcher — runs detached from terminal
+nohup /path/to/mytool-binary "$@" &>/dev/null &
+disown
+WRAPPER
+chmod +x "$HOME/.local/bin/mytool"
+```
+
+### Web server variant
+
+For tools that start a local web server, print the URL and how to open it before detaching:
+
+```bash
+cat > "$HOME/.local/bin/mytool" << 'WRAPPER'
+#!/usr/bin/env bash
+# mytool launcher — starts web UI detached from terminal
+MYTOOL_HOST="${MYTOOL_HOST:-127.0.0.1}"
+MYTOOL_PORT="${MYTOOL_PORT:-8080}"
+
+echo ""
+echo "Starting mytool web UI..."
+echo "  URL : http://${MYTOOL_HOST}:${MYTOOL_PORT}"
+echo ""
+echo "  Open in Chrome:"
+echo "  chrome http://${MYTOOL_HOST}:${MYTOOL_PORT}"
+echo ""
+
+nohup /path/to/mytool-binary --listen "${MYTOOL_HOST}:${MYTOOL_PORT}" "$@" &>/dev/null &
+MYTOOL_PID=$!
+disown
+
+echo "mytool started (PID ${MYTOOL_PID})"
+echo "To stop: kill ${MYTOOL_PID}  or  pkill -f mytool-binary"
+echo ""
+WRAPPER
+chmod +x "$HOME/.local/bin/mytool"
+```
+
+### Notes
+
+- Always use `nohup ... &>/dev/null &` followed by `disown` — this combination ignores SIGHUP, suppresses output, and removes the process from the shell's job table.
+- Set `TOOL_INSTALL_LOCATION` in `tool-definitions.sh` to the wrapper path (`$HOME/.local/bin/mytool`), not the underlying binary.
+- The `is_installed()` check in `verification.sh` should check for the wrapper file, not the system binary, so verification reflects the full setup.
+- For tools with configurable ports, expose them via environment variables (`MYTOOL_PORT`) so they can be overridden without editing the wrapper.
+
+---
 
 ## Tips and Troubleshooting
 

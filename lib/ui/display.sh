@@ -1,11 +1,37 @@
 #!/bin/bash
 # Security Tools Installer - Display Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Status and information display functions
 
 # shellcheck disable=SC2012  # Using ls with timestamps is intentional for logs
 
 # ===== DISPLAY FUNCTIONS =====
+
+# Function: _tool_status_line
+# Purpose: Print a status line for a single tool with three states:
+#   [OK]   — binary found (installed)
+#   [FAIL] — install was attempted this session and failed
+#   [--]   — not installed, not attempted
+# Parameters:
+#   $1 - tool name
+_tool_status_line() {
+    local tool="$1"
+    local in_failed=false
+    local t
+    if [ "${#FAILED_INSTALLS[@]}" -gt 0 ]; then
+        for t in "${FAILED_INSTALLS[@]}"; do
+            [[ "$t" == "$tool" ]] && in_failed=true && break
+        done
+    fi
+
+    if [[ "${INSTALLED_STATUS[$tool]:-false}" == "true" ]]; then
+        echo -e "  ${GREEN}[OK]${NC} $tool"
+    elif $in_failed; then
+        echo -e "  ${RED}[FAIL]${NC} $tool"
+    else
+        echo -e "  ${YELLOW}[--]${NC} $tool"
+    fi
+}
 
 # Function: show_installed
 # Purpose: Display installation status for all tools
@@ -19,66 +45,38 @@ show_installed() {
 
     echo -e "${MAGENTA}BUILD TOOLS:${NC}"
     for tool in "${BUILD_TOOLS[@]}"; do
-        if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}[OK]${NC} $tool"
-        else
-            echo -e "  ${RED}[FAIL]${NC} $tool"
-        fi
+        _tool_status_line "$tool"
     done
 
     echo ""
     echo -e "${MAGENTA}LANGUAGES:${NC}"
     for tool in "${LANGUAGES[@]}"; do
-        if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}[OK]${NC} $tool"
-        else
-            echo -e "  ${RED}[FAIL]${NC} $tool"
-        fi
+        _tool_status_line "$tool"
     done
 
     echo ""
     echo -e "${MAGENTA}PYTHON TOOLS:${NC}"
-    if [[ "${INSTALLED_STATUS[python_venv]}" == "true" ]]; then
-        echo -e "  ${GREEN}[OK]${NC} python_venv"
-    else
-        echo -e "  ${RED}[FAIL]${NC} python_venv"
-    fi
+    _tool_status_line "python_venv"
     for tool in "${ALL_PYTHON_TOOLS[@]}"; do
-        if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}[OK]${NC} $tool"
-        else
-            echo -e "  ${RED}[FAIL]${NC} $tool"
-        fi
+        _tool_status_line "$tool"
     done
 
     echo ""
     echo -e "${MAGENTA}GO TOOLS:${NC}"
     for tool in "${ALL_GO_TOOLS[@]}"; do
-        if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}[OK]${NC} $tool"
-        else
-            echo -e "  ${RED}[FAIL]${NC} $tool"
-        fi
+        _tool_status_line "$tool"
     done
 
     echo ""
     echo -e "${MAGENTA}NODE.JS TOOLS:${NC}"
     for tool in "${NODE_TOOLS[@]}"; do
-        if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}[OK]${NC} $tool"
-        else
-            echo -e "  ${RED}[FAIL]${NC} $tool"
-        fi
+        _tool_status_line "$tool"
     done
 
     echo ""
     echo -e "${MAGENTA}RUST TOOLS:${NC}"
     for tool in "${ALL_RUST_TOOLS[@]}"; do
-        if [[ "${INSTALLED_STATUS[$tool]}" == "true" ]]; then
-            echo -e "  ${GREEN}[OK]${NC} $tool"
-        else
-            echo -e "  ${RED}[FAIL]${NC} $tool"
-        fi
+        _tool_status_line "$tool"
     done
 
     echo ""
@@ -122,7 +120,7 @@ show_installation_summary() {
         echo ""
         echo -e "${RED}Failed installations:${NC}"
         for tool in "${FAILED_INSTALLS[@]}"; do
-            local logfile="${FAILED_INSTALL_LOGS[$tool]}"
+            local logfile="${FAILED_INSTALL_LOGS[$tool]:-}"
             echo -e "  ${RED}[FAIL]${NC} $tool"
             echo "    Log: $logfile"
             echo "    View: cat $logfile"

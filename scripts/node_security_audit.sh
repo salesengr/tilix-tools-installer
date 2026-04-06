@@ -2,8 +2,24 @@
 set -euo pipefail
 
 REGISTRY="${NPM_REGISTRY_URL:-https://registry.npmjs.org}"
+
+# Validate registry URL scheme — only https:// is permitted
+if [[ "$REGISTRY" != https://* ]]; then
+    echo "ERROR: NPM_REGISTRY_URL must use https:// (got: $REGISTRY)" >&2
+    exit 1
+fi
+
 WORKDIR="$(mktemp -d)"
+trap 'rm -rf "$WORKDIR"' EXIT
+
 REPORT_PATH="${1:-node-audit-report.json}"
+
+# Validate REPORT_PATH — must be an absolute path or a simple filename in cwd;
+# reject path traversal and shell-special characters
+if [[ "$REPORT_PATH" == *".."* ]] || [[ "$REPORT_PATH" =~ [^a-zA-Z0-9_./:@-] ]]; then
+    echo "ERROR: REPORT_PATH contains invalid characters: $REPORT_PATH" >&2
+    exit 1
+fi
 
 NPM_TOOLS=(
   "@trufflesecurity/trufflehog"
@@ -26,7 +42,7 @@ mkdir -p "$WORKDIR"
 cd "$WORKDIR"
 
 if [ "${#available[@]}" -gt 0 ]; then
-  python3 - <<'PY' "${available[@]}"
+  python3 - <<'PY' "${available[@]}" > package.json
 import json, sys
 pkgs = sys.argv[1:]
 print(json.dumps({
@@ -36,7 +52,7 @@ print(json.dumps({
   "dependencies": {p: "latest" for p in pkgs}
 }, indent=2))
 PY
-fi > package.json
+fi
 
 AUDIT_JSON='{}'
 if [ "${#available[@]}" -gt 0 ]; then
@@ -47,6 +63,8 @@ if [ "${#available[@]}" -gt 0 ]; then
   fi
 fi
 
+# AUDIT_JSON is passed as a positional arg — safe for this 3-package scope.
+# If the package list expands significantly, switch to a tempfile to avoid ARG_MAX limits.
 python3 - <<'PY' "$REPORT_PATH" "$REGISTRY" "$AUDIT_JSON" "${available[@]}" -- "${unavailable[@]}"
 import json, sys
 report_path = sys.argv[1]

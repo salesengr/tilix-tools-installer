@@ -313,6 +313,10 @@ Godeps/
 # Project-Specific
 # =============================================================================
 
+# VNC smoketest script and Docker config (used only in tilix-local image, not part of this repo)
+start-vnc.sh
+.dockerignore
+
 # Test installations (if testing in repo directory - shouldn't happen but just in case)
 opt/
 .local/

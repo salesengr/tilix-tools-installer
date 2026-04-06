@@ -36,6 +36,9 @@ jobs:
 
       - name: Installer dry-run smoke
         run: |
+          # Source .bashrc so XDG env vars set by xdg_setup.sh are available
+          # shellcheck disable=SC1090
+          source ~/.bashrc || true
           bash install_security_tools.sh --dry-run all
 
       - name: Install Node for audit coverage step

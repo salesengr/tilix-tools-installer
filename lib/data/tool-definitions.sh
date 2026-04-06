@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Tool Definitions Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: Centralized tool metadata and category definitions
 
 # shellcheck disable=SC2034  # Variables used in parent script and other modules
@@ -22,7 +22,7 @@ ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
 CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
 SECURITY_TESTING=("jwt-cracker")
 UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "dog" "aria2")
-WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser")
+WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser" "qtox")
 
 # ===== INTERNAL RUNTIME ARRAYS =====
 # Used internally for dependency resolution only (not exposed in menu).
@@ -240,7 +240,6 @@ define_tools() {
     TOOL_SIZES[aria2]="5MB"
     TOOL_DEPENDENCIES[aria2]=""
     TOOL_INSTALL_LOCATION[aria2]="$HOME/.local/bin/aria2c"
-}
 
     # Web Tools
     TOOL_INFO[seleniumbase]="SeleniumBase|Browser automation with UC/CDP modes for bypassing bot-detection|Web Tools"
@@ -256,9 +255,15 @@ define_tools() {
     TOOL_INFO[yandex_browser]="Yandex Browser|Chromium-based browser for Russian-language OSINT|Web Tools"
     TOOL_SIZES[yandex_browser]="300MB"
     TOOL_DEPENDENCIES[yandex_browser]=""
-    TOOL_INSTALL_LOCATION[yandex_browser]="/usr/bin/yandex-browser-beta"
+    TOOL_INSTALL_LOCATION[yandex_browser]="$HOME/.local/bin/yandex-browser"
 
     TOOL_INFO[tor_browser]="Tor Browser|Anonymous browsing via Tor network|Web Tools"
-    TOOL_SIZES[tor_browser]="100MB"
+    TOOL_SIZES[tor_browser]="333MB"
     TOOL_DEPENDENCIES[tor_browser]=""
-    TOOL_INSTALL_LOCATION[tor_browser]="$HOME/opt/tor-browser/Browser/start-tor-browser"
+    TOOL_INSTALL_LOCATION[tor_browser]="$HOME/.local/bin/tor-browser"
+
+    TOOL_INFO[qtox]="qTox|Encrypted peer-to-peer chat client (Tox protocol)|Web Tools"
+    TOOL_SIZES[qtox]="65MB"
+    TOOL_DEPENDENCIES[qtox]=""
+    TOOL_INSTALL_LOCATION[qtox]="$HOME/.local/bin/qtox"
+}

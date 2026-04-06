@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Orchestration Module
-# Version: 1.4.0
+# Version: 1.4.1
 # Purpose: High-level installation coordination and workflow management
 
 # shellcheck disable=SC2034  # Variables used in display/logging
@@ -74,6 +74,7 @@ install_tool() {
         playwright) install_playwright ;;
         yandex_browser) install_yandex_browser ;;
         tor_browser) install_tor_browser ;;
+        qtox) install_qtox ;;
         *)
             echo -e "${RED}Unknown tool: $tool${NC}"
             return 1
@@ -123,7 +124,7 @@ dry_run_install() {
     echo "${indent}[DRY RUN] Would install: $tool"
 
     # Check dependencies
-    local deps=${TOOL_DEPENDENCIES[$tool]}
+    local deps=${TOOL_DEPENDENCIES[$tool]:-}
     if [[ -n "$deps" ]]; then
         echo "${indent}  Prerequisites:"
         for dep in $deps; do
@@ -137,9 +138,9 @@ dry_run_install() {
     fi
 
     # Show details
-    local info=${TOOL_INFO[$tool]}
-    local size=${TOOL_SIZES[$tool]}
-    local location=${TOOL_INSTALL_LOCATION[$tool]}
+    local info=${TOOL_INFO[$tool]:-}
+    local size=${TOOL_SIZES[$tool]:-}
+    local location=${TOOL_INSTALL_LOCATION[$tool]:-}
 
     echo "${indent}  Download size: $size"
     echo "${indent}  Install location: $location"

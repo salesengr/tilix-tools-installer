@@ -1,6 +1,6 @@
 #!/bin/bash
 # Bootstrap Installer for Security Tools
-# Version: 1.4.1
+# Version: 1.4.2
 # Usage: bash installer.sh
 
 set -euo pipefail

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-04-07
+
+### Fixed
+- `show_installed()` was missing the WEB_TOOLS loop — seleniumbase, playwright, yandex_browser, tor_browser, and qtox were invisible in the post-install status summary. The per-tool install confirmation echoes fired correctly; only the final summary display was affected.
+
 ## [1.4.1] - 2026-04-03
 
 ### Added

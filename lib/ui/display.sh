@@ -37,6 +37,9 @@ _tool_status_line() {
 # Purpose: Display installation status for all tools
 # Returns: Always succeeds
 show_installed() {
+    # Rescan so status reflects any tools installed during this session
+    scan_installed_tools
+
     echo ""
     echo -e "${BLUE}=========================================="
     echo "Installed Tools"

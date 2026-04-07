@@ -998,6 +998,14 @@ install_yandex_browser() {
         cat > "$HOME/.local/bin/yandex-browser" << 'WRAPPER'
 #!/usr/bin/env bash
 # Yandex Browser launcher — runs detached from terminal
+if [ ! -f "/usr/bin/yandex-browser-beta" ]; then
+    echo "yandex-browser: yandex-browser-beta not found — run: bash install_security_tools.sh yandex_browser" >&2
+    exit 1
+fi
+if [ -z "${DISPLAY:-}" ]; then
+    echo "yandex-browser: DISPLAY not set — start a VNC session first" >&2
+    exit 1
+fi
 nohup /usr/bin/yandex-browser-beta "$@" &>/dev/null &
 disown
 WRAPPER
@@ -1085,7 +1093,17 @@ install_tor_browser() {
         # Unquoted heredoc so $HOME expands at write time; \$@ escapes for runtime
         cat > "$HOME/.local/bin/tor-browser" << WRAPPER
 #!/usr/bin/env bash
-exec "${HOME}/opt/tor-browser/Browser/start-tor-browser" --detach "\$@"
+# tor-browser launcher — runs detached from terminal
+if [ ! -f "${HOME}/opt/tor-browser/Browser/start-tor-browser" ]; then
+    echo "tor-browser: not installed — run: bash install_security_tools.sh tor_browser" >&2
+    exit 1
+fi
+if [ -z "\${DISPLAY:-}" ]; then
+    echo "tor-browser: DISPLAY not set — start a VNC session first" >&2
+    exit 1
+fi
+nohup "${HOME}/opt/tor-browser/Browser/start-tor-browser" "\$@" &>/dev/null &
+disown
 WRAPPER
         chmod +x "$HOME/.local/bin/tor-browser"
 

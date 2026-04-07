@@ -80,6 +80,12 @@ show_installed() {
     done
 
     echo ""
+    echo -e "${MAGENTA}WEB TOOLS:${NC}"
+    for tool in "${WEB_TOOLS[@]}"; do
+        _tool_status_line "$tool"
+    done
+
+    echo ""
 }
 
 # Function: show_logs

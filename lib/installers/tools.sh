@@ -1157,7 +1157,7 @@ install_qtox() {
 
         # Fetch latest release asset URL
         # Pinned to a specific release — update deliberately after review
-        local QTOX_VERSION="v1.17.6"
+        local QTOX_VERSION="v1.18.4"
         local api_url="https://api.github.com/repos/TokTok/qTox/releases/tags/${QTOX_VERSION}"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \

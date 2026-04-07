@@ -63,9 +63,9 @@ echo ""
 echo "Step 2/3: Reloading shell configuration..."
 
 # Detect shell and source appropriate config
-if [ -n "$ZSH_VERSION" ]; then
+if [ -n "${ZSH_VERSION:-}" ]; then
     SHELL_CONFIG="$HOME/.zshrc"
-elif [ -n "$BASH_VERSION" ]; then
+elif [ -n "${BASH_VERSION:-}" ]; then
     SHELL_CONFIG="$HOME/.bashrc"
 else
     SHELL_CONFIG="$HOME/.bashrc"  # Default to bash

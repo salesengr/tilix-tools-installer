@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Verification Module
-# Version: 1.4.1
+# Version: 1.4.2
 # Purpose: Installation status checking and environment validation
 
 # shellcheck disable=SC2034  # INSTALLED_STATUS used in parent script

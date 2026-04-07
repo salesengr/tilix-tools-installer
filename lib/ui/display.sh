@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Display Module
-# Version: 1.4.1
+# Version: 1.4.2
 # Purpose: Status and information display functions
 
 # shellcheck disable=SC2012  # Using ls with timestamps is intentional for logs
@@ -37,6 +37,9 @@ _tool_status_line() {
 # Purpose: Display installation status for all tools
 # Returns: Always succeeds
 show_installed() {
+    # Rescan so status reflects any tools installed during this session
+    scan_installed_tools
+
     echo ""
     echo -e "${BLUE}=========================================="
     echo "Installed Tools"

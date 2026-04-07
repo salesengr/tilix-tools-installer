@@ -1,6 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Dependencies Module
-# Version: 1.4.1
+# Version: 1.4.2
 # Purpose: Automated prerequisite handling and dependency resolution
 
 # ===== DEPENDENCY RESOLUTION =====

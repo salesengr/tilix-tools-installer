@@ -106,6 +106,47 @@ def filter_links(
     return result
 
 
+def save_capture(
+    screenshot_bytes: Optional[bytes],
+    pdf_bytes: Optional[bytes],
+    dest_dir: Path,
+) -> Dict[str, Optional[Path]]:
+    """Write screenshot and optional PDF bytes to dest_dir."""
+    result: Dict[str, Optional[Path]] = {"screenshot": None, "pdf": None}
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    if screenshot_bytes:
+        out = dest_dir / "screenshot.png"
+        out.write_bytes(screenshot_bytes)
+        result["screenshot"] = out
+    if pdf_bytes:
+        out = dest_dir / "page.pdf"
+        out.write_bytes(pdf_bytes)
+        result["pdf"] = out
+    return result
+
+
+def print_summary(
+    rows: List[Dict], output_dir: Path, site_label: str
+) -> None:
+    """Print a summary table to stdout and write it to output_dir/summary.txt."""
+    col_url = 60
+    header = f"{'#':<4}  {'Status':<7}  {'URL':<{col_url}}  Files"
+    sep = "─" * (4 + 2 + 7 + 2 + col_url + 2 + 30)
+    lines = [f"\nNews Spider (Playwright) — {site_label}", sep, header, sep]
+    for row in rows:
+        url_trunc = row["url"][:col_url]
+        files_str = ", ".join(f.name for f in row["files"] if f)
+        lines.append(
+            f"{row['num']:<4}  {row['status']:<7}  {url_trunc:<{col_url}}  {files_str}"
+        )
+    lines.append(sep)
+    output = "\n".join(lines)
+    print(output)
+    summary_path = output_dir / "summary.txt"
+    summary_path.write_text(output + "\n")
+    print(f"\nSummary written to: {summary_path}")
+
+
 def build_argparser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Spider a news site and capture screenshots using Playwright",

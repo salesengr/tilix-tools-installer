@@ -178,8 +178,92 @@ async def main() -> None:
     parser = build_argparser()
     args = parser.parse_args()
 
-    # Placeholder — phases added in later tasks
-    print("scaffold ok")
+    # ── Input validation ──────────────────────────────────────────────────────
+    if not args.site and not args.url:
+        parser.error("Either --site or --url is required")
+    if args.url and not args.include_pattern:
+        parser.error("--include-pattern is required when using --url")
+
+    if args.site:
+        preset = SITE_PRESETS[args.site]
+        index_url = preset["url"]
+        include_pattern = args.include_pattern or preset["include"]
+        exclude_pattern = preset["exclude"]
+        site_label = args.site
+    else:
+        index_url = args.url
+        include_pattern = args.include_pattern
+        exclude_pattern = None
+        site_label = urlparse(index_url).netloc
+
+    base_domain = urlparse(index_url).netloc
+    output_dir = Path(args.output_dir) / site_label
+
+    print(f"\nNews Spider (Playwright)")
+    print(f"  Site          : {site_label} ({index_url})")
+    print(f"  Max pages     : {args.max_pages}")
+    print(f"  Max concurrent: {args.max_concurrent}")
+    print(f"  Output        : {output_dir}/")
+    print(f"  Formats       : screenshot" + (", PDF" if args.output_pdf else ""))
+
+    if args.dry_run:
+        print("\n  Mode: DRY RUN — no browser will be opened\n")
+        print(f"  Would load    : {index_url}")
+        print(f"  Include       : {include_pattern!r}")
+        if exclude_pattern:
+            print(f"  Exclude       : {exclude_pattern!r}")
+        print(f"  Would capture : up to {args.max_pages} stories + index proof shot")
+        sys.exit(0)
+
+    # ── Check playwright is installed ─────────────────────────────────────────
+    try:
+        from playwright.async_api import async_playwright, Browser, Page
+    except ImportError:
+        print(
+            "ERROR: playwright not installed.\n"
+            "  Run: bash install_security_tools.sh playwright && playwright install chromium",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # ── Phase 1: Load index page + extract links ──────────────────────────────
+    # Harvester equivalent: create_harvest_task("single", ...) + wait + download ZIP
+    print(f"\n── Phase 1: Fetching index page ──")
+    print(f"  URL: {index_url}")
+
+    async with async_playwright() as pw:
+        browser: Browser = await pw.chromium.launch(headless=args.headless)
+        page: Page = await browser.new_page()
+
+        try:
+            await page.goto(index_url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
+            html = await page.content()
+        except Exception as e:
+            print(f"ERROR: Failed to load index page: {e}", file=sys.stderr)
+            await browser.close()
+            sys.exit(1)
+
+        print("  Extracting links...")
+        all_links = extract_links_from_html(html, index_url)
+        filtered = filter_links(all_links, include_pattern, exclude_pattern, base_domain)
+        story_urls = filtered[: args.max_pages]
+
+        if not story_urls:
+            print(
+                f"ERROR: No article links found after filtering.\n"
+                f"  Scanned {len(all_links)} raw links; include={include_pattern!r}\n"
+                f"  Try a different --include-pattern or --site.",
+                file=sys.stderr,
+            )
+            await browser.close()
+            sys.exit(1)
+
+        print(f"  Found {len(story_urls)} article link(s):")
+        for i, url in enumerate(story_urls, 1):
+            print(f"    {i}. {url}")
+
+        # Phases 2 and 3 added in next task
+        await browser.close()
 
 
 if __name__ == "__main__":

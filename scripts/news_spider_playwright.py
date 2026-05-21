@@ -54,6 +54,58 @@ WAIT_UNTIL = "domcontentloaded"
 PAGE_TIMEOUT = 30_000  # ms
 
 
+class _LinkExtractor(HTMLParser):
+    """Collect href attributes from <a> tags."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.links: List[str] = []
+
+    def handle_starttag(
+        self, tag: str, attrs: List[Tuple[str, Optional[str]]]
+    ) -> None:
+        if tag == "a":
+            for name, value in attrs:
+                if name == "href" and value:
+                    self.links.append(value)
+
+
+def extract_links_from_html(html: str, base_url: str) -> List[str]:
+    """Parse HTML and return absolute URLs of all <a href> attributes."""
+    parser = _LinkExtractor()
+    parser.feed(html)
+    return [urljoin(base_url, href) for href in parser.links]
+
+
+def filter_links(
+    links: List[str],
+    include_pattern: str,
+    exclude_pattern: Optional[str],
+    base_domain: str,
+) -> List[str]:
+    """Apply include/exclude regex filters, restrict to same domain, deduplicate."""
+    include_re = re.compile(include_pattern)
+    exclude_re = re.compile(exclude_pattern) if exclude_pattern else None
+    base_bare = base_domain.lstrip("www.")
+
+    seen: set = set()
+    result: List[str] = []
+    for url in links:
+        parsed = urlparse(url)
+        link_bare = parsed.netloc.lstrip("www.")
+        if base_bare not in link_bare and link_bare not in base_bare:
+            continue
+        if not include_re.search(url):
+            continue
+        if exclude_re and exclude_re.search(url):
+            continue
+        normalized = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+        if normalized not in seen:
+            seen.add(normalized)
+            result.append(normalized)
+    return result
+
+
 def build_argparser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Spider a news site and capture screenshots using Playwright",

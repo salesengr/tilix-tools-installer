@@ -165,7 +165,7 @@ async def _capture_page(
         try:
             await page.goto(url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
             screenshot_bytes = await page.screenshot(full_page=True)
-            pdf_bytes = await page.pdf() if include_pdf else None
+            pdf_bytes = await page.pdf(timeout=PAGE_TIMEOUT) if include_pdf else None
             files = save_capture(screenshot_bytes, pdf_bytes, dest_dir)
             extracted = [v for v in files.values() if v is not None]
             names = ", ".join(f.name for f in extracted)
@@ -325,7 +325,7 @@ async def main() -> None:
         ):
             if isinstance(result, Exception):
                 summary_rows.append(
-                    {"num": i, "status": "ERROR", "url": page_url, "files": []}
+                    {"num": i, "status": "ERROR", "url": page_url, "files": [], "error": str(result)}
                 )
             else:
                 summary_rows.append(

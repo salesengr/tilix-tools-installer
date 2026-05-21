@@ -147,6 +147,37 @@ def print_summary(
     print(f"\nSummary written to: {summary_path}")
 
 
+async def _capture_page(
+    browser,
+    url: str,
+    dest_dir: Path,
+    include_pdf: bool,
+    semaphore: asyncio.Semaphore,
+    label: str,
+) -> Dict:
+    """Load a page and capture screenshot + optional PDF.
+
+    Harvester equivalent: one visual task in bulk_create_and_monitor_async.
+    Result dict matches the harvester version's summary_rows format.
+    """
+    async with semaphore:
+        page = await browser.new_page()
+        try:
+            await page.goto(url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
+            screenshot_bytes = await page.screenshot(full_page=True)
+            pdf_bytes = await page.pdf() if include_pdf else None
+            files = save_capture(screenshot_bytes, pdf_bytes, dest_dir)
+            extracted = [v for v in files.values() if v is not None]
+            names = ", ".join(f.name for f in extracted)
+            print(f"  [{label}] OK — {names}")
+            return {"status": "OK", "url": url, "files": extracted, "error": None}
+        except Exception as e:
+            print(f"  [{label}] ERROR: {e}")
+            return {"status": "ERROR", "url": url, "files": [], "error": str(e)}
+        finally:
+            await page.close()
+
+
 def build_argparser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Spider a news site and capture screenshots using Playwright",
@@ -262,8 +293,53 @@ async def main() -> None:
         for i, url in enumerate(story_urls, 1):
             print(f"    {i}. {url}")
 
-        # Phases 2 and 3 added in next task
+        # ── Phase 2: Concurrent captures ─────────────────────────────────────
+        # Harvester equivalent: bulk_create_and_monitor_async(tasks, max_concurrent=5)
+        n_visual = len(story_urls) + 1
+        print(f"\n── Phase 2: Capturing {n_visual} pages (max {args.max_concurrent} concurrent) ──")
+
+        semaphore = asyncio.Semaphore(args.max_concurrent)
+        labels = ["index"] + [f"story-{i:02d}" for i in range(1, len(story_urls) + 1)]
+        urls_list = [index_url] + story_urls
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        capture_tasks = [
+            _capture_page(
+                browser=browser,
+                url=url,
+                dest_dir=output_dir / label,
+                include_pdf=args.output_pdf,
+                semaphore=semaphore,
+                label=label,
+            )
+            for url, label in zip(urls_list, labels)
+        ]
+
+        results = await asyncio.gather(*capture_tasks, return_exceptions=True)
+
+        # ── Phase 3: Summary ──────────────────────────────────────────────────
+        print(f"\n── Phase 3: Summary ──")
+        summary_rows: List[Dict] = []
+        for i, (result, label, page_url) in enumerate(
+            zip(results, labels, urls_list), 1
+        ):
+            if isinstance(result, Exception):
+                summary_rows.append(
+                    {"num": i, "status": "ERROR", "url": page_url, "files": []}
+                )
+            else:
+                summary_rows.append(
+                    {
+                        "num": i,
+                        "status": result["status"],
+                        "url": page_url,
+                        "files": result["files"],
+                    }
+                )
+
         await browser.close()
+
+    print_summary(summary_rows, output_dir, site_label)
 
 
 if __name__ == "__main__":

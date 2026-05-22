@@ -107,6 +107,25 @@ def filter_links(
     return result
 
 
+def _slug_from_url(url: str, max_len: int = 40) -> str:
+    """Return a sanitized filename stem from the last path segment of a URL."""
+    segment = urlparse(url).path.rstrip("/").rsplit("/", 1)[-1]
+    slug = re.sub(r"[^a-z0-9]+", "-", segment.lower()).strip("-")
+    return slug[:max_len] if slug else "page"
+
+
+def _make_labels(urls: List[str]) -> List[str]:
+    """Convert a list of URLs to unique slug labels, appending -2/-3 on collision."""
+    seen: Dict[str, int] = {}
+    labels = []
+    for url in urls:
+        slug = _slug_from_url(url)
+        count = seen.get(slug, 0) + 1
+        seen[slug] = count
+        labels.append(slug if count == 1 else f"{slug}-{count}")
+    return labels
+
+
 def save_capture(
     screenshot_bytes: Optional[bytes],
     pdf_bytes: Optional[bytes],
@@ -122,15 +141,15 @@ def save_capture(
     result: Dict[str, Optional[Path]] = {"screenshot": None, "pdf": None, "mhtml": None}
     dest_dir.mkdir(parents=True, exist_ok=True)
     if screenshot_bytes:
-        out = dest_dir / f"{label}-screenshot.png"
+        out = dest_dir / f"{label}.png"
         out.write_bytes(screenshot_bytes)
         result["screenshot"] = out
     if pdf_bytes:
-        out = dest_dir / f"{label}-page.pdf"
+        out = dest_dir / f"{label}.pdf"
         out.write_bytes(pdf_bytes)
         result["pdf"] = out
     if mhtml_bytes:
-        out = dest_dir / f"{label}-page.mhtml"
+        out = dest_dir / f"{label}.mhtml"
         out.write_bytes(mhtml_bytes)
         result["mhtml"] = out
     return result
@@ -322,7 +341,7 @@ async def main() -> None:
         print(f"\n── Phase 2: Capturing {n_visual} pages (max {args.max_concurrent} concurrent) ──")
 
         semaphore = asyncio.Semaphore(args.max_concurrent)
-        labels = ["index"] + [f"story-{i:02d}" for i in range(1, len(story_urls) + 1)]
+        labels = ["index"] + _make_labels(story_urls)
         urls_list = [index_url] + story_urls
         output_dir.mkdir(parents=True, exist_ok=True)
 

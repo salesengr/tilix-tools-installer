@@ -110,9 +110,10 @@ def save_capture(
     screenshot_bytes: Optional[bytes],
     pdf_bytes: Optional[bytes],
     dest_dir: Path,
+    mhtml_bytes: Optional[bytes] = None,
 ) -> Dict[str, Optional[Path]]:
-    """Write screenshot and optional PDF bytes to dest_dir."""
-    result: Dict[str, Optional[Path]] = {"screenshot": None, "pdf": None}
+    """Write screenshot, optional PDF, and optional MHTML bytes to dest_dir."""
+    result: Dict[str, Optional[Path]] = {"screenshot": None, "pdf": None, "mhtml": None}
     dest_dir.mkdir(parents=True, exist_ok=True)
     if screenshot_bytes:
         out = dest_dir / "screenshot.png"
@@ -122,6 +123,10 @@ def save_capture(
         out = dest_dir / "page.pdf"
         out.write_bytes(pdf_bytes)
         result["pdf"] = out
+    if mhtml_bytes:
+        out = dest_dir / "page.mhtml"
+        out.write_bytes(mhtml_bytes)
+        result["mhtml"] = out
     return result
 
 
@@ -152,13 +157,15 @@ async def _capture_page(
     url: str,
     dest_dir: Path,
     include_pdf: bool,
+    include_mhtml: bool,
     semaphore: asyncio.Semaphore,
     label: str,
 ) -> Dict:
-    """Load a page and capture screenshot + optional PDF.
+    """Load a page and capture screenshot + optional PDF + optional MHTML.
 
     Harvester equivalent: one visual task in bulk_create_and_monitor_async.
     Result dict matches the harvester version's summary_rows format.
+    MHTML is captured via the Chrome DevTools Protocol (Page.captureSnapshot).
     """
     async with semaphore:
         page = await browser.new_page()
@@ -166,7 +173,13 @@ async def _capture_page(
             await page.goto(url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
             screenshot_bytes = await page.screenshot(full_page=True)
             pdf_bytes = await page.pdf(timeout=PAGE_TIMEOUT) if include_pdf else None
-            files = save_capture(screenshot_bytes, pdf_bytes, dest_dir)
+            if include_mhtml:
+                cdp = await page.context.new_cdp_session(page)
+                snapshot = await cdp.send("Page.captureSnapshot", {"format": "mhtml"})
+                mhtml_bytes = snapshot["data"].encode("utf-8")
+            else:
+                mhtml_bytes = None
+            files = save_capture(screenshot_bytes, pdf_bytes, dest_dir, mhtml_bytes)
             extracted = [v for v in files.values() if v is not None]
             names = ", ".join(f.name for f in extracted)
             print(f"  [{label}] OK — {names}")
@@ -192,6 +205,8 @@ def build_argparser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--output-pdf", action="store_true",
                         help="Capture PDF alongside screenshot (Chromium only)")
+    parser.add_argument("--output-mhtml", action="store_true",
+                        help="Save MHTML snapshot of each page for offline use")
     parser.add_argument("--output-dir", default="output", metavar="DIR",
                         help="Local output directory (default: output/)")
     parser.add_argument(
@@ -235,7 +250,8 @@ async def main() -> None:
     print(f"  Max pages     : {args.max_pages}")
     print(f"  Max concurrent: {args.max_concurrent}")
     print(f"  Output        : {output_dir}/")
-    print(f"  Formats       : screenshot" + (", PDF" if args.output_pdf else ""))
+    formats = "screenshot" + (", PDF" if args.output_pdf else "") + (", MHTML" if args.output_mhtml else "")
+    print(f"  Formats       : {formats}")
 
     if args.dry_run:
         print("\n  Mode: DRY RUN — no browser will be opened\n")
@@ -309,6 +325,7 @@ async def main() -> None:
                 url=url,
                 dest_dir=output_dir / label,
                 include_pdf=args.output_pdf,
+                include_mhtml=args.output_mhtml,
                 semaphore=semaphore,
                 label=label,
             )

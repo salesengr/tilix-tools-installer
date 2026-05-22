@@ -27,6 +27,7 @@ import argparse
 import asyncio
 import re
 import sys
+from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -110,21 +111,26 @@ def save_capture(
     screenshot_bytes: Optional[bytes],
     pdf_bytes: Optional[bytes],
     dest_dir: Path,
+    label: str,
     mhtml_bytes: Optional[bytes] = None,
 ) -> Dict[str, Optional[Path]]:
-    """Write screenshot, optional PDF, and optional MHTML bytes to dest_dir."""
+    """Write labelled capture files into dest_dir (the timestamped run folder).
+
+    Files are named <label>-screenshot.png, <label>-page.pdf, <label>-page.mhtml
+    so all pages from a run share one flat folder and are identifiable by prefix.
+    """
     result: Dict[str, Optional[Path]] = {"screenshot": None, "pdf": None, "mhtml": None}
     dest_dir.mkdir(parents=True, exist_ok=True)
     if screenshot_bytes:
-        out = dest_dir / "screenshot.png"
+        out = dest_dir / f"{label}-screenshot.png"
         out.write_bytes(screenshot_bytes)
         result["screenshot"] = out
     if pdf_bytes:
-        out = dest_dir / "page.pdf"
+        out = dest_dir / f"{label}-page.pdf"
         out.write_bytes(pdf_bytes)
         result["pdf"] = out
     if mhtml_bytes:
-        out = dest_dir / "page.mhtml"
+        out = dest_dir / f"{label}-page.mhtml"
         out.write_bytes(mhtml_bytes)
         result["mhtml"] = out
     return result
@@ -179,7 +185,7 @@ async def _capture_page(
                 mhtml_bytes = snapshot["data"].encode("utf-8")
             else:
                 mhtml_bytes = None
-            files = save_capture(screenshot_bytes, pdf_bytes, dest_dir, mhtml_bytes)
+            files = save_capture(screenshot_bytes, pdf_bytes, dest_dir, label, mhtml_bytes)
             extracted = [v for v in files.values() if v is not None]
             names = ", ".join(f.name for f in extracted)
             print(f"  [{label}] OK — {names}")
@@ -243,7 +249,8 @@ async def main() -> None:
         site_label = urlparse(index_url).netloc
 
     base_domain = urlparse(index_url).netloc
-    output_dir = Path(args.output_dir) / site_label
+    run_ts = datetime.now().strftime("%m-%d-%Y-%H-%M")
+    output_dir = Path(args.output_dir) / site_label / run_ts
 
     print(f"\nNews Spider (Playwright)")
     print(f"  Site          : {site_label} ({index_url})")
@@ -323,7 +330,7 @@ async def main() -> None:
             _capture_page(
                 browser=browser,
                 url=url,
-                dest_dir=output_dir / label,
+                dest_dir=output_dir,
                 include_pdf=args.output_pdf,
                 include_mhtml=args.output_mhtml,
                 semaphore=semaphore,

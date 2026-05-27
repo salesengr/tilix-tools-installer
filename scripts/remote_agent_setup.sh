@@ -1,29 +1,34 @@
 #!/usr/bin/env bash
 # remote_agent_setup.sh
 # Sets up a bore tunnel + Python command server for remote orchestration.
-# Run as the target user (no root required).
+# Run as the target user (no root required). Both services run in the background.
 
 set -euo pipefail
 
 BORE_VERSION="v0.6.0"
 BORE_URL="https://github.com/ekzhang/bore/releases/download/${BORE_VERSION}/bore-${BORE_VERSION}-x86_64-unknown-linux-musl.tar.gz"
 SERVER_PORT=9000
+BORE_LOG="${HOME}/.local/bore-tunnel.log"
 
-# ── Install bore ──────────────────────────────────────────────────────────────
-echo ">>> Installing bore ${BORE_VERSION}..."
+# ── Install bore (skip if already present) ────────────────────────────────────
 mkdir -p "${HOME}/.local/bin"
-curl -fsSL "${BORE_URL}" | tar -xz -C "${HOME}/.local/bin/"
-echo "    bore installed to ~/.local/bin/bore"
-
-# ── Add ~/.local/bin to PATH for this session ─────────────────────────────────
 export PATH="${HOME}/.local/bin:${PATH}"
 
-# ── Start Python command server ───────────────────────────────────────────────
+if ! command -v bore &>/dev/null; then
+    echo ">>> Installing bore ${BORE_VERSION}..."
+    curl -fsSL "${BORE_URL}" | tar -xz -C "${HOME}/.local/bin/"
+    echo "    bore installed to ~/.local/bin/bore"
+fi
+
+# ── Kill any previous instances ───────────────────────────────────────────────
+pkill -f "bore local ${SERVER_PORT}" 2>/dev/null || true
+pkill -f "CommandHandler"            2>/dev/null || true
+sleep 1
+
+# ── Start Python command server in background ─────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-python3 - <<'PYEOF' &
-import http.server
-import subprocess
-import json
+python3 - &>/dev/null &<<'PYEOF'
+import http.server, subprocess, json
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
@@ -44,24 +49,44 @@ class CommandHandler(http.server.BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass
 
-print(f"Command server listening on 127.0.0.1:9000", flush=True)
 http.server.HTTPServer(("127.0.0.1", 9000), CommandHandler).serve_forever()
 PYEOF
 
 SERVER_PID=$!
-echo "    Server PID: ${SERVER_PID}"
-
-# Give the server a moment to bind
 sleep 1
 
-# Verify it's up
 if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
     echo "ERROR: Command server failed to start" >&2
     exit 1
 fi
+echo "    Server PID: ${SERVER_PID} — OK"
 
-# ── Expose via bore ───────────────────────────────────────────────────────────
-echo ">>> Exposing port ${SERVER_PORT} via bore..."
-echo "    (Share the bore.pub port printed below with your orchestrator)"
+# ── Start bore in background, capture port from log ───────────────────────────
+echo ">>> Starting bore tunnel (logging to ${BORE_LOG})..."
+bore local "${SERVER_PORT}" --to bore.pub >"${BORE_LOG}" 2>&1 &
+BORE_PID=$!
+
+# Wait for bore to print the port (up to 10s)
+for i in $(seq 1 20); do
+    if grep -q "listening at" "${BORE_LOG}" 2>/dev/null; then
+        break
+    fi
+    sleep 0.5
+done
+
+if ! kill -0 "${BORE_PID}" 2>/dev/null; then
+    echo "ERROR: bore failed to start. Log:" >&2
+    cat "${BORE_LOG}" >&2
+    exit 1
+fi
+
+BORE_PORT=$(grep -oP '(?<=bore\.pub:)\d+' "${BORE_LOG}")
+echo "    bore PID: ${BORE_PID} — OK"
 echo ""
-bore local "${SERVER_PORT}" --to bore.pub
+echo "=========================================="
+echo "  Remote agent ready."
+echo "  Orchestrator endpoint: bore.pub:${BORE_PORT}"
+echo "=========================================="
+echo ""
+echo "  Test with:"
+echo "  curl -s -X POST http://bore.pub:${BORE_PORT} -d 'whoami'"

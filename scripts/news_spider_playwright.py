@@ -47,6 +47,8 @@ SITE_PRESETS: Dict[str, Dict[str, str]] = {
         "url": "https://www.reuters.com",
         "include": r"/[a-z-]+/[0-9]{4}-[0-9]{2}-[0-9]{2}/[a-z0-9-]+-\d{4}-\d{2}-\d{2}/",
         "exclude": r"(/video/|/graphics/|/pictures/|#|\?)",
+        # Reuters renders links via JS — networkidle ensures content is present
+        "wait_until": "networkidle",
     },
     "nikkei": {
         "url": "https://www.nikkei.com",
@@ -204,6 +206,7 @@ async def _capture_page(
     include_mhtml: bool,
     semaphore: asyncio.Semaphore,
     label: str,
+    wait_until: str = WAIT_UNTIL,
 ) -> Dict:
     """Load a page and capture screenshot + optional PDF + optional MHTML.
 
@@ -216,7 +219,7 @@ async def _capture_page(
         t0 = time.monotonic()
         page = await browser.new_page()
         try:
-            await page.goto(url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
+            await page.goto(url, wait_until=wait_until, timeout=PAGE_TIMEOUT)
             screenshot_bytes = await page.screenshot(full_page=True)
             pdf_bytes = await page.pdf(timeout=PAGE_TIMEOUT) if include_pdf else None
             if include_mhtml:
@@ -287,11 +290,13 @@ async def main() -> None:
         index_url = preset["url"]
         include_pattern = args.include_pattern or preset["include"]
         exclude_pattern = preset["exclude"]
+        wait_until = preset.get("wait_until", WAIT_UNTIL)
         site_label = args.site
     else:
         index_url = args.url
         include_pattern = args.include_pattern
         exclude_pattern = None
+        wait_until = WAIT_UNTIL
         site_label = urlparse(index_url).netloc
 
     base_domain = urlparse(index_url).netloc
@@ -328,6 +333,7 @@ async def main() -> None:
     log.debug("  headless     : %s", args.headless)
     log.debug("  output_pdf   : %s", args.output_pdf)
     log.debug("  output_mhtml : %s", args.output_mhtml)
+    log.debug("  wait_until   : %s", wait_until)
     log.debug("  output_dir   : %s", output_dir)
 
     # ── Check playwright is installed ─────────────────────────────────────────
@@ -351,7 +357,7 @@ async def main() -> None:
         page: Page = await browser.new_page()
 
         try:
-            await page.goto(index_url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
+            await page.goto(index_url, wait_until=wait_until, timeout=PAGE_TIMEOUT)
             html = await page.content()
         except Exception as e:
             log.exception("Phase 1: failed to load index page")
@@ -401,6 +407,7 @@ async def main() -> None:
                 include_mhtml=args.output_mhtml,
                 semaphore=semaphore,
                 label=label,
+                wait_until=wait_until,
             )
             for url, label in zip(urls_list, labels)
         ]

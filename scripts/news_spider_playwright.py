@@ -25,13 +25,17 @@ Requirements:
 
 import argparse
 import asyncio
+import logging
 import re
 import sys
+import time
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse
+
+log = logging.getLogger(__name__)
 
 SITE_PRESETS: Dict[str, Dict[str, str]] = {
     "bbc": {
@@ -105,6 +109,21 @@ def filter_links(
             seen.add(normalized)
             result.append(normalized)
     return result
+
+
+def _setup_logging(log_path: Path) -> None:
+    """File handler: DEBUG (full tracebacks, timing). Console handler: WARNING only."""
+    fmt = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    fh = logging.FileHandler(log_path, encoding="utf-8")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(fmt)
+    ch = logging.StreamHandler(sys.stderr)
+    ch.setLevel(logging.WARNING)
+    ch.setFormatter(fmt)
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+    root.addHandler(fh)
+    root.addHandler(ch)
 
 
 def _slug_from_url(url: str, max_len: int = 40) -> str:
@@ -193,6 +212,8 @@ async def _capture_page(
     MHTML is captured via the Chrome DevTools Protocol (Page.captureSnapshot).
     """
     async with semaphore:
+        log.debug("[%s] start: %s", label, url)
+        t0 = time.monotonic()
         page = await browser.new_page()
         try:
             await page.goto(url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
@@ -207,9 +228,15 @@ async def _capture_page(
             files = save_capture(screenshot_bytes, pdf_bytes, dest_dir, label, mhtml_bytes)
             extracted = [v for v in files.values() if v is not None]
             names = ", ".join(f.name for f in extracted)
+            elapsed = time.monotonic() - t0
+            log.debug("[%s] OK in %.1fs — %s", label, elapsed, names)
+            for f in extracted:
+                log.debug("[%s]   wrote %s (%d bytes)", label, f.name, f.stat().st_size)
             print(f"  [{label}] OK — {names}")
             return {"status": "OK", "url": url, "files": extracted, "error": None}
         except Exception as e:
+            elapsed = time.monotonic() - t0
+            log.exception("[%s] ERROR after %.1fs", label, elapsed)
             print(f"  [{label}] ERROR: {e}")
             return {"status": "ERROR", "url": url, "files": [], "error": str(e)}
         finally:
@@ -288,6 +315,21 @@ async def main() -> None:
         print(f"  Would capture : up to {args.max_pages} stories + index proof shot")
         sys.exit(0)
 
+    # ── Set up logging ────────────────────────────────────────────────────────
+    output_dir.mkdir(parents=True, exist_ok=True)
+    _setup_logging(output_dir / "run.log")
+    log.debug("=== news_spider_playwright run ===")
+    log.debug("  site         : %s", site_label)
+    log.debug("  index_url    : %s", index_url)
+    log.debug("  include      : %s", include_pattern)
+    log.debug("  exclude      : %s", exclude_pattern)
+    log.debug("  max_pages    : %d", args.max_pages)
+    log.debug("  max_concurrent: %d", args.max_concurrent)
+    log.debug("  headless     : %s", args.headless)
+    log.debug("  output_pdf   : %s", args.output_pdf)
+    log.debug("  output_mhtml : %s", args.output_mhtml)
+    log.debug("  output_dir   : %s", output_dir)
+
     # ── Check playwright is installed ─────────────────────────────────────────
     try:
         from playwright.async_api import async_playwright, Browser, Page
@@ -312,6 +354,7 @@ async def main() -> None:
             await page.goto(index_url, wait_until=WAIT_UNTIL, timeout=PAGE_TIMEOUT)
             html = await page.content()
         except Exception as e:
+            log.exception("Phase 1: failed to load index page")
             print(f"ERROR: Failed to load index page: {e}", file=sys.stderr)
             await browser.close()
             sys.exit(1)
@@ -320,8 +363,10 @@ async def main() -> None:
         all_links = extract_links_from_html(html, index_url)
         filtered = filter_links(all_links, include_pattern, exclude_pattern, base_domain)
         story_urls = filtered[: args.max_pages]
+        log.debug("Phase 1: raw links=%d  filtered=%d  capped=%d", len(all_links), len(filtered), len(story_urls))
 
         if not story_urls:
+            log.error("Phase 1: no article links found (raw=%d, include=%r)", len(all_links), include_pattern)
             print(
                 f"ERROR: No article links found after filtering.\n"
                 f"  Scanned {len(all_links)} raw links; include={include_pattern!r}\n"
@@ -334,6 +379,7 @@ async def main() -> None:
         print(f"  Found {len(story_urls)} article link(s):")
         for i, url in enumerate(story_urls, 1):
             print(f"    {i}. {url}")
+            log.debug("  story %d: %s", i, url)
 
         # ── Phase 2: Concurrent captures ─────────────────────────────────────
         # Harvester equivalent: bulk_create_and_monitor_async(tasks, max_concurrent=5)
@@ -343,6 +389,7 @@ async def main() -> None:
         semaphore = asyncio.Semaphore(args.max_concurrent)
         labels = ["index"] + _make_labels(story_urls)
         urls_list = [index_url] + story_urls
+        log.debug("Phase 2: labels=%s", labels)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         capture_tasks = [
@@ -382,6 +429,9 @@ async def main() -> None:
 
         await browser.close()
 
+    ok = sum(1 for r in summary_rows if r["status"] == "OK")
+    log.debug("Phase 3: complete — %d/%d OK", ok, len(summary_rows))
+    log.debug("Log written to: %s", output_dir / "run.log")
     print_summary(summary_rows, output_dir, site_label)
 
 

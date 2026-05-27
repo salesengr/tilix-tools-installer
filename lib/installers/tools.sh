@@ -604,8 +604,9 @@ install_nuclei() {
 }
 
 install_virustotal() {
-    # No pre-built binary available — go install only
-    install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt"
+    # No pre-built binary available — go install only.
+    # vt-cli installs its binary as "vt", not "virustotal".
+    install_go_tool "virustotal" "github.com/VirusTotal/vt-cli/vt" "vt"
 }
 
 # ===== NODE.JS TOOL WRAPPERS =====

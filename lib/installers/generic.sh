@@ -98,13 +98,17 @@ install_python_tool() {
 # Function: install_go_tool
 # Purpose: Generic Go tool installer using system Go and user-space GOPATH
 # Parameters:
-#   $1 - tool name
+#   $1 - tool name (used for logging and ~/.local/bin symlink name)
 #   $2 - Go repository path (e.g., "github.com/OJ/gobuster/v3")
+#   $3 - binary name produced by go install (defaults to $1 if omitted)
+#        Use when the installed binary name differs from the tool name,
+#        e.g. "vt" for the virustotal tool.
 # Returns: 0 on success, 1 on failure
 # Dependencies: Requires system Go to be installed
 install_go_tool() {
     local tool=$1
     local repo=$2
+    local binary_name="${3:-$tool}"
     local logfile
     logfile=$(create_tool_log "$tool")
 
@@ -128,17 +132,28 @@ install_go_tool() {
         export PATH="$GOPATH/bin:$PATH"
         mkdir -p "$GOPATH"
 
+        # Ensure go install runs from a valid directory regardless of what
+        # previous installers may have cd'd into (braces share the shell's cwd).
+        cd "$HOME" || true
+
         echo "Using system Go: $(go version)"
         echo "GOPATH: $GOPATH"
         echo ""
         echo "Compiling $tool from source..."
         go install "$repo@latest" || return 1
 
-        # Symlink only this tool's binary — not all GOPATH/bin contents
+        # Symlink only this tool's binary — not all GOPATH/bin contents.
+        # Use binary_name to handle cases where the installed binary name
+        # differs from the tool name (e.g. vt-cli installs as "vt").
         mkdir -p "$HOME/.local/bin"
-        if [ -f "$GOPATH/bin/$tool" ]; then
-            ln -sf "$GOPATH/bin/$tool" "$HOME/.local/bin/$tool"
-            echo "Symlinked $tool to ~/.local/bin/"
+        if [ -f "$GOPATH/bin/$binary_name" ]; then
+            ln -sf "$GOPATH/bin/$binary_name" "$HOME/.local/bin/$binary_name"
+            echo "Symlinked $binary_name to ~/.local/bin/"
+            # If tool name differs from binary name, add a convenience alias
+            if [ "$tool" != "$binary_name" ]; then
+                ln -sf "$HOME/.local/bin/$binary_name" "$HOME/.local/bin/$tool"
+                echo "Symlinked $tool -> $binary_name in ~/.local/bin/"
+            fi
         fi
 
         echo "=========================================="

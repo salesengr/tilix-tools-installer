@@ -57,8 +57,8 @@ SITE_PRESETS: Dict[str, Dict[str, str]] = {
     },
     "google-news": {
         "url": "https://news.google.com",
-        "include": r"/articles/[A-Za-z0-9_-]{20,}",
-        "exclude": r"(/search|/topics|/publications|/sections|/read|#)",
+        "include": r"/read/[A-Za-z0-9_-]{20,}",
+        "exclude": r"(/search|/topics|/publications|/sections|/stories|#)",
         # Google News is JS-rendered — networkidle ensures article links are present
         "wait_until": "networkidle",
     },

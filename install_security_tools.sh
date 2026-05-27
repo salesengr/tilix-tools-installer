@@ -47,7 +47,7 @@ WARN='\u26a0'            # ⚠
 INFOSYM='\u2139'         # ℹ
 
 # ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.4.2"
+SCRIPT_VERSION="1.4.3"
 DRY_RUN=false
 CHECK_UPDATES=false
 SUCCESSFUL_INSTALLS=()

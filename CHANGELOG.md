@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.3] - 2026-05-27
+
+### Added
+- **`scripts/news_spider_playwright.py`** — new local-browser news spider using Playwright/Chromium. Fetches a news site index, extracts article links, and captures screenshots, PDFs, and MHTML snapshots. Designed as a direct contrast to the Silo cloud harvester (`silo-sdk-python/examples/news_spider_harvest.py`) — same three-phase flow, no Silo tokens required.
+  - Site presets: `bbc`, `nikkei`, `google-news` (working); `reuters` preset included but blocked by Cloudflare from datacenter IPs
+  - Output: timestamped run folders (`output/<site>/mm-dd-yyyy-HH-MM/`) with URL-slug-named files (`<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`)
+  - Debug logging: every run writes `run.log` and `phase1-index.png` to the output folder for smoke test review
+  - Flags: `--site`, `--url`, `--include-pattern`, `--max-pages`, `--output-pdf`, `--output-mhtml`, `--max-concurrent`, `--no-headless`, `--dry-run`
+
+### Fixed
+- **tor-browser launcher** — added guard checks: exits with a clear error if the binary is missing or `DISPLAY` is not set, rather than silently failing. Switched from `exec` to `nohup`/`disown` for consistent detached launch behavior matching the yandex-browser pattern.
+- **yandex-browser launcher** — added guard checks: exits with a clear error if `/usr/bin/yandex-browser-beta` is missing or `DISPLAY` is not set.
+
+### Changed
+- **qTox pinned version** bumped from `v1.17.6` to `v1.18.4` to pick up upstream bug fixes.
+
 ## [1.4.2] - 2026-04-07
 
 ### Fixed

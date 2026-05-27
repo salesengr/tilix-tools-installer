@@ -178,11 +178,11 @@ yandex-browser-beta --version       # Check version (direct binary)
 ```
 
 ### Tor Browser
-Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser` that uses Tor's built-in `--detach` flag to separate from the terminal.
+Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser` that launches the browser detached using `nohup` + `disown`. The launcher also checks that the binary exists and that `DISPLAY` is set, printing a clear error and exiting if either check fails.
 
 **Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
 ```bash
-tor-browser                         # Launch detached from terminal via --detach (requires VNC)
+tor-browser                         # Launch detached from terminal via nohup + disown (requires VNC)
 ```
 
 ### SpiderFoot
@@ -204,3 +204,36 @@ Includes a convenience launcher at `~/.local/bin/qtox` that automatically backgr
 ```bash
 qtox                                # Launch qTox (backgrounds automatically)
 ```
+
+## Standalone Scripts
+
+Scripts in the `scripts/` directory run directly from the repo and do not create installed binaries. They rely on packages already installed by an existing installer entry.
+
+| Script | Requires | Description |
+|--------|----------|-------------|
+| `scripts/news_spider_playwright.py` | `playwright` + `playwright install chromium` | Captures screenshots, PDFs, and MHTML snapshots of news sites |
+
+### news_spider_playwright.py
+
+Playwright-based news spider that crawls supported news sites and saves timestamped output to `output/<site>/mm-dd-yyyy-HH-MM/`. Uses Playwright's own Chromium (not system Chrome) — requires `playwright install chromium` after the Playwright installer step.
+
+**Working presets:** `bbc`, `nikkei`, `google-news`
+**Blocked preset:** `reuters` (Cloudflare bot-block from datacenter IPs — use the Silo harvester instead)
+
+```bash
+# Install prerequisites
+bash install_security_tools.sh playwright
+playwright install chromium
+
+# Run
+python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
+python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
+python3 scripts/news_spider_playwright.py --site google-news --dry-run
+
+# Custom site
+python3 scripts/news_spider_playwright.py \
+    --url https://apnews.com \
+    --include-pattern "/article/[a-z0-9-]+"
+```
+
+**Output per run:** `<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`, `summary.txt`, `run.log`

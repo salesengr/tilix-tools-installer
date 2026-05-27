@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.4.2 | **Release Date:** April 7, 2026
+**Version:** 1.4.3 | **Release Date:** May 27, 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest and web automation tools. No sudo required — everything installs to `~/.local/`.
 
@@ -19,7 +19,8 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 - ✅ **Interactive menu** — point-and-click installation
 - ✅ **XDG compliant** — follows Linux filesystem standards
 - ✅ **Shellcheck clean** — zero warnings across all scripts
-- ✅ **Detached GUI launchers** — GUI tools (`chrome`, `yandex-browser`, `tor-browser`, `qtox`, `spiderfoot`) background automatically so they don't block the terminal
+- ✅ **Detached GUI launchers** — GUI tools (`chrome`, `yandex-browser`, `tor-browser`, `qtox`, `spiderfoot`) background automatically using `nohup` + `disown`; guard checks verify binary presence and `DISPLAY` before launching
+- ✅ **News spider script** — `scripts/news_spider_playwright.py` captures screenshots, PDFs, and MHTML snapshots of news sites (BBC, Nikkei, Google News); no installer entry needed
 
 ---
 
@@ -149,10 +150,16 @@ nuclei -u https://target.com
 # Web Tools (all GUI launchers background automatically)
 chrome                                        # launch Chrome detached
 yandex-browser                               # launch Yandex Browser detached
-tor-browser                                  # launch Tor Browser detached (--detach)
+tor-browser                                  # launch Tor Browser detached (nohup + disown)
 qtox                                         # launch qTox detached
 sbase get https://example.com --headless      # SeleniumBase headless screenshot
+
+# News Spider (requires: playwright install chromium)
+python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
+python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
 ```
+
+> **Playwright note:** After `bash install_security_tools.sh playwright`, run `playwright install chromium` to download the Chromium binary (~300 MB) required by the news spider and other scripts that launch their own browser.
 
 → **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)**
 

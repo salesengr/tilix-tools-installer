@@ -5,7 +5,7 @@
 
 
 
-**Version:** 1.4.2
+**Version:** 1.4.3
 
 The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 
@@ -116,6 +116,14 @@ If the tool you're adding opens as a separate GUI window or web server — not a
 cat > "$HOME/.local/bin/mytool" << 'WRAPPER'
 #!/usr/bin/env bash
 # mytool launcher — runs detached from terminal
+if [ ! -f "/path/to/mytool-binary" ]; then
+    echo "mytool: not installed — run: bash install_security_tools.sh mytool" >&2
+    exit 1
+fi
+if [ -z "${DISPLAY:-}" ]; then
+    echo "mytool: DISPLAY not set — start a VNC session first" >&2
+    exit 1
+fi
 nohup /path/to/mytool-binary "$@" &>/dev/null &
 disown
 WRAPPER
@@ -158,6 +166,32 @@ chmod +x "$HOME/.local/bin/mytool"
 - Set `TOOL_INSTALL_LOCATION` in `tool-definitions.sh` to the wrapper path (`$HOME/.local/bin/mytool`), not the underlying binary.
 - The `is_installed()` check in `verification.sh` should check for the wrapper file, not the system binary, so verification reflects the full setup.
 - For tools with configurable ports, expose them via environment variables (`MYTOOL_PORT`) so they can be overridden without editing the wrapper.
+
+---
+
+## Standalone Scripts in `scripts/`
+
+Not all tools need an installer entry. Self-contained Python scripts can live in `scripts/` and be run directly — no registration in `tool-definitions.sh`, `orchestration.sh`, or `menu.sh` required.
+
+**When to use this pattern:**
+- The script has no persistent binary to install — users run it from the repo directory.
+- The script is purpose-built (single task, specific preset list) and would not benefit from the full installer lifecycle.
+- Dependencies are already installed by an existing installer entry (e.g., `playwright`).
+
+**Example:** `scripts/news_spider_playwright.py`
+
+```bash
+# Playwright must be installed first:
+bash install_security_tools.sh playwright
+playwright install chromium          # downloads the Chromium binary used by this script
+
+# Then run directly from the repo:
+python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
+python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
+python3 scripts/news_spider_playwright.py --site google-news --dry-run
+```
+
+The `scripts/` directory is not on `PATH` — users must either prefix with `python3 scripts/` or copy/symlink the script to `~/.local/bin/` manually.
 
 ---
 

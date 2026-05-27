@@ -55,11 +55,6 @@ SITE_PRESETS: Dict[str, Dict[str, str]] = {
         "include": r"/article/[A-Z0-9]{20,}",
         "exclude": r"(/ranking/|/special/|/paper/|#|\?)",
     },
-    "tass": {
-        "url": "https://tass.ru",
-        "include": r"/[a-z-]+/\d{6,}",
-        "exclude": r"(/tag/|/search|/person/|/doc/|/info/|/spec/|#|\?)",
-    },
     "google-news": {
         "url": "https://news.google.com",
         "include": r"/read/[A-Za-z0-9_-]{20,}",

@@ -22,7 +22,7 @@ fi
 
 # ── Kill any previous instances ───────────────────────────────────────────────
 pkill -f "bore local ${SERVER_PORT}" 2>/dev/null || true
-pkill -f "CommandHandler"            2>/dev/null || true
+pkill -f "cmd_server.py"             2>/dev/null || true
 sleep 1
 
 # ── Write Python command server to temp file and background it ────────────────
@@ -52,12 +52,14 @@ class CommandHandler(http.server.BaseHTTPRequestHandler):
 http.server.HTTPServer(("127.0.0.1", 9000), CommandHandler).serve_forever()
 PYEOF
 
-python3 /tmp/cmd_server.py >/dev/null 2>&1 &
+SERVER_LOG="/tmp/cmd_server.log"
+python3 /tmp/cmd_server.py >"${SERVER_LOG}" 2>&1 &
 SERVER_PID=$!
-sleep 1
+sleep 2
 
 if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
-    echo "ERROR: Command server failed to start" >&2
+    echo "ERROR: Command server failed to start. Log:" >&2
+    cat "${SERVER_LOG}" >&2
     exit 1
 fi
 echo "    Server PID: ${SERVER_PID} — OK"

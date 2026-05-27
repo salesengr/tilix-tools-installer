@@ -387,6 +387,9 @@ async def main() -> None:
 
         if not story_urls:
             log.error("Phase 1: no article links found (raw=%d, include=%r)", len(all_links), include_pattern)
+            log.debug("Phase 1: sample of raw links (first 20):")
+            for sample_url in all_links[:20]:
+                log.debug("  %s", sample_url)
             print(
                 f"ERROR: No article links found after filtering.\n"
                 f"  Scanned {len(all_links)} raw links; include={include_pattern!r}\n"

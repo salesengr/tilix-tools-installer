@@ -55,6 +55,13 @@ SITE_PRESETS: Dict[str, Dict[str, str]] = {
         "include": r"/article/[A-Z0-9]{20,}",
         "exclude": r"(/ranking/|/special/|/paper/|#|\?)",
     },
+    "google-news": {
+        "url": "https://news.google.com",
+        "include": r"/articles/[A-Za-z0-9_-]{20,}",
+        "exclude": r"(/search|/topics|/publications|/sections|/read|#)",
+        # Google News is JS-rendered — networkidle ensures article links are present
+        "wait_until": "networkidle",
+    },
 }
 
 WAIT_UNTIL = "domcontentloaded"

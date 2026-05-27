@@ -23,6 +23,8 @@ fi
 # ── Kill any previous instances ───────────────────────────────────────────────
 pkill -f "bore local ${SERVER_PORT}" 2>/dev/null || true
 pkill -f "cmd_server.py"             2>/dev/null || true
+# Kill whatever is holding the port (works without root)
+fuser -k "${SERVER_PORT}/tcp" 2>/dev/null || true
 sleep 1
 
 # ── Write Python command server to temp file and background it ────────────────

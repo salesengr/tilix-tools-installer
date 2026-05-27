@@ -25,9 +25,9 @@ pkill -f "bore local ${SERVER_PORT}" 2>/dev/null || true
 pkill -f "CommandHandler"            2>/dev/null || true
 sleep 1
 
-# ── Start Python command server in background ─────────────────────────────────
+# ── Write Python command server to temp file and background it ────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-python3 - &>/dev/null &<<'PYEOF'
+cat > /tmp/cmd_server.py << 'PYEOF'
 import http.server, subprocess, json
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
@@ -52,6 +52,7 @@ class CommandHandler(http.server.BaseHTTPRequestHandler):
 http.server.HTTPServer(("127.0.0.1", 9000), CommandHandler).serve_forever()
 PYEOF
 
+python3 /tmp/cmd_server.py >/dev/null 2>&1 &
 SERVER_PID=$!
 sleep 1
 

@@ -365,6 +365,13 @@ async def main() -> None:
             await browser.close()
             sys.exit(1)
 
+        # Always capture a Phase 1 diagnostic screenshot so the rendered page
+        # is visible even when link extraction fails (e.g. captcha, JS block).
+        output_dir.mkdir(parents=True, exist_ok=True)
+        phase1_shot = output_dir / "phase1-index.png"
+        await page.screenshot(path=str(phase1_shot), full_page=True)
+        log.debug("Phase 1: diagnostic screenshot saved to %s", phase1_shot)
+
         print("  Extracting links...")
         all_links = extract_links_from_html(html, index_url)
         filtered = filter_links(all_links, include_pattern, exclude_pattern, base_domain)

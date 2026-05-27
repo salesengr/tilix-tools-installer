@@ -35,7 +35,7 @@ install_photon() {
         mkdir -p "$HOME/opt/src"
 
         # Pinned to a specific tag — update deliberately after review
-        local PHOTON_VERSION="v1.3.3"
+        local PHOTON_VERSION="v1.3.0"
         if [ -d "$HOME/opt/src/Photon/.git" ]; then
             echo "Updating existing Photon checkout to ${PHOTON_VERSION}..."
             # --unshallow ensures tags are available in shallow clones
@@ -144,7 +144,7 @@ install_theHarvester() {
         local python_bin; python_bin=$(_get_python_bin)
 
         # Pinned to a specific tag — update deliberately after review
-        local THEHARVESTER_VERSION="v4.6.0"
+        local THEHARVESTER_VERSION="4.11.0"
         echo "Installing theHarvester ${THEHARVESTER_VERSION} from GitHub..."
         "$python_bin" -m pip install --user --quiet \
             "git+https://github.com/laramies/theHarvester.git@${THEHARVESTER_VERSION}" || return 1

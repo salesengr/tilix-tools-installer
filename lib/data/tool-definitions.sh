@@ -145,17 +145,17 @@ define_tools() {
     TOOL_INFO[gobuster]="Gobuster|Directory/DNS/vhost bruteforcing|Active Recon"
     TOOL_SIZES[gobuster]="15MB"
     TOOL_DEPENDENCIES[gobuster]=""
-    TOOL_INSTALL_LOCATION[gobuster]="\$GOPATH/bin/gobuster"
+    TOOL_INSTALL_LOCATION[gobuster]="$HOME/.local/bin/gobuster"
 
     TOOL_INFO[ffuf]="FFuF|Fast web fuzzer|Active Recon"
     TOOL_SIZES[ffuf]="12MB"
     TOOL_DEPENDENCIES[ffuf]=""
-    TOOL_INSTALL_LOCATION[ffuf]="\$GOPATH/bin/ffuf"
+    TOOL_INSTALL_LOCATION[ffuf]="$HOME/.local/bin/ffuf"
 
     TOOL_INFO[httprobe]="httprobe|HTTP/HTTPS service probe|Active Recon"
     TOOL_SIZES[httprobe]="5MB"
     TOOL_DEPENDENCIES[httprobe]=""
-    TOOL_INSTALL_LOCATION[httprobe]="\$GOPATH/bin/httprobe"
+    TOOL_INSTALL_LOCATION[httprobe]="$HOME/.local/bin/httprobe"
 
     TOOL_INFO[waybackurls]="waybackurls|Wayback Machine URL fetcher|OSINT"
     TOOL_SIZES[waybackurls]="5MB"

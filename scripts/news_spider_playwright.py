@@ -59,8 +59,11 @@ SITE_PRESETS: Dict[str, Dict[str, str]] = {
         "url": "https://news.google.com",
         "include": r"/read/[A-Za-z0-9_-]{20,}",
         "exclude": r"(/search|/topics|/publications|/sections|/stories|#)",
-        # Google News is JS-rendered — networkidle ensures article links are present
+        # Index needs networkidle for JS to render article links
         "wait_until": "networkidle",
+        # /read/ pages redirect to external articles with endless background JS
+        # — domcontentloaded prevents timeout on captures
+        "capture_wait_until": "domcontentloaded",
     },
 }
 
@@ -298,12 +301,14 @@ async def main() -> None:
         include_pattern = args.include_pattern or preset["include"]
         exclude_pattern = preset["exclude"]
         wait_until = preset.get("wait_until", WAIT_UNTIL)
+        capture_wait_until = preset.get("capture_wait_until", wait_until)
         site_label = args.site
     else:
         index_url = args.url
         include_pattern = args.include_pattern
         exclude_pattern = None
         wait_until = WAIT_UNTIL
+        capture_wait_until = WAIT_UNTIL
         site_label = urlparse(index_url).netloc
 
     base_domain = urlparse(index_url).netloc
@@ -340,7 +345,7 @@ async def main() -> None:
     log.debug("  headless     : %s", args.headless)
     log.debug("  output_pdf   : %s", args.output_pdf)
     log.debug("  output_mhtml : %s", args.output_mhtml)
-    log.debug("  wait_until   : %s", wait_until)
+    log.debug("  wait_until   : %s (index) / %s (captures)", wait_until, capture_wait_until)
     log.debug("  output_dir   : %s", output_dir)
 
     # ── Check playwright is installed ─────────────────────────────────────────
@@ -424,7 +429,7 @@ async def main() -> None:
                 include_mhtml=args.output_mhtml,
                 semaphore=semaphore,
                 label=label,
-                wait_until=wait_until,
+                wait_until=capture_wait_until,
             )
             for url, label in zip(urls_list, labels)
         ]

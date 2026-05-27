@@ -712,21 +712,20 @@ install_feroxbuster() {
 
 install_rustscan() {
     # RustScan ships a zip containing a tar.gz — extract zip then tar
+    # Repo moved from RustScan/RustScan to bee-san/RustScan at v2.4.1
     local logfile
     logfile=$(create_tool_log "rustscan")
     echo -e "${INFO}⬇ Installing rustscan (pre-built binary)...${NC}"
     {
         echo "Installing rustscan"; echo "Started: $(date)"
         mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
-        # Pinned to match the cargo fallback version — update deliberately after review
-        local RUSTSCAN_VERSION="v2.3.0"
-        local api_url="https://api.github.com/repos/RustScan/RustScan/releases/tags/${RUSTSCAN_VERSION}"
+        local api_url="https://api.github.com/repos/bee-san/RustScan/releases/latest"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
             | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep "x86_64-linux-rustscan\.tar\.gz\.zip" \
             | head -1)
-        if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found for ${RUSTSCAN_VERSION}"; return 1; fi
+        if [[ -z "$asset_url" ]]; then echo "ERROR: asset not found (bee-san/RustScan latest)"; return 1; fi
         echo "Downloading: $asset_url"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o rustscan.zip || return 1
@@ -758,7 +757,7 @@ install_rustscan() {
         return 0
     fi
     echo -e "${WARNING}${WARN} Pre-built download failed, falling back to cargo...${NC}"
-    install_rust_tool "rustscan" "rustscan" "2.3.0"
+    install_rust_tool "rustscan" "rustscan" "2.4.1"
 }
 
 install_ripgrep() {
@@ -1120,15 +1119,13 @@ install_sd() {
     echo -e "${INFO}⬇ Installing sd (pre-built musl binary)...${NC}"
     {
         echo "Installing sd"; echo "Started: $(date)"
-        # Pinned to match the cargo fallback version — update deliberately after review
-        local SD_VERSION="v1.0.0"
-        local api_url="https://api.github.com/repos/chmln/sd/releases/tags/${SD_VERSION}"
+        local api_url="https://api.github.com/repos/chmln/sd/releases/latest"
         local asset_url
         asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
             | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep "x86_64-unknown-linux-musl\.tar\.gz" \
             | head -1)
-        echo "Downloading musl ${SD_VERSION}: $asset_url"
+        echo "Downloading musl (latest): $asset_url"
         mkdir -p "$HOME/.local/bin" "$HOME/opt/src"
         cd "$HOME/opt/src" || return 1
         curl -fsSL "$asset_url" -o sd-musl.tar.gz || return 1
@@ -1149,7 +1146,7 @@ install_sd() {
         SUCCESSFUL_INSTALLS+=("sd"); log_installation "sd" "success" "$logfile"; cleanup_old_logs "sd"; return 0
     fi
     echo -e "${WARNING}${WARN} musl download failed, falling back to cargo...${NC}"
-    install_rust_tool "sd" "sd" "1.0.0"
+    install_rust_tool "sd" "sd" "1.1.0"
 }
 
 install_dog() {

@@ -42,6 +42,10 @@ is_installed() {
 	sherlock | holehe | socialscan | h8mail | photon | sublist3r | shodan | censys | theHarvester | spiderfoot | yara | wappalyzer)
 		[ -f "$HOME/.local/bin/$tool" ] && return 0
 		;;
+	amass)
+		[ -f "$HOME/.local/bin/amass" ] && return 0
+		command -v amass &>/dev/null && return 0
+		;;
 	# Go tools — check ~/.local/bin (pre-built) then ~/opt/gopath/bin (compiled)
 	gobuster | ffuf | httprobe | waybackurls | assetfinder | subfinder | nuclei)
 		[ -f "$HOME/.local/bin/$tool" ] && return 0

@@ -16,7 +16,7 @@ LANGUAGES=("nodejs" "rust" "go_runtime")
 # Menu and bulk install operations use these arrays.
 # Tools are grouped by function, not by runtime.
 
-PASSIVE_OSINT=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot" "photon" "wappalyzer" "h8mail" "waybackurls" "assetfinder" "subfinder" "git-hound")
+PASSIVE_OSINT=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot" "photon" "wappalyzer" "h8mail" "waybackurls" "assetfinder" "subfinder" "git-hound" "amass")
 DOMAIN_ENUM=("sublist3r" "gobuster" "ffuf")
 ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
 CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
@@ -171,6 +171,11 @@ define_tools() {
 	TOOL_SIZES[subfinder]="15MB"
 	TOOL_DEPENDENCIES[subfinder]=""
 	TOOL_INSTALL_LOCATION[subfinder]="\$GOPATH/bin/subfinder"
+
+	TOOL_INFO[amass]="amass|In-depth passive subdomain enumeration (OWASP)|OSINT"
+	TOOL_SIZES[amass]="50MB"
+	TOOL_DEPENDENCIES[amass]=""
+	TOOL_INSTALL_LOCATION[amass]="$HOME/.local/bin/amass"
 
 	TOOL_INFO[nuclei]="Nuclei|Vulnerability scanner|Vuln Scan"
 	TOOL_SIZES[nuclei]="20MB"

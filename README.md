@@ -10,7 +10,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 
 ## 🎯 Features
 
-- ✅ **36 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
+- ✅ **37 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
 - ✅ **No sudo required** — complete user-space installation
 - ✅ **Pre-built binaries** — fast installs via GitHub releases; compile-from-source as fallback
 - ✅ **Use-case categories** — install exactly what you need with one command
@@ -35,7 +35,7 @@ bash installer.sh
 Or install by category directly:
 
 ```bash
-bash install_security_tools.sh --osint-tools      # Passive OSINT (12 tools)
+bash install_security_tools.sh --osint-tools      # Passive OSINT (13 tools)
 bash install_security_tools.sh --domain-tools     # Domain & Subdomain Enum (3 tools)
 bash install_security_tools.sh --recon-tools      # Active Recon & Scanning (4 tools)
 bash install_security_tools.sh --cti-tools        # Cyber Threat Intel (5 tools)
@@ -69,7 +69,7 @@ Tools are organized by use-case. → **[Full tool list with descriptions](https:
 
 | Category | Tools | Flag |
 |----------|-------|------|
-| Passive OSINT | sherlock, holehe, theHarvester, spiderfoot, subfinder, git-hound + 6 more | `--osint-tools` |
+| Passive OSINT | sherlock, holehe, theHarvester, spiderfoot, subfinder, git-hound, amass + 6 more | `--osint-tools` |
 | Domain & Subdomain Enum | sublist3r, gobuster, ffuf | `--domain-tools` |
 | Active Recon & Scanning | httprobe, rustscan, feroxbuster, nuclei | `--recon-tools` |
 | Cyber Threat Intelligence | shodan, censys, yara, trufflehog, virustotal | `--cti-tools` |

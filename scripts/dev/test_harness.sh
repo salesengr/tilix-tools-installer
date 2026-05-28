@@ -48,6 +48,7 @@ VERIFY[waybackurls]="${HOME}/opt/gopath/bin/waybackurls|waybackurls --help 2>&1 
 VERIFY[assetfinder]="${HOME}/opt/gopath/bin/assetfinder|assetfinder --help 2>&1 | head -3 || true"
 VERIFY[subfinder]="${HOME}/opt/gopath/bin/subfinder|subfinder --version 2>&1 | head -3"
 VERIFY[git_hound]="${HOME}/.local/bin/git-hound|git-hound --help 2>&1 | head -3 || true"
+VERIFY[amass]="${HOME}/.local/bin/amass|amass --help 2>&1 | head -3 || true"
 VERIFY[sublist3r]="${HOME}/.local/bin/sublist3r|sublist3r --help 2>&1 | head -3 || true"
 VERIFY[gobuster]="${HOME}/.local/bin/gobuster|gobuster version 2>&1 | head -3 || true"
 VERIFY[ffuf]="${HOME}/.local/bin/ffuf|ffuf -V 2>&1 | head -3 || true"

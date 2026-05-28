@@ -599,6 +599,14 @@ install_subfinder() {
 		"github.com/projectdiscovery/subfinder/v2/cmd/subfinder"
 }
 
+install_amass() {
+	install_prebuilt_binary "amass" \
+		"owasp-amass/amass" \
+		"amass_linux_amd64\.tar\.gz" \
+		"amass" \
+		"tar.gz"
+}
+
 install_nuclei() {
 	_install_go_with_fallback "nuclei" \
 		"projectdiscovery/nuclei" \

@@ -57,6 +57,7 @@ install_tool() {
 	waybackurls) install_waybackurls ;;
 	assetfinder) install_assetfinder ;;
 	subfinder) install_subfinder ;;
+	amass) install_amass ;;
 	nuclei) install_nuclei ;;
 	virustotal) install_virustotal ;;
 	trufflehog) install_trufflehog ;;

@@ -255,7 +255,9 @@ install_prebuilt_binary() {
 		filename=$(basename "$asset_url")
 		cd "$HOME/opt/src" || return 1
 		local _tmpfile="$filename"
-		trap 'rm -f "${_tmpfile}" 2>/dev/null' RETURN
+		# trap RETURN is process-wide in bash — use ${_tmpfile:-} to avoid set -u failures
+		# in other functions; reset the trap when this function exits cleanly
+		trap 'rm -f "${_tmpfile:-}" 2>/dev/null; trap - RETURN' RETURN
 		curl -fsSL --max-time 120 "$asset_url" -o "$filename" || return 1
 
 		# Verify SHA256 if companion file is published (rc=2 means unavailable — non-fatal for GitHub releases)

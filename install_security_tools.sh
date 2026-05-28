@@ -73,7 +73,9 @@ _check_disk_space() {
 	local required_mb=0
 	for tool in "$@"; do
 		local size="${TOOL_SIZES[$tool]:-0}"
-		required_mb=$((required_mb + ${size%MB}))
+		local size_int="${size%MB}"
+		size_int="${size_int%%.*}"  # strip decimal — bash arithmetic is integer-only
+		required_mb=$((required_mb + ${size_int:-0}))
 	done
 	local available_mb
 	available_mb=$(df -m "${HOME}/.local" 2>/dev/null | tail -1 | awk '{print $4}')

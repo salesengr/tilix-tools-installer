@@ -15,7 +15,6 @@ set +e
 pkill -f "cmd_server.py"      2>/dev/null
 pkill -f "ssh.*serveo.net"    2>/dev/null
 fuser -k "${SERVER_PORT}/tcp" 2>/dev/null
-wait 2>/dev/null
 set -e
 sleep 1
 

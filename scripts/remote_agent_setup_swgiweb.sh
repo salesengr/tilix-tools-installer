@@ -1,26 +1,31 @@
 #!/usr/bin/env bash
 # remote_agent_setup_swgiweb.sh
-# Sets up a direct reverse SSH tunnel to swgiweb + Python command server.
+# Sets up a direct reverse SSH tunnel to a jump host + Python command server.
 # Use when bore.pub and third-party tunnel services are blocked.
+#
+# Usage: bash remote_agent_setup_swgiweb.sh <jump-host> [jump-user] [remote-port] [ssh-key]
+#   jump-host    DNS name or IP of the SSH jump host (required)
+#   jump-user    SSH username on jump host (default: ubuntu)
+#   remote-port  Port to open on jump host (default: 19999)
+#   ssh-key      Path to SSH key (default: /tmp/ck)
 #
 # Requirements:
 #   1. Generate a throwaway key in the container:
 #        ssh-keygen -t ed25519 -f /tmp/ck -N "" -q
-#   2. Add the public key (/tmp/ck.pub) to swgiweb's ~/.ssh/authorized_keys:
-#        ssh swgiweb "echo '<pubkey>' >> ~/.ssh/authorized_keys"
-#   3. Run this script — it opens a reverse tunnel on swgiweb port 19999
+#   2. Add /tmp/ck.pub to the jump host's ~/.ssh/authorized_keys
+#   3. Run this script
 #
 # Orchestrator sends commands via:
-#   ssh swgiweb "curl -s -X POST http://localhost:19999 -d 'cmd'"
+#   ssh <jump-user>@<jump-host> "curl -s -X POST http://localhost:<remote-port> -d 'cmd'"
 
 set -euo pipefail
 
+JUMP_HOST="${1:?Usage: $0 <jump-host> [jump-user] [remote-port] [ssh-key]}"
+JUMP_USER="${2:-ubuntu}"
 SERVER_PORT=9000
-REMOTE_PORT=19999
-SWGIWEB_HOST="swgiweb.myselab.net"
-SWGIWEB_USER="ubuntu"
-SSH_KEY="/tmp/ck"
-TUNNEL_LOG="${HOME}/.local/swgiweb-tunnel.log"
+REMOTE_PORT="${3:-19999}"
+SSH_KEY="${4:-/tmp/ck}"
+TUNNEL_LOG="${HOME}/.local/jump-tunnel.log"
 SERVER_LOG="/tmp/cmd_server.log"
 
 # ── Preflight checks ──────────────────────────────────────────────────────────
@@ -33,7 +38,7 @@ fi
 
 # ── Kill any previous instances ───────────────────────────────────────────────
 pkill -f "cmd_server.py"                              2>/dev/null || true
-pkill -f "ssh.*${SWGIWEB_HOST}.*${REMOTE_PORT}"       2>/dev/null || true
+pkill -f "ssh.*${JUMP_HOST}.*${REMOTE_PORT}"       2>/dev/null || true
 fuser -k "${SERVER_PORT}/tcp"                         2>/dev/null || true
 sleep 1
 
@@ -76,13 +81,13 @@ fi
 echo "    Server PID: ${SERVER_PID} — OK"
 
 # ── Open reverse SSH tunnel to swgiweb ────────────────────────────────────────
-echo ">>> Opening reverse SSH tunnel to ${SWGIWEB_HOST}..."
+echo ">>> Opening reverse SSH tunnel to ${JUMP_HOST}..."
 ssh -o StrictHostKeyChecking=no \
     -o ServerAliveInterval=30 \
     -o ServerAliveCountMax=3 \
     -i "${SSH_KEY}" \
     -NR "${REMOTE_PORT}:localhost:${SERVER_PORT}" \
-    "${SWGIWEB_USER}@${SWGIWEB_HOST}" >"${TUNNEL_LOG}" 2>&1 &
+    "${JUMP_USER}@${JUMP_HOST}" >"${TUNNEL_LOG}" 2>&1 &
 TUNNEL_PID=$!
 sleep 3
 
@@ -94,12 +99,13 @@ fi
 echo "    Tunnel PID: ${TUNNEL_PID} — OK"
 echo ""
 echo "=========================================="
-echo "  Remote agent ready (swgiweb tunnel)."
-echo "  Orchestrator endpoint: swgiweb:${REMOTE_PORT}"
+echo "  Remote agent ready (reverse SSH tunnel)."
+echo "  Jump host : ${JUMP_USER}@${JUMP_HOST}"
+echo "  Endpoint  : localhost:${REMOTE_PORT} on jump host"
 echo ""
 echo "  Send commands via:"
-echo "  ssh swgiweb \"curl -s -X POST http://localhost:${REMOTE_PORT} -d 'cmd'\""
+echo "  ssh ${JUMP_USER}@${JUMP_HOST} \"curl -s -X POST http://localhost:${REMOTE_PORT} -d 'cmd'\""
 echo ""
 echo "  Test:"
-echo "  ssh swgiweb \"curl -s -X POST http://localhost:${REMOTE_PORT} -d 'whoami'\""
+echo "  ssh ${JUMP_USER}@${JUMP_HOST} \"curl -s -X POST http://localhost:${REMOTE_PORT} -d 'whoami'\""
 echo "=========================================="

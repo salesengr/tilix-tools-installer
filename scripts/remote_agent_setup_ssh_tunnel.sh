@@ -18,9 +18,13 @@
 # Orchestrator sends commands via:
 #   ssh <jump-user>@<jump-host> "curl -s -X POST http://localhost:<remote-port> -d 'cmd'"
 
-set -euo pipefail
+set -uo pipefail
 
-JUMP_HOST="${1:?Usage: $0 <jump-host> [jump-user] [remote-port] [ssh-key]}"
+if [[ -z "${1:-}" ]]; then
+    echo "Usage: $0 <jump-host> [jump-user] [remote-port] [ssh-key]" >&2
+    exit 1
+fi
+JUMP_HOST="${1}"
 JUMP_USER="${2:-ubuntu}"
 SERVER_PORT=9000
 REMOTE_PORT="${3:-19999}"

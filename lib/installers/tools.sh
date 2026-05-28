@@ -991,12 +991,17 @@ install_yandex_browser() {
                 dpkg-deb -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>&1
                 dpkg_rc=$?
                 echo "dpkg-deb exit: ${dpkg_rc}"
-                echo "Extracted contents:"
-                find "${tmp_dir}/extracted/usr/bin" -type f 2>/dev/null | head -5 || echo "  (nothing in usr/bin)"
-                if [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-stable" ]] || [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-beta" ]]; then
+                echo "Extracted contents (opt/yandex):"
+                find "${tmp_dir}/extracted/opt/yandex" -type f 2>/dev/null | head -5 || echo "  (nothing in opt/yandex)"
+                # Stable package installs to /opt/yandex/browser/yandex-browser
+                if [[ -f "${tmp_dir}/extracted/opt/yandex/browser/yandex-browser" ]]; then
                     mkdir -p "$HOME/opt/yandex-browser"
                     cp -r "${tmp_dir}/extracted/." "$HOME/opt/yandex-browser/"
                     echo "Yandex Browser extracted to ~/opt/yandex-browser"
+                elif [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-beta" ]]; then
+                    mkdir -p "$HOME/opt/yandex-browser"
+                    cp -r "${tmp_dir}/extracted/." "$HOME/opt/yandex-browser/"
+                    echo "Yandex Browser (beta) extracted to ~/opt/yandex-browser"
                 else
                     echo "ERROR: binary not found in extracted deb — check dpkg-deb output above"
                 fi
@@ -1025,7 +1030,11 @@ install_yandex_browser() {
 
         # Determine actual binary path (system or user-extracted)
         local yandex_bin
-        if [ -f "/usr/bin/yandex-browser-stable" ]; then
+        if [ -f "$HOME/opt/yandex-browser/opt/yandex/browser/yandex-browser" ]; then
+            yandex_bin="$HOME/opt/yandex-browser/opt/yandex/browser/yandex-browser"
+        elif [ -f "/opt/yandex/browser/yandex-browser" ]; then
+            yandex_bin="/opt/yandex/browser/yandex-browser"
+        elif [ -f "/usr/bin/yandex-browser-stable" ]; then
             yandex_bin="/usr/bin/yandex-browser-stable"
         elif [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-stable" ]; then
             yandex_bin="$HOME/opt/yandex-browser/usr/bin/yandex-browser-stable"

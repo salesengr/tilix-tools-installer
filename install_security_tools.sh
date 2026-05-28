@@ -354,7 +354,19 @@ WGETRC_EOF
         # Interactive menu mode
         # Verify stdin is connected to a terminal
         if [ ! -t 0 ]; then
-            # Try to reconnect to /dev/tty
+            # Stdin is piped — read selections directly (supports comma-separated input)
+            if read -r -t 5 piped_selection 2>/dev/null && [[ -n "${piped_selection}" ]]; then
+                IFS=',' read -ra SELECTIONS <<< "${piped_selection}"
+                for sel in "${SELECTIONS[@]}"; do
+                    sel=$(echo "$sel" | xargs)  # Trim whitespace
+                    process_menu_selection "$sel"
+                done
+                show_installation_summary
+                print_shell_reload_reminder
+                exit 0
+            fi
+
+            # No piped input — try to reconnect to /dev/tty
             if [ -c /dev/tty ]; then
                 echo -e "${YELLOW}Note: Reconnecting stdin to /dev/tty for interactive menu${NC}"
                 exec bash "$0" < /dev/tty
@@ -367,7 +379,7 @@ WGETRC_EOF
             echo "Solutions:"
             echo "  1. Run directly: bash install_security_tools.sh"
             echo "  2. Use CLI mode: bash install_security_tools.sh <tool-name>"
-            echo "  3. If piping via curl, save and run: curl -O URL && bash install_security_tools.sh"
+            echo "  3. Pipe selections: echo '38,39,40' | bash install_security_tools.sh"
             echo ""
             exit 1
         fi

@@ -59,6 +59,10 @@ _record_install_result() {
     else
         echo -e "${ERROR}${CROSS} ${tool} installation failed${NC}"
         echo "  See log: $logfile"
+        if [[ -f "$logfile" ]]; then
+            echo -e "${YELLOW}  Last install output:${NC}"
+            tail -15 "$logfile" | sed 's/^/    /'
+        fi
         FAILED_INSTALLS+=("$tool")
         FAILED_INSTALL_LOGS["$tool"]="$logfile"
         log_installation "$tool" "failure" "$logfile"

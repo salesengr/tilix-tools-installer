@@ -62,7 +62,7 @@ TOOL_SCRIPT="$HOME/opt/src/Photon/photon.py"
 
 if [ ! -x "$TOOL_PY" ]; then
     echo "Error: Python not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
+    echo "Run: bash install_security_tools.sh photon" >&2
     exit 1
 fi
 
@@ -222,7 +222,7 @@ SF_PORT="${SF_PORT:-5001}"
 
 if [ ! -x "${TOOL_PY}" ]; then
     echo "Error: Python not found" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2
+    echo "Run: bash install_security_tools.sh spiderfoot" >&2
     exit 1
 fi
 
@@ -293,7 +293,7 @@ TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
     echo "Error: Python not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
+    echo "Run: bash install_security_tools.sh wappalyzer" >&2
     exit 1
 fi
 
@@ -444,7 +444,7 @@ TOOL_PY="$(command -v python3.13 || command -v python3)"
 
 if [ ! -x "$TOOL_PY" ]; then
     echo "Error: Python not found at $TOOL_PY" >&2
-    echo "Run: bash install_security_tools.sh python_venv" >&2  # ensures python3 available
+    echo "Run: bash install_security_tools.sh yara" >&2
     exit 1
 fi
 

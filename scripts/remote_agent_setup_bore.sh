@@ -73,7 +73,7 @@ bore local "${SERVER_PORT}" --to bore.pub >"${BORE_LOG}" 2>&1 &
 BORE_PID=$!
 
 # Wait for bore to print the port (up to 10s)
-for i in $(seq 1 20); do
+for _ in $(seq 1 20); do
     if grep -q "listening at" "${BORE_LOG}" 2>/dev/null; then
         break
     fi

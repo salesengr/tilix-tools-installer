@@ -66,7 +66,7 @@ ssh -o StrictHostKeyChecking=no \
 TUNNEL_PID=$!
 
 # Wait for serveo to print the assigned port (up to 15s)
-for i in $(seq 1 30); do
+for _ in $(seq 1 30); do
     if grep -q "Forwarding" "${SERVEO_LOG}" 2>/dev/null; then
         break
     fi

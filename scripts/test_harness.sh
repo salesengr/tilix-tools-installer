@@ -17,7 +17,7 @@ SUMMARY="${RESULTS_DIR}/summary.txt"
 mkdir -p "${RESULTS_DIR}"
 
 # Source environment
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 source "${HOME}/.bashrc" 2>/dev/null || true
 export PATH="${HOME}/.local/bin:${HOME}/opt/gopath/bin:${HOME}/.cargo/bin:${PATH}"
 export GOPATH="${HOME}/opt/gopath"
@@ -25,7 +25,7 @@ export CARGO_HOME="${HOME}/.cargo"
 
 # Install the category
 echo "=== Installing ${CATEGORY} (${INSTALL_FLAG}) ==="
-cd "${HOME}/tilix-tools-installer"
+cd "${HOME}/tilix-tools-installer" || { echo "ERROR: repo not found at ~/tilix-tools-installer" >&2; exit 1; }
 bash install_security_tools.sh "${INSTALL_FLAG}" 2>&1 | tee "${INSTALL_LOG}"
 INSTALL_RC=${PIPESTATUS[0]}
 echo "Install exit code: ${INSTALL_RC}" | tee -a "${INSTALL_LOG}"

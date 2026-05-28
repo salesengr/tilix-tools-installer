@@ -69,7 +69,7 @@ TUNNEL_PID=$!
 
 # localhost.run prints URL after the welcome banner (~10-20s)
 # Format: "xxxxxxxx.lhr.life tunneled with tls termination, https://xxxxxxxx.lhr.life"
-for i in $(seq 1 60); do
+for _ in $(seq 1 60); do
     if grep -q "lhr.life" "${TUNNEL_LOG}" 2>/dev/null; then
         break
     fi

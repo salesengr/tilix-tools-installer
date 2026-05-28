@@ -225,3 +225,19 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 [MIT License](LICENSE) — Copyright (c) 2026 salesengr
 
 Provided as-is for educational and professional security testing. Always obtain proper authorization before testing systems you don't own.
+
+---
+
+## 🛠 Developer Tools
+
+Scripts in `scripts/dev/` are for testing and remote orchestration — not intended for trial users.
+
+| Script | Purpose |
+|--------|---------|
+| `remote_agent_setup_bore.sh` | bore tunnel for remote container access |
+| `remote_agent_setup_ssh_tunnel.sh` | Direct reverse SSH tunnel (most reliable) |
+| `remote_agent_setup_serveo.sh` | serveo.net SSH tunnel fallback |
+| `remote_agent_setup_localrun.sh` | localhost.run tunnel fallback |
+| `test_harness.sh` | Install + verify a tool category |
+| `get_public_ip.sh` | Get container public IP via ipify |
+| `install_nc_fallback.sh` | Python netcat replacement with -z/-v/-w support |

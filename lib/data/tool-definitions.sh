@@ -199,41 +199,41 @@ define_tools() {
     TOOL_INSTALL_LOCATION[jwt-cracker]="$HOME/.local/bin/jwt-cracker"
 
     # Rust Tools
+    # Pre-built binaries — no rust dependency needed for primary install path
     TOOL_INFO[feroxbuster]="feroxbuster|Fast content discovery|Active Recon"
     TOOL_SIZES[feroxbuster]="5MB"
-    TOOL_DEPENDENCIES[feroxbuster]="rust"
-    TOOL_INSTALL_LOCATION[feroxbuster]="\$CARGO_HOME/bin/feroxbuster"
+    TOOL_DEPENDENCIES[feroxbuster]=""
+    TOOL_INSTALL_LOCATION[feroxbuster]="$HOME/.local/bin/feroxbuster"
 
     TOOL_INFO[rustscan]="RustScan|Modern fast port scanner|Active Recon"
     TOOL_SIZES[rustscan]="3MB"
-    TOOL_DEPENDENCIES[rustscan]="rust"
-    TOOL_INSTALL_LOCATION[rustscan]="\$CARGO_HOME/bin/rustscan"
+    TOOL_DEPENDENCIES[rustscan]=""
+    TOOL_INSTALL_LOCATION[rustscan]="$HOME/.local/bin/rustscan"
 
     TOOL_INFO[ripgrep]="ripgrep|Fast recursive grep|Utility"
     TOOL_SIZES[ripgrep]="2MB"
-    TOOL_DEPENDENCIES[ripgrep]="rust"
-    TOOL_INSTALL_LOCATION[ripgrep]="\$CARGO_HOME/bin/rg"
+    TOOL_DEPENDENCIES[ripgrep]=""
+    TOOL_INSTALL_LOCATION[ripgrep]="$HOME/.local/bin/ripgrep"
 
     TOOL_INFO[fd]="fd|Fast file finder|Utility"
     TOOL_SIZES[fd]="1.5MB"
-    TOOL_DEPENDENCIES[fd]="rust"
-    TOOL_INSTALL_LOCATION[fd]="\$CARGO_HOME/bin/fd"
+    TOOL_DEPENDENCIES[fd]=""
+    TOOL_INSTALL_LOCATION[fd]="$HOME/.local/bin/fd"
 
     TOOL_INFO[bat]="bat|Cat with syntax highlighting|Utility"
     TOOL_SIZES[bat]="2MB"
-    TOOL_DEPENDENCIES[bat]="rust"
-    TOOL_INSTALL_LOCATION[bat]="\$CARGO_HOME/bin/bat"
+    TOOL_DEPENDENCIES[bat]=""
+    TOOL_INSTALL_LOCATION[bat]="$HOME/.local/bin/bat"
 
     TOOL_INFO[sd]="sd|Intuitive find & replace|Utility"
     TOOL_SIZES[sd]="1MB"
-    TOOL_DEPENDENCIES[sd]="rust"
-    TOOL_INSTALL_LOCATION[sd]="\$CARGO_HOME/bin/sd"
-
+    TOOL_DEPENDENCIES[sd]=""
+    TOOL_INSTALL_LOCATION[sd]="$HOME/.local/bin/sd"
 
     TOOL_INFO[dog]="dog|Modern DNS client|Utility"
     TOOL_SIZES[dog]="1.5MB"
-    TOOL_DEPENDENCIES[dog]="rust"
-    TOOL_INSTALL_LOCATION[dog]="\$CARGO_HOME/bin/dog"
+    TOOL_DEPENDENCIES[dog]=""
+    TOOL_INSTALL_LOCATION[dog]="$HOME/.local/bin/dog"
 
     # Utility Tools
     TOOL_INFO[aria2]="aria2|Multi-protocol download utility (HTTP/FTP/BitTorrent/Metalink)|Utility"

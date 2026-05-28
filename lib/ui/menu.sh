@@ -5,6 +5,19 @@
 
 # ===== MENU FUNCTIONS =====
 
+# Function: _tool_status
+# Purpose: Return a colored [✓] or dim [ ] prefix for a tool
+# Parameters: $1 - tool name (must match INSTALLED_STATUS key)
+# Returns: Prints status indicator without trailing newline
+_tool_status() {
+    local tool=$1
+    if [[ "${INSTALLED_STATUS[$tool]:-false}" == "true" ]]; then
+        printf '%b' "${SUCCESS}[✓]${NC}"
+    else
+        printf '%b' "\033[2m[ ]\033[0m"
+    fi
+}
+
 # Function: show_menu
 # Purpose: Display interactive menu
 # Returns: Always succeeds
@@ -15,32 +28,32 @@ show_menu() {
     echo "Security Tools Installer v${SCRIPT_VERSION}"
     echo -e "==========================================${NC}"
     echo ""
-    echo -e "${CATEGORY}BUILD & LANGUAGES:${NC} [1] CMake  [2] GitHub CLI  [3] Node.js  [4] Rust  [5] Go Runtime  [6] Python venv"
+    echo -e "${CATEGORY}BUILD & LANGUAGES:${NC} [1] $(_tool_status cmake)cmake  [2] $(_tool_status github_cli)GitHub CLI  [3] $(_tool_status nodejs)Node.js  [4] $(_tool_status rust)Rust  [5] $(_tool_status go_runtime)Go Runtime  [6] $(_tool_status python_venv)Python venv"
     echo ""
     echo -e "${CATEGORY}PASSIVE OSINT:${NC}"
-    echo "  [7]  sherlock      [8]  holehe        [9]  socialscan    [10] theHarvester"
-    echo "  [11] spiderfoot    [12] photon         [13] wappalyzer   [14] h8mail"
-    echo "  [15] waybackurls   [16] assetfinder    [17] subfinder    [18] git-hound"
+    echo "  [7]  $(_tool_status sherlock)sherlock      [8]  $(_tool_status holehe)holehe        [9]  $(_tool_status socialscan)socialscan    [10] $(_tool_status theHarvester)theHarvester"
+    echo "  [11] $(_tool_status spiderfoot)spiderfoot    [12] $(_tool_status photon)photon         [13] $(_tool_status wappalyzer)wappalyzer   [14] $(_tool_status h8mail)h8mail"
+    echo "  [15] $(_tool_status waybackurls)waybackurls   [16] $(_tool_status assetfinder)assetfinder    [17] $(_tool_status subfinder)subfinder    [18] $(_tool_status git-hound)git-hound"
     echo ""
     echo -e "${CATEGORY}DOMAIN & SUBDOMAIN ENUMERATION:${NC}"
-    echo "  [19] sublist3r     [20] gobuster       [21] ffuf"
+    echo "  [19] $(_tool_status sublist3r)sublist3r     [20] $(_tool_status gobuster)gobuster       [21] $(_tool_status ffuf)ffuf"
     echo ""
     echo -e "${CATEGORY}ACTIVE RECON & SCANNING:${NC}"
-    echo "  [22] httprobe      [23] rustscan       [24] feroxbuster  [25] nuclei"
+    echo "  [22] $(_tool_status httprobe)httprobe      [23] $(_tool_status rustscan)rustscan       [24] $(_tool_status feroxbuster)feroxbuster  [25] $(_tool_status nuclei)nuclei"
     echo ""
     echo -e "${CATEGORY}CYBER THREAT INTEL (CTI):${NC}"
-    echo "  [26] shodan        [27] censys         [28] yara         [29] trufflehog"
-    echo "  [30] virustotal"
+    echo "  [26] $(_tool_status shodan)shodan        [27] $(_tool_status censys)censys         [28] $(_tool_status yara)yara         [29] $(_tool_status trufflehog)trufflehog"
+    echo "  [30] $(_tool_status virustotal)virustotal"
     echo ""
-    echo -e "${CATEGORY}SECURITY TESTING:${NC} [31] jwt-cracker"
+    echo -e "${CATEGORY}SECURITY TESTING:${NC} [31] $(_tool_status jwt-cracker)jwt-cracker"
     echo ""
     echo -e "${CATEGORY}UTILITIES:${NC}"
-    echo "  [32] ripgrep       [33] fd             [34] bat          [35] sd"
-    echo "  [36] dog            [37] aria2"
+    echo "  [32] $(_tool_status ripgrep)ripgrep       [33] $(_tool_status fd)fd             [34] $(_tool_status bat)bat          [35] $(_tool_status sd)sd"
+    echo "  [36] $(_tool_status dog)dog            [37] $(_tool_status aria2)aria2"
     echo ""
     echo -e "${CATEGORY}WEB TOOLS:${NC}"
-    echo "  [38] seleniumbase  [39] playwright      [40] yandex-browser  [41] tor-browser"
-    echo "  [42] qtox"
+    echo "  [38] $(_tool_status seleniumbase)seleniumbase  [39] $(_tool_status playwright)playwright      [40] $(_tool_status yandex_browser)yandex-browser  [41] $(_tool_status tor_browser)tor-browser"
+    echo "  [42] $(_tool_status qtox)qtox"
     echo ""
     echo -e "${CATEGORY}BULK INSTALL:${NC}"
     echo "  [43] All Passive OSINT    [44] All Domain/Subdomain    [45] All Active Recon"

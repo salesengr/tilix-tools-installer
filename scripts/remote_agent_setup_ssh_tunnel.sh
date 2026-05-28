@@ -43,7 +43,7 @@ fi
 # ── Kill any previous instances ───────────────────────────────────────────────
 set +e
 pkill -f "cmd_server.py"                        2>/dev/null
-pkill -f "ssh.*${JUMP_HOST}.*${REMOTE_PORT}"    2>/dev/null
+pkill -f "ssh -o.*-NR ${REMOTE_PORT}"           2>/dev/null
 fuser -k "${SERVER_PORT}/tcp"                   2>/dev/null
 set -e
 sleep 1

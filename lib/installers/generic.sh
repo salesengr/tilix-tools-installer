@@ -237,7 +237,7 @@ install_prebuilt_binary() {
         # Fetch latest release asset URL
         local api_url="https://api.github.com/repos/${repo}/releases/latest"
         local asset_url
-        asset_url=$(curl -fsSL "$api_url" 2>/dev/null \
+        asset_url=$(curl -fsSL --max-time 30 "$api_url" 2>/dev/null \
             | grep -oP '"browser_download_url":\s*"\K[^"]+' \
             | grep -iE "$asset_pattern" \
             | grep -v "\.sha256\|\.sig\|\.minisig" \
@@ -252,7 +252,7 @@ install_prebuilt_binary() {
         local filename
         filename=$(basename "$asset_url")
         cd "$HOME/opt/src" || return 1
-        curl -fsSL "$asset_url" -o "$filename" || return 1
+        curl -fsSL --max-time 120 "$asset_url" -o "$filename" || return 1
 
         # Verify SHA256 if companion file is published (rc=2 means unavailable — non-fatal for GitHub releases)
         local _rc; verify_sha256 "$filename" "${asset_url}.sha256"; _rc=$?

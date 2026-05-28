@@ -971,12 +971,12 @@ install_yandex_browser() {
         mkdir -p "$tmp_dir"
 
         # Strategy 1: Download .deb directly from Yandex repo and extract without root.
-        # Read the latest version from the beta channel package index.
-        echo "Fetching latest yandex-browser-beta version from repo..."
+        # Use stable channel — yandex-browser-stable is the production release.
+        echo "Fetching latest yandex-browser-stable version from repo..."
         local pkg_filename
         pkg_filename=$(curl -fsSL --max-time 30 \
-            "https://repo.yandex.ru/yandex-browser/deb/dists/beta/main/binary-amd64/Packages.gz" \
-            2>/dev/null | gunzip | grep "^Filename:" | grep "yandex-browser-beta" | head -1 \
+            "https://repo.yandex.ru/yandex-browser/deb/dists/stable/main/binary-amd64/Packages.gz" \
+            2>/dev/null | gunzip | grep "^Filename:" | grep "yandex-browser-stable" | head -1 \
             | awk '{print $2}')
 
         if [[ -n "${pkg_filename}" ]]; then
@@ -987,7 +987,7 @@ install_yandex_browser() {
                 dpkg-deb -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>/dev/null || \
                     dpkg -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>/dev/null || true
                 # Copy binary to system location requires root — install to user opt instead
-                if [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-beta" ]]; then
+                if [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-stable" ]] || [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-beta" ]]; then
                     mkdir -p "$HOME/opt/yandex-browser"
                     cp -r "${tmp_dir}/extracted/." "$HOME/opt/yandex-browser/"
                     echo "Yandex Browser extracted to ~/opt/yandex-browser"
@@ -1014,9 +1014,17 @@ install_yandex_browser() {
         fi
 
         # Determine actual binary path (system or user-extracted)
-        local yandex_bin="/usr/bin/yandex-browser-beta"
-        if [ ! -f "${yandex_bin}" ] && [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta" ]; then
+        local yandex_bin
+        if [ -f "/usr/bin/yandex-browser-stable" ]; then
+            yandex_bin="/usr/bin/yandex-browser-stable"
+        elif [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-stable" ]; then
+            yandex_bin="$HOME/opt/yandex-browser/usr/bin/yandex-browser-stable"
+        elif [ -f "/usr/bin/yandex-browser-beta" ]; then
+            yandex_bin="/usr/bin/yandex-browser-beta"
+        elif [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta" ]; then
             yandex_bin="$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta"
+        else
+            yandex_bin=""
         fi
 
         if [ ! -f "${yandex_bin}" ]; then

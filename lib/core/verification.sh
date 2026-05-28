@@ -69,9 +69,11 @@ is_installed() {
             [ -f "$HOME/.local/bin/playwright" ] && return 0
             "$(_get_python_bin 2>/dev/null || echo python3)" -c "import playwright" &>/dev/null && return 0 ;;
         yandex_browser)
+            [ -f "/usr/bin/yandex-browser-stable" ] && return 0
+            [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-stable" ] && return 0
             [ -f "/usr/bin/yandex-browser-beta" ] && return 0
             [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta" ] && return 0
-            command -v yandex-browser-beta &>/dev/null && return 0 ;;
+            command -v yandex-browser-stable &>/dev/null && return 0 ;;
         tor_browser)
             [ -f "$HOME/opt/tor-browser/Browser/start-tor-browser" ] && return 0 ;;
         qtox)

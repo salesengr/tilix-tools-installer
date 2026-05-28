@@ -230,7 +230,14 @@ install_dog() {
         "unzip -o dog.zip" \
         "bin/dog" \
         "dog" \
-        "$CHECKSUM_DOG"
+        "$CHECKSUM_DOG" || return 1
+
+    # Validate binary runs on this libc — dog GNU build requires GLIBC_2.32
+    if ! "$HOME/.local/bin/dog" --version &>/dev/null; then
+        echo -e "${WARNING}${WARN} dog installed but may not run on this system (requires GLIBC_2.32)"
+        echo -e "  The binary is at ~/.local/bin/dog but may fail with a libc version error."
+        echo -e "  Consider upgrading to Ubuntu 22.04+ or waiting for a musl build from upstream."
+    fi
 }
 
 # ===== SIGNAL HANDLERS =====

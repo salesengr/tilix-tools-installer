@@ -252,6 +252,8 @@ install_prebuilt_binary() {
         local filename
         filename=$(basename "$asset_url")
         cd "$HOME/opt/src" || return 1
+        local _tmpfile="$filename"
+        trap 'rm -f "${_tmpfile}" 2>/dev/null' RETURN
         curl -fsSL --max-time 120 "$asset_url" -o "$filename" || return 1
 
         # Verify SHA256 if companion file is published (rc=2 means unavailable — non-fatal for GitHub releases)
@@ -298,8 +300,6 @@ install_prebuilt_binary() {
                 [[ "$tool" != "$binary_name" ]] && ln -sf "$HOME/.local/bin/$binary_name" "$HOME/.local/bin/$tool"
                 ;;
         esac
-
-        rm -f "$filename"
 
         echo "=========================================="
         echo "Completed: $(date)"

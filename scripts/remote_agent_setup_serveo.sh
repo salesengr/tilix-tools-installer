@@ -21,7 +21,7 @@ sleep 1
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
 cat > /tmp/cmd_server.py << 'PYEOF'
-import http.server, subprocess, json
+import http.server, subprocess, json, os
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):

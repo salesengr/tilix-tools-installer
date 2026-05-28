@@ -21,6 +21,7 @@ if ! command -v bore &>/dev/null; then
 fi
 
 # ── Kill any previous instances ───────────────────────────────────────────────
+set +e
 pkill -f "bore local ${SERVER_PORT}" 2>/dev/null || true
 pkill -f "cmd_server.py"             2>/dev/null || true
 # Kill whatever is holding the port (works without root)
@@ -30,7 +31,7 @@ sleep 1
 # ── Write Python command server to temp file and background it ────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
 cat > /tmp/cmd_server.py << 'PYEOF'
-import http.server, subprocess, json
+import http.server, subprocess, json, os
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):

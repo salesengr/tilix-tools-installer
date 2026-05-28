@@ -51,18 +51,29 @@ sleep 1
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
 cat > /tmp/cmd_server.py << 'PYEOF'
-import http.server, subprocess, json
+import http.server, subprocess, json, os
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers["Content-Length"])
-        cmd = self.rfile.read(length).decode()
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        body = json.dumps({
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "rc":     result.returncode,
-        }).encode()
+        cmd = self.rfile.read(length).decode().strip()
+        # Background commands (ending with &): use Popen with close_fds so the
+        # detached process doesn't hold our capture pipes open and block the response.
+        if cmd.endswith("&"):
+            inner = cmd[:-1].strip()
+            p = subprocess.Popen(
+                inner, shell=True, close_fds=True,
+                stdout=open("/dev/null", "w"), stderr=subprocess.STDOUT,
+                stdin=open("/dev/null"),
+            )
+            body = json.dumps({"stdout": str(p.pid) + "\n", "stderr": "", "rc": 0}).encode()
+        else:
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            body = json.dumps({
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "rc":     result.returncode,
+            }).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))

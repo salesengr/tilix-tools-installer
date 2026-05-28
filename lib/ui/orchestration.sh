@@ -1,6 +1,5 @@
 #!/bin/bash
 # Security Tools Installer - Orchestration Module
-# Version: 1.4.2
 # Purpose: High-level installation coordination and workflow management
 
 # shellcheck disable=SC2034  # Variables used in display/logging

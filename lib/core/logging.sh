@@ -1,6 +1,5 @@
 #!/bin/bash
 # Security Tools Installer - Logging Module
-# Version: 1.4.2
 # Purpose: Centralized logging operations for installation tracking and history
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in sourced installer modules
 

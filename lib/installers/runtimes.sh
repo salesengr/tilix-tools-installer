@@ -1,6 +1,5 @@
 #!/bin/bash
 # Security Tools Installer - Runtimes Module
-# Version: 1.4.2
 # Purpose: Language runtime and build tool installation
 
 # shellcheck disable=SC2034  # FAILED_INSTALL_LOGS used in parent script

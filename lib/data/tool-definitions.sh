@@ -1,6 +1,5 @@
 #!/bin/bash
 # Security Tools Installer - Tool Definitions Module
-# Version: 1.4.2
 # Purpose: Centralized tool metadata and category definitions
 
 # shellcheck disable=SC2034  # Variables used in parent script and other modules

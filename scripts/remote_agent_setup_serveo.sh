@@ -11,9 +11,12 @@ SERVEO_LOG="${HOME}/.local/serveo-tunnel.log"
 SERVER_LOG="/tmp/cmd_server.log"
 
 # ── Kill any previous instances ───────────────────────────────────────────────
-pkill -f "cmd_server.py"    2>/dev/null || true
-pkill -f "ssh.*serveo.net"  2>/dev/null || true
-fuser -k "${SERVER_PORT}/tcp" 2>/dev/null || true
+set +e
+pkill -f "cmd_server.py"      2>/dev/null
+pkill -f "ssh.*serveo.net"    2>/dev/null
+fuser -k "${SERVER_PORT}/tcp" 2>/dev/null
+wait 2>/dev/null
+set -e
 sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────

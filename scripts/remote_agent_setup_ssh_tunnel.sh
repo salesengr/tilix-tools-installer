@@ -37,9 +37,12 @@ if [[ ! -f "${SSH_KEY}" ]]; then
 fi
 
 # ── Kill any previous instances ───────────────────────────────────────────────
-pkill -f "cmd_server.py"                              2>/dev/null || true
-pkill -f "ssh.*${JUMP_HOST}.*${REMOTE_PORT}"       2>/dev/null || true
-fuser -k "${SERVER_PORT}/tcp"                         2>/dev/null || true
+set +e
+pkill -f "cmd_server.py"                        2>/dev/null
+pkill -f "ssh.*${JUMP_HOST}.*${REMOTE_PORT}"    2>/dev/null
+fuser -k "${SERVER_PORT}/tcp"                   2>/dev/null
+wait 2>/dev/null  # flush job-terminated notifications before re-enabling -e
+set -e
 sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────

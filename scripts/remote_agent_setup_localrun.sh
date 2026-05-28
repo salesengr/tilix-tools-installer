@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
-# remote_agent_setup_serveo.sh
-# Sets up a serveo.net SSH tunnel + Python command server for remote orchestration.
-# Use when bore.pub is blocked (port 7835 unreachable). Requires SSH port 22 outbound.
-# No binary downloads required — uses system SSH and Python3.
+# remote_agent_setup_localrun.sh
+# Sets up a localhost.run HTTPS tunnel + Python command server for remote orchestration.
+# Use when bore.pub is blocked and serveo.net rejects port forwarding.
+# Requires SSH port 22 outbound. No binary downloads required.
+#
+# localhost.run tunnels HTTP only — the Python server on port 9000 is exposed
+# via HTTPS at a *.lhr.life URL. The orchestrator connects via:
+#   ssh swgiweb "curl -s -X POST https://<id>.lhr.life -d 'cmd'"
 
 set -euo pipefail
 
 SERVER_PORT=9000
-SERVEO_LOG="${HOME}/.local/serveo-tunnel.log"
+TUNNEL_LOG="${HOME}/.local/localrun-tunnel.log"
 SERVER_LOG="/tmp/cmd_server.log"
 
 # ── Kill any previous instances ───────────────────────────────────────────────
-pkill -f "cmd_server.py"    2>/dev/null || true
-pkill -f "ssh.*serveo.net"  2>/dev/null || true
-fuser -k "${SERVER_PORT}/tcp" 2>/dev/null || true
+pkill -f "cmd_server.py"           2>/dev/null || true
+pkill -f "ssh.*localhost.run"      2>/dev/null || true
+fuser -k "${SERVER_PORT}/tcp"      2>/dev/null || true
 sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────
@@ -54,45 +58,42 @@ if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
 fi
 echo "    Server PID: ${SERVER_PID} — OK"
 
-# ── Open serveo tunnel and capture assigned port ──────────────────────────────
-echo ">>> Opening serveo.net SSH tunnel..."
+# ── Open localhost.run tunnel ─────────────────────────────────────────────────
+echo ">>> Opening localhost.run SSH tunnel..."
 ssh -o StrictHostKeyChecking=no \
     -o ServerAliveInterval=30 \
     -o ServerAliveCountMax=3 \
-    -NR "0:localhost:${SERVER_PORT}" \
-    serveo.net >"${SERVEO_LOG}" 2>&1 &
+    -NR "80:localhost:${SERVER_PORT}" \
+    nokey@localhost.run >"${TUNNEL_LOG}" 2>&1 &
 TUNNEL_PID=$!
 
-# Wait for serveo to print the assigned port (up to 15s)
+# localhost.run prints: "xxxxxxxx.lhr.life tunneled with tls termination, https://xxxxxxxx.lhr.life"
 for i in $(seq 1 30); do
-    if grep -q "Forwarding" "${SERVEO_LOG}" 2>/dev/null; then
+    if grep -q "lhr.life" "${TUNNEL_LOG}" 2>/dev/null; then
         break
     fi
     sleep 0.5
 done
 
 if ! kill -0 "${TUNNEL_PID}" 2>/dev/null; then
-    echo "ERROR: serveo tunnel failed to start. Log:" >&2
-    cat "${SERVEO_LOG}" >&2
+    echo "ERROR: localhost.run tunnel failed to start. Log:" >&2
+    cat "${TUNNEL_LOG}" >&2
     exit 1
 fi
 
-# Serveo prints: "Forwarding TCP connections from tcp://serveo.net:XXXXX"
-SERVEO_PORT=$(grep -oP '(?<=tcp://serveo\.net:)\d+' "${SERVEO_LOG}" 2>/dev/null \
-    || grep -oP '\d{4,5}$' "${SERVEO_LOG}" 2>/dev/null | head -1 \
-    || echo "")
+TUNNEL_URL=$(grep -oP 'https://\S+\.lhr\.life' "${TUNNEL_LOG}" 2>/dev/null | head -1 || echo "")
 
 echo "    Tunnel PID: ${TUNNEL_PID} — OK"
 echo ""
 echo "=========================================="
-echo "  Remote agent ready (serveo)."
-if [[ -n "${SERVEO_PORT}" ]]; then
-    echo "  Orchestrator endpoint: serveo.net:${SERVEO_PORT}"
+echo "  Remote agent ready (localhost.run)."
+if [[ -n "${TUNNEL_URL}" ]]; then
+    echo "  Orchestrator endpoint: ${TUNNEL_URL}"
     echo ""
     echo "  Test with (via swgiweb):"
-    echo "  ssh swgiweb \"curl -s -X POST http://serveo.net:${SERVEO_PORT} -d 'whoami'\""
+    echo "  ssh swgiweb \"curl -s -X POST ${TUNNEL_URL} -d 'whoami'\""
 else
-    echo "  Could not detect port. Full log:"
-    cat "${SERVEO_LOG}"
+    echo "  Could not detect URL. Full log:"
+    cat "${TUNNEL_LOG}"
 fi
 echo "=========================================="

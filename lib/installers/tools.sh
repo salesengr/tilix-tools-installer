@@ -982,16 +982,26 @@ install_yandex_browser() {
         if [[ -n "${pkg_filename}" ]]; then
             local deb_url="https://repo.yandex.ru/yandex-browser/deb/${pkg_filename}"
             echo "Downloading: ${deb_url}"
-            if curl -fsSL --max-time 300 "${deb_url}" -o "${tmp_dir}/yandex.deb" 2>/dev/null; then
+            curl_rc=0
+            curl -fsSL --max-time 300 "${deb_url}" -o "${tmp_dir}/yandex.deb" 2>&1 || curl_rc=$?
+            echo "curl exit: ${curl_rc}, file size: $(wc -c < "${tmp_dir}/yandex.deb" 2>/dev/null || echo 0) bytes"
+            if [[ "${curl_rc}" -eq 0 ]] && [[ -s "${tmp_dir}/yandex.deb" ]]; then
                 echo "Extracting deb (no root needed)..."
-                dpkg-deb -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>/dev/null || \
-                    dpkg -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>/dev/null || true
-                # Copy binary to system location requires root — install to user opt instead
+                mkdir -p "${tmp_dir}/extracted"
+                dpkg-deb -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>&1
+                dpkg_rc=$?
+                echo "dpkg-deb exit: ${dpkg_rc}"
+                echo "Extracted contents:"
+                find "${tmp_dir}/extracted/usr/bin" -type f 2>/dev/null | head -5 || echo "  (nothing in usr/bin)"
                 if [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-stable" ]] || [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-beta" ]]; then
                     mkdir -p "$HOME/opt/yandex-browser"
                     cp -r "${tmp_dir}/extracted/." "$HOME/opt/yandex-browser/"
                     echo "Yandex Browser extracted to ~/opt/yandex-browser"
+                else
+                    echo "ERROR: binary not found in extracted deb — check dpkg-deb output above"
                 fi
+            else
+                echo "ERROR: curl download failed (rc=${curl_rc}) or file empty"
             fi
         fi
         rm -rf "${tmp_dir}"

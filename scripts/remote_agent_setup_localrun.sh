@@ -67,12 +67,13 @@ ssh -o StrictHostKeyChecking=no \
     nokey@localhost.run >"${TUNNEL_LOG}" 2>&1 &
 TUNNEL_PID=$!
 
-# localhost.run prints: "xxxxxxxx.lhr.life tunneled with tls termination, https://xxxxxxxx.lhr.life"
-for i in $(seq 1 30); do
+# localhost.run prints URL after the welcome banner (~10-20s)
+# Format: "xxxxxxxx.lhr.life tunneled with tls termination, https://xxxxxxxx.lhr.life"
+for i in $(seq 1 60); do
     if grep -q "lhr.life" "${TUNNEL_LOG}" 2>/dev/null; then
         break
     fi
-    sleep 0.5
+    sleep 1
 done
 
 if ! kill -0 "${TUNNEL_PID}" 2>/dev/null; then

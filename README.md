@@ -48,6 +48,21 @@ After install, reload your shell: `source ~/.bashrc`
 
 ---
 
+## ⚙️ Tool Configuration
+
+Some tools require API key setup before they return results:
+
+| Tool | Setup Command | Get Key From |
+|------|--------------|--------------|
+| shodan | `shodan init <key>` | [account.shodan.io](https://account.shodan.io) |
+| censys | `censys config` | [search.censys.io/account/api](https://search.censys.io/account/api) |
+| virustotal | `vt init` | [virustotal.com/gui/my-apikey](https://www.virustotal.com/gui/my-apikey) |
+| h8mail | Edit `~/.config/h8mail.ini` | See [h8mail docs](https://github.com/khast3x/h8mail) |
+
+Tools without setup work immediately after install.
+
+---
+
 ## 📦 What Gets Installed
 
 Tools are organized by use-case. → **[Full tool list with descriptions](https://github.com/salesengr/tilix-tools-installer/wiki/Tool-Categories)**

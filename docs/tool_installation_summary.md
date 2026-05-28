@@ -44,10 +44,16 @@ All Python tools are installed via `pip install --user` using the system Python 
 | holehe | `holehe` | `~/.local/bin/holehe` | pip --user package `holehe`. |
 | socialscan | `socialscan` | `~/.local/bin/socialscan` | pip --user package `socialscan`. |
 | h8mail | `h8mail` | `~/.local/bin/h8mail` | pip --user package `h8mail`. |
+
+> **Setup required:** Configure API keys in `~/.config/h8mail.ini` — see [github.com/khast3x/h8mail](https://github.com/khast3x/h8mail) for supported breach DB APIs
 | photon | GitHub clone (`s0md3v/Photon`) + `requirements.txt` | `~/.local/bin/photon` | Source cloned under `~/opt/src/Photon`; wrapper points to user-installed package. |
 | sublist3r | `sublist3r` | `~/.local/bin/sublist3r` | pip --user package `sublist3r`. |
 | shodan | `shodan` | `~/.local/bin/shodan` | pip --user package `shodan` (with pkg_resources shim). |
+
+> **Setup required:** `shodan init <YOUR_API_KEY>` — get key from [account.shodan.io](https://account.shodan.io)
 | censys | `censys` | `~/.local/bin/censys` | pip --user package `censys`. |
+
+> **Setup required:** `censys config` — prompts for API ID and secret from [search.censys.io/account/api](https://search.censys.io/account/api)
 | theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | pip --user package `theHarvester`. |
 | spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | Cloned from GitHub; launcher starts web UI detached on `127.0.0.1:5001`. |
 | yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings in `~/.local/lib/python3.13/site-packages/`. |
@@ -67,6 +73,8 @@ Go-based applications are built from source via `go install <module>@latest`. Co
 | subfinder | `github.com/projectdiscovery/subfinder/v2/cmd/subfinder` | `~/opt/gopath/bin/subfinder` |
 | nuclei | `github.com/projectdiscovery/nuclei/v3/cmd/nuclei` | `~/opt/gopath/bin/nuclei` |
 | virustotal | `github.com/VirusTotal/vt-cli/vt` | `~/opt/gopath/bin/vt` (invoke `vt ...`) |
+
+> **Setup required:** `vt init` — get key from [virustotal.com/gui/my-apikey](https://www.virustotal.com/gui/my-apikey)
 
 ## Node.js Tools
 

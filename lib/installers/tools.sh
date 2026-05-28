@@ -1243,10 +1243,15 @@ install_sd() {
 	install_rust_tool "sd" "sd" "1.1.0"
 }
 
-install_dog() {
-	# dog has no musl build; gnu binary requires GLIBC_2.32 (Ubuntu 20.04 has 2.31)
-	# Compile from cargo — gcc is available in the Tilix image
-	install_rust_tool "dog" "dog" "0.1.0"
+install_doggo() {
+	# doggo ships musl static builds — no GLIBC dependency
+	_install_rust_with_fallback "doggo" \
+		"mr-karan/doggo" \
+		"doggo_.*_Linux_x86_64\.tar\.gz" \
+		"doggo" \
+		"tar.gz" \
+		"" \
+		""
 }
 
 # Function: install_qtox

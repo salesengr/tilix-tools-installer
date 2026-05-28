@@ -21,7 +21,7 @@ DOMAIN_ENUM=("sublist3r" "gobuster" "ffuf")
 ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
 CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
 SECURITY_TESTING=("jwt-cracker")
-UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "dog" "aria2")
+UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "doggo" "aria2")
 WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser" "qtox")
 
 # ===== INTERNAL RUNTIME ARRAYS =====
@@ -31,7 +31,7 @@ WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser" "qtox")
 _PYTHON_TOOLS=("sherlock" "holehe" "socialscan" "theHarvester" "spiderfoot" "photon" "wappalyzer" "h8mail" "sublist3r" "shodan" "censys" "yara")
 _GO_TOOLS=("gobuster" "ffuf" "httprobe" "waybackurls" "assetfinder" "subfinder" "nuclei" "virustotal")
 _NODE_TOOLS=("trufflehog" "git-hound" "jwt-cracker")
-_RUST_TOOLS=("feroxbuster" "rustscan" "ripgrep" "fd" "bat" "sd" "dog")
+_RUST_TOOLS=("feroxbuster" "rustscan" "ripgrep" "fd" "bat" "sd" "doggo")
 
 # Legacy aliases — kept for backward compatibility with any external scripts
 NODE_TOOLS=("${_NODE_TOOLS[@]}")
@@ -230,10 +230,10 @@ define_tools() {
 	TOOL_DEPENDENCIES[sd]=""
 	TOOL_INSTALL_LOCATION[sd]="$HOME/.local/bin/sd"
 
-	TOOL_INFO[dog]="dog|Modern DNS client|Utility"
-	TOOL_SIZES[dog]="1.5MB"
-	TOOL_DEPENDENCIES[dog]=""
-	TOOL_INSTALL_LOCATION[dog]="$HOME/.local/bin/dog"
+	TOOL_INFO[doggo]="doggo|Modern DNS client with colour output|Utility"
+	TOOL_SIZES[doggo]="5MB"
+	TOOL_DEPENDENCIES[doggo]=""
+	TOOL_INSTALL_LOCATION[doggo]="$HOME/.local/bin/doggo"
 
 	# Utility Tools
 	TOOL_INFO[aria2]="aria2|Multi-protocol download utility (HTTP/FTP/BitTorrent/Metalink)|Utility"

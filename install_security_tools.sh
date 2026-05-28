@@ -181,7 +181,6 @@ install_release_binary_with_log() {
 # CHECKSUMS: Verify these SHA256 hashes against official release pages before deployment
 # trufflehog v3.93.3:  https://github.com/trufflesecurity/trufflehog/releases/tag/v3.93.3
 # git-hound v3.2:      https://github.com/tillson/git-hound/releases/tag/v3.2
-# dog v0.1.0:          https://github.com/ogham/dog/releases/tag/v0.1.0
 #
 # To update checksums:
 #   curl -sL <release-url> | sha256sum
@@ -190,7 +189,6 @@ install_release_binary_with_log() {
 # Generated from official GitHub releases - verify before updating versions
 CHECKSUM_TRUFFLEHOG="62af52009a462a50421ca723424e41e0b3a1c8725d74b56de10e49d215ce8545"
 CHECKSUM_GIT_HOUND="8d4ed7284d072af6b54953cbd840752a288d6b115f7be25a03776a62d0345281"
-CHECKSUM_DOG="6093525fccf5de5b7ed66f920c9b6d2d16221adde8a44589dc3e4c47245039a0"
 
 install_trufflehog() {
 	# Preserve existing behavior first.
@@ -222,27 +220,7 @@ install_git-hound() {
 		"$CHECKSUM_GIT_HOUND"
 }
 
-install_dog() {
-	# Preserve existing behavior first.
-	install_rust_tool "dog" "dog" && return 0
-
-	echo -e "${WARNING}${WARN} cargo install failed for dog; using release fallback${NC}"
-	install_release_binary_with_log \
-		"dog" \
-		"https://github.com/ogham/dog/releases/download/v0.1.0/dog-v0.1.0-x86_64-unknown-linux-gnu.zip" \
-		"dog.zip" \
-		"unzip -o dog.zip" \
-		"bin/dog" \
-		"dog" \
-		"$CHECKSUM_DOG" || return 1
-
-	# Validate binary runs on this libc — dog GNU build requires GLIBC_2.32
-	if ! "$HOME/.local/bin/dog" --version &>/dev/null; then
-		echo -e "${WARNING}${WARN} dog installed but may not run on this system (requires GLIBC_2.32)"
-		echo -e "  The binary is at ~/.local/bin/dog but may fail with a libc version error."
-		echo -e "  Consider upgrading to Ubuntu 22.04+ or waiting for a musl build from upstream."
-	fi
-}
+# install_doggo is defined in lib/installers/tools.sh (musl pre-built binary, no GLIBC dependency)
 
 # ===== SIGNAL HANDLERS =====
 

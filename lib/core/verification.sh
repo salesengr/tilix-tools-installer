@@ -61,8 +61,12 @@ is_installed() {
 		[ -f "$HOME/opt/node/bin/$tool" ] && return 0
 		;;
 	# Rust tools
-	feroxbuster | rustscan | sd | dog)
+	feroxbuster | rustscan | sd)
 		command -v "$tool" &>/dev/null && return 0
+		;;
+	doggo)
+		[ -f "$HOME/.local/bin/doggo" ] && return 0
+		command -v doggo &>/dev/null && return 0
 		;;
 	ripgrep)
 		command -v rg &>/dev/null && return 0

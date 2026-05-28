@@ -68,7 +68,7 @@ install_tool() {
 	fd) install_fd ;;
 	bat) install_bat ;;
 	sd) install_sd ;;
-	dog) install_dog ;;
+	doggo) install_doggo ;;
 	aria2) install_aria2 ;;
 	seleniumbase) install_seleniumbase ;;
 	playwright) install_playwright ;;

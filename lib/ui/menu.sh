@@ -49,7 +49,7 @@ show_menu() {
 	echo ""
 	echo -e "${CATEGORY}UTILITIES:${NC}"
 	echo "  [32] $(_tool_status ripgrep)ripgrep       [33] $(_tool_status fd)fd             [34] $(_tool_status bat)bat          [35] $(_tool_status sd)sd"
-	echo "  [36] $(_tool_status dog)dog            [37] $(_tool_status aria2)aria2"
+	echo "  [36] $(_tool_status doggo)doggo          [37] $(_tool_status aria2)aria2"
 	echo ""
 	echo -e "${CATEGORY}WEB TOOLS:${NC}"
 	echo "  [38] $(_tool_status seleniumbase)seleniumbase  [39] $(_tool_status playwright)playwright      [40] $(_tool_status yandex_browser)yandex-browser  [41] $(_tool_status tor_browser)tor-browser"
@@ -122,7 +122,7 @@ process_menu_selection() {
 	34) install_tool "bat" ;;
 	35) install_tool "sd" ;;
 
-	36) install_tool "dog" ;;
+	36) install_tool "doggo" ;;
 	37) install_tool "aria2" ;;
 
 	# WEB TOOLS (38-42)

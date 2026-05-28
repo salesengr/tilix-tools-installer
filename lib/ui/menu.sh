@@ -73,6 +73,13 @@ show_menu() {
 process_menu_selection() {
 	local selection=$1
 
+	# Reject range input (e.g. "7-9") — guide user to comma-separated format
+	if [[ "$selection" =~ ^[0-9]+-[0-9]+$ ]]; then
+		echo -e "${YELLOW}Note: ranges not supported. Use comma-separated numbers instead.${NC}"
+		echo -e "  Example: to install items 7 through 9, enter: 7,8,9"
+		return 0
+	fi
+
 	case "$selection" in
 	# BUILD & LANGUAGES (1-6)
 	1) install_tool "cmake" ;;

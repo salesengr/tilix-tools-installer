@@ -163,24 +163,28 @@ process_cli_args() {
 
 	# ===== USE-CASE FLAGS (v1.4.0) =====
 	if [[ "${args[0]}" == "--osint-tools" ]]; then
+		_check_disk_space "${PASSIVE_OSINT[@]}"
 		install_tool "python_venv"
 		for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
 		return
 	fi
 
 	if [[ "${args[0]}" == "--domain-tools" ]]; then
+		_check_disk_space "${DOMAIN_ENUM[@]}"
 		install_tool "python_venv"
 		for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
 		return
 	fi
 
 	if [[ "${args[0]}" == "--recon-tools" ]]; then
+		_check_disk_space "${ACTIVE_RECON[@]}"
 		install_tool "rust"
 		for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
 		return
 	fi
 
 	if [[ "${args[0]}" == "--cti-tools" ]]; then
+		_check_disk_space "${CTI_TOOLS[@]}"
 		install_tool "python_venv"
 		install_tool "nodejs"
 		for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
@@ -188,12 +192,14 @@ process_cli_args() {
 	fi
 
 	if [[ "${args[0]}" == "--utility-tools" ]]; then
+		_check_disk_space "${UTILITY_TOOLS[@]}"
 		install_tool "rust"
 		for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
 		return
 	fi
 
 	if [[ "${args[0]}" == "--web-tools" ]]; then
+		_check_disk_space "${WEB_TOOLS[@]}"
 		for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
 		return
 	fi

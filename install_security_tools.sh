@@ -63,6 +63,26 @@ declare -A TOOL_INSTALL_LOCATION
 LOG_DIR="$HOME/.local/state/install_tools/logs"
 HISTORY_LOG="$HOME/.local/state/install_tools/installation_history.log"
 
+# ===== DISK SPACE PRE-FLIGHT =====
+
+# Function: _check_disk_space
+# Purpose: Warn if estimated disk space needed exceeds available space in ~/.local
+# Parameters: $@ - tool names to sum sizes for
+# Returns: Always succeeds (warning only — does not block install)
+_check_disk_space() {
+	local required_mb=0
+	for tool in "$@"; do
+		local size="${TOOL_SIZES[$tool]:-0}"
+		required_mb=$((required_mb + ${size%MB}))
+	done
+	local available_mb
+	available_mb=$(df -m "${HOME}/.local" 2>/dev/null | tail -1 | awk '{print $4}')
+	if [[ -n "$available_mb" ]] && [[ "$available_mb" -lt "$required_mb" ]]; then
+		echo -e "${WARNING}${WARN} Estimated space needed: ${required_mb}MB, available: ${available_mb}MB${NC}"
+		echo -e "  Consider freeing disk space before proceeding."
+	fi
+}
+
 # ===== SOURCE LIBRARY MODULES =====
 
 # Source in dependency order

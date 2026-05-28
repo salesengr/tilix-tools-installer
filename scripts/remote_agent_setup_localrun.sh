@@ -7,8 +7,16 @@
 # localhost.run tunnels HTTP only — the Python server on port 9000 is exposed
 # via HTTPS at a *.lhr.life URL. The orchestrator connects via:
 #   ssh swgiweb "curl -s -X POST https://<id>.lhr.life -d 'cmd'"
+#
+# ⚠ SECURITY WARNING: This script starts an HTTP command server protected by a
+# per-session token. Keep the printed token private — anyone with the token and
+# tunnel endpoint can execute arbitrary shell commands as the container user.
+# For developer/testing use only. Never use in production environments.
 
 set -euo pipefail
+
+# ── Generate per-session auth token ──────────────────────────────────────────
+CMD_TOKEN=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
 SERVER_PORT=9000
 TUNNEL_LOG="${HOME}/.local/localrun-tunnel.log"
@@ -22,11 +30,19 @@ sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-cat > /tmp/cmd_server.py << 'PYEOF'
+cat > /tmp/cmd_server.py << PYEOF
 import http.server, subprocess, json, os
+
+REQUIRED_TOKEN = "${CMD_TOKEN}"
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
+        token = self.headers.get("X-Token", "")
+        if not REQUIRED_TOKEN or token != REQUIRED_TOKEN:
+            self.send_response(403)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         length = int(self.headers["Content-Length"])
         cmd = self.rfile.read(length).decode()
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -90,9 +106,10 @@ echo "=========================================="
 echo "  Remote agent ready (localhost.run)."
 if [[ -n "${TUNNEL_URL}" ]]; then
     echo "  Orchestrator endpoint: ${TUNNEL_URL}"
+    echo "  Auth token: ${CMD_TOKEN}"
     echo ""
-    echo "  Test with (via swgiweb):"
-    echo "  ssh swgiweb \"curl -s -X POST ${TUNNEL_URL} -d 'whoami'\""
+    echo "  Test with:"
+    echo "  curl -s -H 'X-Token: ${CMD_TOKEN}' -X POST ${TUNNEL_URL} -d 'whoami'"
 else
     echo "  Could not detect URL. Full log:"
     cat "${TUNNEL_LOG}"

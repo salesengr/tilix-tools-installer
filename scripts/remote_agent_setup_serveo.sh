@@ -3,8 +3,16 @@
 # Sets up a serveo.net SSH tunnel + Python command server for remote orchestration.
 # Use when bore.pub is blocked (port 7835 unreachable). Requires SSH port 22 outbound.
 # No binary downloads required — uses system SSH and Python3.
+#
+# ⚠ SECURITY WARNING: This script starts an HTTP command server protected by a
+# per-session token. Keep the printed token private — anyone with the token and
+# tunnel endpoint can execute arbitrary shell commands as the container user.
+# For developer/testing use only. Never use in production environments.
 
 set -euo pipefail
+
+# ── Generate per-session auth token ──────────────────────────────────────────
+CMD_TOKEN=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
 SERVER_PORT=9000
 SERVEO_LOG="${HOME}/.local/serveo-tunnel.log"
@@ -20,11 +28,19 @@ sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-cat > /tmp/cmd_server.py << 'PYEOF'
+cat > /tmp/cmd_server.py << PYEOF
 import http.server, subprocess, json, os
+
+REQUIRED_TOKEN = "${CMD_TOKEN}"
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
+        token = self.headers.get("X-Token", "")
+        if not REQUIRED_TOKEN or token != REQUIRED_TOKEN:
+            self.send_response(403)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         length = int(self.headers["Content-Length"])
         cmd = self.rfile.read(length).decode()
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -90,9 +106,10 @@ echo "=========================================="
 echo "  Remote agent ready (serveo)."
 if [[ -n "${SERVEO_PORT}" ]]; then
     echo "  Orchestrator endpoint: serveo.net:${SERVEO_PORT}"
+    echo "  Auth token: ${CMD_TOKEN}"
     echo ""
-    echo "  Test with (via swgiweb):"
-    echo "  ssh swgiweb \"curl -s -X POST http://serveo.net:${SERVEO_PORT} -d 'whoami'\""
+    echo "  Test with:"
+    echo "  curl -s -H 'X-Token: ${CMD_TOKEN}' -X POST http://serveo.net:${SERVEO_PORT} -d 'whoami'"
 else
     echo "  Could not detect port. Full log:"
     cat "${SERVEO_LOG}"

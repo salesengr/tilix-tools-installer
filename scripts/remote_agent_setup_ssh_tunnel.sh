@@ -17,8 +17,16 @@
 #
 # Orchestrator sends commands via:
 #   ssh <jump-user>@<jump-host> "curl -s -X POST http://localhost:<remote-port> -d 'cmd'"
+#
+# ⚠ SECURITY WARNING: This script starts an HTTP command server protected by a
+# per-session token. Keep the printed token private — anyone with the token and
+# tunnel endpoint can execute arbitrary shell commands as the container user.
+# For developer/testing use only. Never use in production environments.
 
 set -uo pipefail
+
+# ── Generate per-session auth token ──────────────────────────────────────────
+CMD_TOKEN=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
 if [[ -z "${1:-}" ]]; then
     echo "Usage: $0 <jump-host> [jump-user] [remote-port] [ssh-key]" >&2
@@ -50,11 +58,19 @@ sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-cat > /tmp/cmd_server.py << 'PYEOF'
+cat > /tmp/cmd_server.py << PYEOF
 import http.server, subprocess, json, os
+
+REQUIRED_TOKEN = "${CMD_TOKEN}"
 
 class CommandHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
+        token = self.headers.get("X-Token", "")
+        if not REQUIRED_TOKEN or token != REQUIRED_TOKEN:
+            self.send_response(403)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         length = int(self.headers["Content-Length"])
         cmd = self.rfile.read(length).decode().strip()
         # Background commands (ending with &): use Popen with close_fds so the
@@ -120,9 +136,8 @@ echo "  Remote agent ready (reverse SSH tunnel)."
 echo "  Jump host : ${JUMP_USER}@${JUMP_HOST}"
 echo "  Endpoint  : localhost:${REMOTE_PORT} on jump host"
 echo ""
-echo "  Send commands via:"
-echo "  ssh ${JUMP_USER}@${JUMP_HOST} \"curl -s -X POST http://localhost:${REMOTE_PORT} -d 'cmd'\""
+echo "  Auth token: ${CMD_TOKEN}"
 echo ""
-echo "  Test:"
-echo "  ssh ${JUMP_USER}@${JUMP_HOST} \"curl -s -X POST http://localhost:${REMOTE_PORT} -d 'whoami'\""
+echo "  Test with:"
+echo "  ssh ${JUMP_USER}@${JUMP_HOST} \"curl -s -H 'X-Token: ${CMD_TOKEN}' -X POST http://localhost:${REMOTE_PORT} -d 'whoami'\""
 echo "=========================================="

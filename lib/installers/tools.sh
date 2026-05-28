@@ -825,49 +825,47 @@ install_aria2() {
                 ;;
         esac
 
-        # aria2 is installed via apt — the packaged version is used as-is.
-        # Official aria2 releases do not ship pre-built static binaries,
-        # and third-party binary sources were excluded on supply chain grounds.
-        echo "Attempting install via system package manager..."
+        local tmp_dir="$HOME/opt/src/aria2-tmp"
+        mkdir -p "$tmp_dir"
 
-        if command -v apt-get &>/dev/null; then
-            # Strategy 1: direct install (works if running as root, e.g. in Docker)
+        # Strategy 1: musl static binary from abcfy2/aria2-static-build (no root, no apt)
+        # Continuously updated from upstream aria2 releases — musl = no glibc dependency
+        case "$arch" in
+            x86_64)  static_asset="aria2-x86_64-linux-musl_static.zip" ;;
+            aarch64) static_asset="aria2-aarch64-linux-musl_static.zip" ;;
+        esac
+        local static_url="https://github.com/abcfy2/aria2-static-build/releases/download/continuous/${static_asset}"
+        echo "Trying static musl binary from abcfy2/aria2-static-build..."
+        if curl -fsSL --max-time 120 "$static_url" -o "$tmp_dir/aria2.zip" 2>/dev/null; then
+            if unzip -q "$tmp_dir/aria2.zip" -d "$tmp_dir" 2>/dev/null; then
+                local bin
+                bin=$(find "$tmp_dir" -name "aria2c" -type f 2>/dev/null | head -1)
+                if [[ -n "$bin" ]]; then
+                    cp "$bin" "$HOME/.local/bin/aria2c"
+                    chmod +x "$HOME/.local/bin/aria2c"
+                    echo "aria2c installed from static musl binary"
+                fi
+            fi
+        fi
+        rm -rf "$tmp_dir"
+
+        # Strategy 2: apt-get (works if root available, e.g. in Docker)
+        if [[ ! -f "$HOME/.local/bin/aria2c" ]] && command -v apt-get &>/dev/null; then
+            echo "Static binary failed — trying apt..."
             apt-get update -qq 2>/dev/null || true
             if apt-get install -y --no-install-recommends aria2 2>/dev/null; then
                 local sys_bin
                 sys_bin=$(command -v aria2c 2>/dev/null)
-                if [ -n "$sys_bin" ]; then
+                if [[ -n "$sys_bin" ]]; then
                     cp "$sys_bin" "$HOME/.local/bin/aria2c"
                     chmod +x "$HOME/.local/bin/aria2c"
                     echo "aria2c installed via apt and copied to user-space"
                 fi
-            else
-                # Strategy 2: apt-get download + dpkg extract (no root needed)
-                echo "Direct apt install failed, trying package extraction..."
-                local tmp_prefix="$HOME/opt/src/aria2-pkg"
-                mkdir -p "$tmp_prefix"
-                cd "$tmp_prefix" || return 1
-
-                if apt-get download aria2 2>/dev/null && ls aria2_*.deb &>/dev/null; then
-                    dpkg -x aria2_*.deb . 2>/dev/null || true
-                    if [ -f "./usr/bin/aria2c" ]; then
-                        cp ./usr/bin/aria2c "$HOME/.local/bin/aria2c"
-                        chmod +x "$HOME/.local/bin/aria2c"
-                        echo "aria2c installed from package extraction"
-                    fi
-                fi
-
-                cd "$HOME" || true
-                rm -rf "$tmp_prefix"
             fi
         fi
 
-        # No further fallback — community-maintained third-party binaries (e.g.
-        # p3ng0s/static-aria2) are excluded on supply chain grounds: no provenance
-        # guarantee, no checksum, no affiliation with the upstream aria2 project.
-        # If apt strategies above both failed, report clearly.
-        if [ ! -f "$HOME/.local/bin/aria2c" ]; then
-            echo "ERROR: aria2 could not be installed via apt — ensure apt-get is available and the package index is populated"
+        if [[ ! -f "$HOME/.local/bin/aria2c" ]]; then
+            echo "ERROR: aria2 could not be installed"
             return 1
         fi
 

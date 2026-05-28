@@ -24,30 +24,30 @@ mkdir -p "${HOME}/.local/bin"
 export PATH="${HOME}/.local/bin:${PATH}"
 
 if ! command -v bore &>/dev/null; then
-    echo ">>> Installing bore ${BORE_VERSION}..."
-    BORE_TMP=$(mktemp)
-    curl -fsSL --max-time 120 "${BORE_URL}" -o "${BORE_TMP}"
-    echo "${BORE_SHA256}  ${BORE_TMP}" | sha256sum -c - || {
-        echo "ERROR: bore SHA256 mismatch — aborting install" >&2
-        rm -f "${BORE_TMP}"
-        exit 1
-    }
-    tar -xz -C "${HOME}/.local/bin/" -f "${BORE_TMP}"
-    rm -f "${BORE_TMP}"
-    echo "    bore installed to ~/.local/bin/bore"
+	echo ">>> Installing bore ${BORE_VERSION}..."
+	BORE_TMP=$(mktemp)
+	curl -fsSL --max-time 120 "${BORE_URL}" -o "${BORE_TMP}"
+	echo "${BORE_SHA256}  ${BORE_TMP}" | sha256sum -c - || {
+		echo "ERROR: bore SHA256 mismatch — aborting install" >&2
+		rm -f "${BORE_TMP}"
+		exit 1
+	}
+	tar -xz -C "${HOME}/.local/bin/" -f "${BORE_TMP}"
+	rm -f "${BORE_TMP}"
+	echo "    bore installed to ~/.local/bin/bore"
 fi
 
 # ── Kill any previous instances ───────────────────────────────────────────────
 set +e
 pkill -f "bore local ${SERVER_PORT}" 2>/dev/null
-pkill -f "cmd_server.py"             2>/dev/null
-fuser -k "${SERVER_PORT}/tcp"        2>/dev/null
+pkill -f "cmd_server.py" 2>/dev/null
+fuser -k "${SERVER_PORT}/tcp" 2>/dev/null
 set -e
 sleep 1
 
 # ── Write Python command server with token auth ───────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-cat > /tmp/cmd_server.py << PYEOF
+cat >/tmp/cmd_server.py <<PYEOF
 import http.server, subprocess, json, os
 
 REQUIRED_TOKEN = "${CMD_TOKEN}"
@@ -95,9 +95,9 @@ SERVER_PID=$!
 sleep 2
 
 if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
-    echo "ERROR: Command server failed to start. Log:" >&2
-    cat "${SERVER_LOG}" >&2
-    exit 1
+	echo "ERROR: Command server failed to start. Log:" >&2
+	cat "${SERVER_LOG}" >&2
+	exit 1
 fi
 echo "    Server PID: ${SERVER_PID} — OK"
 
@@ -107,16 +107,16 @@ bore local "${SERVER_PORT}" --to bore.pub >"${BORE_LOG}" 2>&1 &
 BORE_PID=$!
 
 for _ in $(seq 1 20); do
-    if grep -q "listening at" "${BORE_LOG}" 2>/dev/null; then
-        break
-    fi
-    sleep 0.5
+	if grep -q "listening at" "${BORE_LOG}" 2>/dev/null; then
+		break
+	fi
+	sleep 0.5
 done
 
 if ! kill -0 "${BORE_PID}" 2>/dev/null; then
-    echo "ERROR: bore failed to start. Log:" >&2
-    cat "${BORE_LOG}" >&2
-    exit 1
+	echo "ERROR: bore failed to start. Log:" >&2
+	cat "${BORE_LOG}" >&2
+	exit 1
 fi
 
 BORE_PORT=$(grep -oP '(?<=bore\.pub:)\d+' "${BORE_LOG}")

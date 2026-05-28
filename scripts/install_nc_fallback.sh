@@ -8,7 +8,7 @@ set -euo pipefail
 
 mkdir -p "${HOME}/.local/bin"
 
-cat > "${HOME}/.local/bin/nc" << 'PYEOF'
+cat >"${HOME}/.local/bin/nc" <<'PYEOF'
 #!/usr/bin/env python3
 """
 Minimal netcat replacement implemented in Python.
@@ -120,8 +120,8 @@ chmod +x "${HOME}/.local/bin/nc"
 # Ensure ~/.local/bin is first in PATH (prepend, even if already present elsewhere)
 export PATH="${HOME}/.local/bin:${PATH}"
 if ! grep -q 'HOME/.local/bin' "${HOME}/.bashrc" 2>/dev/null; then
-    # shellcheck disable=SC2016
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.bashrc"
+	# shellcheck disable=SC2016
+	echo 'export PATH="$HOME/.local/bin:$PATH"' >>"${HOME}/.bashrc"
 fi
 
 echo "nc installed to ${HOME}/.local/bin/nc"

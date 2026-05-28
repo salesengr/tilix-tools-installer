@@ -13,90 +13,111 @@
 # Parameters: $1 - tool name
 # Returns: 0 if installed, 1 otherwise
 is_installed() {
-    local tool=$1
+	local tool=$1
 
-    case "$tool" in
-        cmake)
-            [ -f "$HOME/.local/bin/cmake" ] && return 0 ;;
-        github_cli)
-            [ -f "$HOME/.local/bin/gh" ] && return 0 ;;
-        go_runtime)
-            command -v go &>/dev/null && return 0
-            [ -f "$HOME/opt/go/bin/go" ] && return 0 ;;
-        nodejs)
-            # Prefer system node; fall back to ~/opt/node (tarball install)
-            command -v node &>/dev/null && return 0
-            [ -f "$HOME/opt/node/bin/node" ] && return 0 ;;
-        rust)
-            [ -f "$HOME/.local/share/cargo/bin/cargo" ] && return 0 ;;
-        python_venv)
-            # No longer using a venv — python_venv is "ready" if python3 exists
-            command -v python3 &>/dev/null && return 0 ;;
-        # Python tools check wrapper
-        sherlock|holehe|socialscan|h8mail|photon|sublist3r|shodan|censys|theHarvester|spiderfoot|yara|wappalyzer)
-            [ -f "$HOME/.local/bin/$tool" ] && return 0 ;;
-        # Go tools — check ~/.local/bin (pre-built) then ~/opt/gopath/bin (compiled)
-        gobuster|ffuf|httprobe|waybackurls|assetfinder|subfinder|nuclei)
-            [ -f "$HOME/.local/bin/$tool" ] && return 0
-            [ -f "$HOME/opt/gopath/bin/$tool" ] && return 0 ;;
-        virustotal)
-            [ -f "$HOME/.local/bin/vt" ] && return 0
-            [ -f "$HOME/opt/gopath/bin/vt" ] && return 0 ;;
-        # Node tools — check ~/.local/bin (pre-built) then npm bin
-        trufflehog|git-hound)
-            [ -f "$HOME/.local/bin/$tool" ] && return 0
-            [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
-        jwt-cracker)
-            [ -f "$HOME/.local/bin/$tool" ] && return 0
-            [ -f "$HOME/opt/node/bin/$tool" ] && return 0 ;;
-        # Rust tools
-        feroxbuster|rustscan|sd|dog)
-            command -v "$tool" &>/dev/null && return 0 ;;
-        ripgrep)
-            command -v rg &>/dev/null && return 0 ;;
-        fd)
-            command -v fd &>/dev/null && return 0 ;;
-        bat)
-            command -v bat &>/dev/null && return 0 ;;
-        # Utility tools
-        aria2)
-            [ -f "$HOME/.local/bin/aria2c" ] && return 0 ;;
-        # Web automation tools
-        seleniumbase)
-            [ -f "$HOME/.local/bin/sbase" ] && return 0
-            "$(_get_python_bin 2>/dev/null || echo python3)" -c "import seleniumbase" &>/dev/null && return 0 ;;
-        playwright)
-            [ -f "$HOME/.local/bin/playwright" ] && return 0
-            "$(_get_python_bin 2>/dev/null || echo python3)" -c "import playwright" &>/dev/null && return 0 ;;
-        yandex_browser)
-            [ -f "$HOME/opt/yandex-browser/opt/yandex/browser/yandex-browser" ] && return 0
-            [ -f "/opt/yandex/browser/yandex-browser" ] && return 0
-            [ -f "/usr/bin/yandex-browser-stable" ] && return 0
-            [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-stable" ] && return 0
-            [ -f "/usr/bin/yandex-browser-beta" ] && return 0
-            [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta" ] && return 0
-            command -v yandex-browser-stable &>/dev/null && return 0 ;;
-        tor_browser)
-            [ -f "$HOME/opt/tor-browser/Browser/start-tor-browser" ] && return 0 ;;
-        qtox)
-            [ -f "$HOME/opt/qtox/squashfs-root/AppRun" ] && return 0
-            [ -f "$HOME/.local/bin/qtox" ] && return 0 ;;
-    esac
+	case "$tool" in
+	cmake)
+		[ -f "$HOME/.local/bin/cmake" ] && return 0
+		;;
+	github_cli)
+		[ -f "$HOME/.local/bin/gh" ] && return 0
+		;;
+	go_runtime)
+		command -v go &>/dev/null && return 0
+		[ -f "$HOME/opt/go/bin/go" ] && return 0
+		;;
+	nodejs)
+		# Prefer system node; fall back to ~/opt/node (tarball install)
+		command -v node &>/dev/null && return 0
+		[ -f "$HOME/opt/node/bin/node" ] && return 0
+		;;
+	rust)
+		[ -f "$HOME/.local/share/cargo/bin/cargo" ] && return 0
+		;;
+	python_venv)
+		# No longer using a venv — python_venv is "ready" if python3 exists
+		command -v python3 &>/dev/null && return 0
+		;;
+	# Python tools check wrapper
+	sherlock | holehe | socialscan | h8mail | photon | sublist3r | shodan | censys | theHarvester | spiderfoot | yara | wappalyzer)
+		[ -f "$HOME/.local/bin/$tool" ] && return 0
+		;;
+	# Go tools — check ~/.local/bin (pre-built) then ~/opt/gopath/bin (compiled)
+	gobuster | ffuf | httprobe | waybackurls | assetfinder | subfinder | nuclei)
+		[ -f "$HOME/.local/bin/$tool" ] && return 0
+		[ -f "$HOME/opt/gopath/bin/$tool" ] && return 0
+		;;
+	virustotal)
+		[ -f "$HOME/.local/bin/vt" ] && return 0
+		[ -f "$HOME/opt/gopath/bin/vt" ] && return 0
+		;;
+	# Node tools — check ~/.local/bin (pre-built) then npm bin
+	trufflehog | git-hound)
+		[ -f "$HOME/.local/bin/$tool" ] && return 0
+		[ -f "$HOME/opt/node/bin/$tool" ] && return 0
+		;;
+	jwt-cracker)
+		[ -f "$HOME/.local/bin/$tool" ] && return 0
+		[ -f "$HOME/opt/node/bin/$tool" ] && return 0
+		;;
+	# Rust tools
+	feroxbuster | rustscan | sd | dog)
+		command -v "$tool" &>/dev/null && return 0
+		;;
+	ripgrep)
+		command -v rg &>/dev/null && return 0
+		;;
+	fd)
+		command -v fd &>/dev/null && return 0
+		;;
+	bat)
+		command -v bat &>/dev/null && return 0
+		;;
+	# Utility tools
+	aria2)
+		[ -f "$HOME/.local/bin/aria2c" ] && return 0
+		;;
+	# Web automation tools
+	seleniumbase)
+		[ -f "$HOME/.local/bin/sbase" ] && return 0
+		"$(_get_python_bin 2>/dev/null || echo python3)" -c "import seleniumbase" &>/dev/null && return 0
+		;;
+	playwright)
+		[ -f "$HOME/.local/bin/playwright" ] && return 0
+		"$(_get_python_bin 2>/dev/null || echo python3)" -c "import playwright" &>/dev/null && return 0
+		;;
+	yandex_browser)
+		[ -f "$HOME/opt/yandex-browser/opt/yandex/browser/yandex-browser" ] && return 0
+		[ -f "/opt/yandex/browser/yandex-browser" ] && return 0
+		[ -f "/usr/bin/yandex-browser-stable" ] && return 0
+		[ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-stable" ] && return 0
+		[ -f "/usr/bin/yandex-browser-beta" ] && return 0
+		[ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta" ] && return 0
+		command -v yandex-browser-stable &>/dev/null && return 0
+		;;
+	tor_browser)
+		[ -f "$HOME/opt/tor-browser/Browser/start-tor-browser" ] && return 0
+		;;
+	qtox)
+		[ -f "$HOME/opt/qtox/squashfs-root/AppRun" ] && return 0
+		[ -f "$HOME/.local/bin/qtox" ] && return 0
+		;;
+	esac
 
-    return 1
+	return 1
 }
 
 # Function: scan_installed_tools
 # Purpose: Populate INSTALLED_STATUS array with current installation state
 # Returns: Always succeeds
 scan_installed_tools() {
-    for tool in "${!TOOL_INFO[@]}"; do
-        if is_installed "$tool"; then
-            INSTALLED_STATUS[$tool]="true"
-        else
-            INSTALLED_STATUS[$tool]="false"
-        fi
-    done
+	for tool in "${!TOOL_INFO[@]}"; do
+		if is_installed "$tool"; then
+			INSTALLED_STATUS[$tool]="true"
+		else
+			INSTALLED_STATUS[$tool]="false"
+		fi
+	done
 }
 
 # Function: verify_system_go
@@ -104,35 +125,35 @@ scan_installed_tools() {
 #          and user-space install (~/opt/go). Auto-installs if not found.
 # Returns: 0 if Go is available, 1 if not found and install failed
 verify_system_go() {
-    # 1. Check system PATH first (covers /usr/local/bin/go in Tilix image)
-    if command -v go &>/dev/null; then
-        local go_version
-        go_version=$(go version 2>/dev/null | awk '{print $3}')
-        echo -e "${GREEN}Go found: ${go_version}${NC}"
-        export GOPATH="${GOPATH:-$HOME/opt/gopath}"
-        mkdir -p "$GOPATH"
-        return 0
-    fi
+	# 1. Check system PATH first (covers /usr/local/bin/go in Tilix image)
+	if command -v go &>/dev/null; then
+		local go_version
+		go_version=$(go version 2>/dev/null | awk '{print $3}')
+		echo -e "${GREEN}Go found: ${go_version}${NC}"
+		export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+		mkdir -p "$GOPATH"
+		return 0
+	fi
 
-    # 2. Check user-space install (~/opt/go — installed by install_go_runtime)
-    if [ -f "$HOME/opt/go/bin/go" ]; then
-        export GOROOT="$HOME/opt/go"
-        export GOPATH="${GOPATH:-$HOME/opt/gopath}"
-        export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
-        mkdir -p "$GOPATH"
-        local go_version
-        go_version=$("$HOME/opt/go/bin/go" version 2>/dev/null | awk '{print $3}')
-        echo -e "${GREEN}Go found (user-space): ${go_version}${NC}"
-        return 0
-    fi
+	# 2. Check user-space install (~/opt/go — installed by install_go_runtime)
+	if [ -f "$HOME/opt/go/bin/go" ]; then
+		export GOROOT="$HOME/opt/go"
+		export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+		export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+		mkdir -p "$GOPATH"
+		local go_version
+		go_version=$("$HOME/opt/go/bin/go" version 2>/dev/null | awk '{print $3}')
+		echo -e "${GREEN}Go found (user-space): ${go_version}${NC}"
+		return 0
+	fi
 
-    # 3. Go not found anywhere — auto-install user-space runtime
-    echo -e "${WARNING}${WARN} Go not found. Installing Go runtime automatically...${NC}"
-    if install_go_runtime; then
-        return 0
-    fi
+	# 3. Go not found anywhere — auto-install user-space runtime
+	echo -e "${WARNING}${WARN} Go not found. Installing Go runtime automatically...${NC}"
+	if install_go_runtime; then
+		return 0
+	fi
 
-    echo -e "${ERROR}${CROSS} Go is not available and automatic install failed.${NC}"
-    echo "Install Go manually or run: bash install_security_tools.sh go_runtime"
-    return 1
+	echo -e "${ERROR}${CROSS} Go is not available and automatic install failed.${NC}"
+	echo "Install Go manually or run: bash install_security_tools.sh go_runtime"
+	return 1
 }

@@ -25,7 +25,10 @@ export CARGO_HOME="${HOME}/.cargo"
 
 # Install the category
 echo "=== Installing ${CATEGORY} (${INSTALL_FLAG}) ==="
-cd "${HOME}/tilix-tools-installer" || { echo "ERROR: repo not found at ~/tilix-tools-installer" >&2; exit 1; }
+cd "${HOME}/tilix-tools-installer" || {
+	echo "ERROR: repo not found at ~/tilix-tools-installer" >&2
+	exit 1
+}
 touch "/tmp/harness_install_start_${CATEGORY}"
 bash install_security_tools.sh "${INSTALL_FLAG}" 2>&1 | tee "${INSTALL_LOG}"
 INSTALL_RC=${PIPESTATUS[0]}
@@ -44,7 +47,7 @@ VERIFY[h8mail]="${HOME}/.local/bin/h8mail|h8mail --help 2>&1 | head -3 || true"
 VERIFY[waybackurls]="${HOME}/opt/gopath/bin/waybackurls|waybackurls --help 2>&1 | head -3 || true"
 VERIFY[assetfinder]="${HOME}/opt/gopath/bin/assetfinder|assetfinder --help 2>&1 | head -3 || true"
 VERIFY[subfinder]="${HOME}/opt/gopath/bin/subfinder|subfinder --version 2>&1 | head -3"
-VERIFY[git-hound]="${HOME}/.local/bin/git-hound|git-hound --help 2>&1 | head -3 || true"
+VERIFY[git_hound]="${HOME}/.local/bin/git-hound|git-hound --help 2>&1 | head -3 || true"
 VERIFY[sublist3r]="${HOME}/.local/bin/sublist3r|sublist3r --help 2>&1 | head -3 || true"
 VERIFY[gobuster]="${HOME}/.local/bin/gobuster|gobuster version 2>&1 | head -3 || true"
 VERIFY[ffuf]="${HOME}/.local/bin/ffuf|ffuf -V 2>&1 | head -3 || true"
@@ -57,7 +60,7 @@ VERIFY[censys]="${HOME}/.local/bin/censys|censys --help 2>&1 | head -3 || true"
 VERIFY[yara]="${HOME}/.local/bin/yara|yara --help 2>&1 | head -3 || true"
 VERIFY[trufflehog]="${HOME}/.local/bin/trufflehog|trufflehog --help 2>&1 | head -3 || true"
 VERIFY[virustotal]="${HOME}/opt/gopath/bin/vt|vt --help 2>&1 | head -3 || true"
-VERIFY[jwt-cracker]="${HOME}/.local/bin/jwt-cracker|jwt-cracker --help 2>&1 | head -3 || true"
+VERIFY[jwt_cracker]="${HOME}/.local/bin/jwt-cracker|jwt-cracker --help 2>&1 | head -3 || true"
 VERIFY[ripgrep]="${HOME}/.local/bin/ripgrep|rg --version 2>&1 | head -2"
 VERIFY[fd]="${HOME}/.local/bin/fd|fd --version 2>&1 | head -2"
 VERIFY[bat]="${HOME}/.local/bin/bat|bat --version 2>&1 | head -2"
@@ -76,76 +79,78 @@ FAIL=0
 WARN=0
 
 {
-    echo "=== Test Results: ${CATEGORY} ==="
-    echo "Install exit code: ${INSTALL_RC}"
-    echo "Tested at: $(date)"
-    echo ""
-} > "${SUMMARY}"
+	echo "=== Test Results: ${CATEGORY} ==="
+	echo "Install exit code: ${INSTALL_RC}"
+	echo "Tested at: $(date)"
+	echo ""
+} >"${SUMMARY}"
 
 REGRESSION_LOG="${HOME}/test-results/regression-history.tsv"
 
 for tool in "${TOOLS[@]}"; do
-    RESULT_FILE="${RESULTS_DIR}/${tool}.result"
-    entry="${VERIFY[$tool]:-}"
+	RESULT_FILE="${RESULTS_DIR}/${tool}.result"
+	# Normalize hyphens to underscores for VERIFY key lookup (shfmt compatibility)
+	verify_key="${tool//-/_}"
+	entry="${VERIFY[$verify_key]:-${VERIFY[$tool]:-}}"
 
-    if [[ -z "${entry}" ]]; then
-        echo "SKIP ${tool} — no verify entry" | tee -a "${SUMMARY}"
-        continue
-    fi
+	if [[ -z "${entry}" ]]; then
+		echo "SKIP ${tool} — no verify entry" | tee -a "${SUMMARY}"
+		continue
+	fi
 
-    t_start=$SECONDS
+	t_start=$SECONDS
 
-    IFS='|' read -r binary launch_cmd <<< "${entry}"
+	IFS='|' read -r binary launch_cmd <<<"${entry}"
 
-    {
-        echo "=== ${tool} ==="
-        echo "Expected binary: ${binary}"
+	{
+		echo "=== ${tool} ==="
+		echo "Expected binary: ${binary}"
 
-        if [[ -f "${binary}" ]]; then
-            echo "BINARY: FOUND at ${binary}"
-        elif command -v "${tool}" &>/dev/null; then
-            echo "BINARY: FOUND via PATH ($(command -v "${tool}" 2>/dev/null))"
-        else
-            echo "BINARY: MISSING — expected at ${binary}"
-        fi
+		if [[ -f "${binary}" ]]; then
+			echo "BINARY: FOUND at ${binary}"
+		elif command -v "${tool}" &>/dev/null; then
+			echo "BINARY: FOUND via PATH ($(command -v "${tool}" 2>/dev/null))"
+		else
+			echo "BINARY: MISSING — expected at ${binary}"
+		fi
 
-        echo "--- Launch output ---"
-        bash -c "${launch_cmd}" 2>&1
-        LAUNCH_RC=$?
-        echo "--- Launch exit code: ${LAUNCH_RC} ---"
-    } > "${RESULT_FILE}" 2>&1
+		echo "--- Launch output ---"
+		bash -c "${launch_cmd}" 2>&1
+		LAUNCH_RC=$?
+		echo "--- Launch exit code: ${LAUNCH_RC} ---"
+	} >"${RESULT_FILE}" 2>&1
 
-    tool_log=$(find "${HOME}/.local/state/install_tools/logs" -maxdepth 1 -name "${tool}-*.log" 2>/dev/null | sort -r | head -1)
-    if [[ -n "${tool_log}" ]] && [[ "${tool_log}" -nt "/tmp/harness_install_start_${CATEGORY}" ]]; then
-        echo "INSTALLED_THIS_RUN: yes" >> "${RESULT_FILE}"
-    else
-        echo "INSTALLED_THIS_RUN: no (pre-existing or not attempted)" >> "${RESULT_FILE}"
-    fi
+	tool_log=$(find "${HOME}/.local/state/install_tools/logs" -maxdepth 1 -name "${tool}-*.log" 2>/dev/null | sort -r | head -1)
+	if [[ -n "${tool_log}" ]] && [[ "${tool_log}" -nt "/tmp/harness_install_start_${CATEGORY}" ]]; then
+		echo "INSTALLED_THIS_RUN: yes" >>"${RESULT_FILE}"
+	else
+		echo "INSTALLED_THIS_RUN: no (pre-existing or not attempted)" >>"${RESULT_FILE}"
+	fi
 
-    if grep -q "BINARY: FOUND" "${RESULT_FILE}"; then
-        if grep -q "Launch exit code: 0" "${RESULT_FILE}"; then
-            STATUS="PASS"
-            PASS=$((PASS + 1))
-        else
-            STATUS="WARN"
-            WARN=$((WARN + 1))
-        fi
-    else
-        STATUS="FAIL"
-        FAIL=$((FAIL + 1))
-    fi
+	if grep -q "BINARY: FOUND" "${RESULT_FILE}"; then
+		if grep -q "Launch exit code: 0" "${RESULT_FILE}"; then
+			STATUS="PASS"
+			PASS=$((PASS + 1))
+		else
+			STATUS="WARN"
+			WARN=$((WARN + 1))
+		fi
+	else
+		STATUS="FAIL"
+		FAIL=$((FAIL + 1))
+	fi
 
-    t_elapsed=$((SECONDS - t_start))
-    echo "Elapsed: ${t_elapsed}s" >> "${RESULT_FILE}"
+	t_elapsed=$((SECONDS - t_start))
+	echo "Elapsed: ${t_elapsed}s" >>"${RESULT_FILE}"
 
-    mkdir -p "${HOME}/test-results"
-    echo -e "$(date -u +%Y-%m-%dT%H:%M:%SZ)\t${CATEGORY}\t${tool}\t${STATUS}\t${t_elapsed}s" >> "${REGRESSION_LOG}"
+	mkdir -p "${HOME}/test-results"
+	echo -e "$(date -u +%Y-%m-%dT%H:%M:%SZ)\t${CATEGORY}\t${tool}\t${STATUS}\t${t_elapsed}s" >>"${REGRESSION_LOG}"
 
-    echo "${STATUS} ${tool}" | tee -a "${SUMMARY}"
+	echo "${STATUS} ${tool}" | tee -a "${SUMMARY}"
 done
 
 {
-    echo ""
-    echo "=== Summary ==="
-    echo "PASS: ${PASS}  WARN: ${WARN}  FAIL: ${FAIL}  TOTAL: $((PASS + WARN + FAIL))"
+	echo ""
+	echo "=== Summary ==="
+	echo "PASS: ${PASS}  WARN: ${WARN}  FAIL: ${FAIL}  TOTAL: $((PASS + WARN + FAIL))"
 } | tee -a "${SUMMARY}"

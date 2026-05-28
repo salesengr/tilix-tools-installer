@@ -29,8 +29,8 @@ set -uo pipefail
 CMD_TOKEN=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
 if [[ -z "${1:-}" ]]; then
-    echo "Usage: $0 <jump-host> [jump-user] [remote-port] [ssh-key]" >&2
-    exit 1
+	echo "Usage: $0 <jump-host> [jump-user] [remote-port] [ssh-key]" >&2
+	exit 1
 fi
 JUMP_HOST="${1}"
 JUMP_USER="${2:-ubuntu}"
@@ -42,23 +42,23 @@ SERVER_LOG="/tmp/cmd_server.log"
 
 # ── Preflight checks ──────────────────────────────────────────────────────────
 if [[ ! -f "${SSH_KEY}" ]]; then
-    echo "ERROR: SSH key not found at ${SSH_KEY}" >&2
-    echo "  Generate it with: ssh-keygen -t ed25519 -f /tmp/ck -N \"\" -q" >&2
-    echo "  Then add /tmp/ck.pub to swgiweb's ~/.ssh/authorized_keys" >&2
-    exit 1
+	echo "ERROR: SSH key not found at ${SSH_KEY}" >&2
+	echo "  Generate it with: ssh-keygen -t ed25519 -f /tmp/ck -N \"\" -q" >&2
+	echo "  Then add /tmp/ck.pub to swgiweb's ~/.ssh/authorized_keys" >&2
+	exit 1
 fi
 
 # ── Kill any previous instances ───────────────────────────────────────────────
 set +e
-pkill -f "cmd_server.py"                        2>/dev/null
-pkill -f "ssh -o.*-NR ${REMOTE_PORT}"           2>/dev/null
-fuser -k "${SERVER_PORT}/tcp"                   2>/dev/null
+pkill -f "cmd_server.py" 2>/dev/null
+pkill -f "ssh -o.*-NR ${REMOTE_PORT}" 2>/dev/null
+fuser -k "${SERVER_PORT}/tcp" 2>/dev/null
 set -e
 sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-cat > /tmp/cmd_server.py << PYEOF
+cat >/tmp/cmd_server.py <<PYEOF
 import http.server, subprocess, json, os
 
 REQUIRED_TOKEN = "${CMD_TOKEN}"
@@ -107,27 +107,27 @@ SERVER_PID=$!
 sleep 2
 
 if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
-    echo "ERROR: Command server failed to start. Log:" >&2
-    cat "${SERVER_LOG}" >&2
-    exit 1
+	echo "ERROR: Command server failed to start. Log:" >&2
+	cat "${SERVER_LOG}" >&2
+	exit 1
 fi
 echo "    Server PID: ${SERVER_PID} — OK"
 
 # ── Open reverse SSH tunnel to swgiweb ────────────────────────────────────────
 echo ">>> Opening reverse SSH tunnel to ${JUMP_HOST}..."
 ssh -o StrictHostKeyChecking=no \
-    -o ServerAliveInterval=30 \
-    -o ServerAliveCountMax=3 \
-    -i "${SSH_KEY}" \
-    -NR "${REMOTE_PORT}:localhost:${SERVER_PORT}" \
-    "${JUMP_USER}@${JUMP_HOST}" >"${TUNNEL_LOG}" 2>&1 &
+	-o ServerAliveInterval=30 \
+	-o ServerAliveCountMax=3 \
+	-i "${SSH_KEY}" \
+	-NR "${REMOTE_PORT}:localhost:${SERVER_PORT}" \
+	"${JUMP_USER}@${JUMP_HOST}" >"${TUNNEL_LOG}" 2>&1 &
 TUNNEL_PID=$!
 sleep 3
 
 if ! kill -0 "${TUNNEL_PID}" 2>/dev/null; then
-    echo "ERROR: SSH tunnel failed to start. Log:" >&2
-    cat "${TUNNEL_LOG}" >&2
-    exit 1
+	echo "ERROR: SSH tunnel failed to start. Log:" >&2
+	cat "${TUNNEL_LOG}" >&2
+	exit 1
 fi
 echo "    Tunnel PID: ${TUNNEL_PID} — OK"
 echo ""

@@ -20,15 +20,15 @@ SERVER_LOG="/tmp/cmd_server.log"
 
 # ── Kill any previous instances ───────────────────────────────────────────────
 set +e
-pkill -f "cmd_server.py"      2>/dev/null
-pkill -f "ssh.*serveo.net"    2>/dev/null
+pkill -f "cmd_server.py" 2>/dev/null
+pkill -f "ssh.*serveo.net" 2>/dev/null
 fuser -k "${SERVER_PORT}/tcp" 2>/dev/null
 set -e
 sleep 1
 
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-cat > /tmp/cmd_server.py << PYEOF
+cat >/tmp/cmd_server.py <<PYEOF
 import http.server, subprocess, json, os
 
 REQUIRED_TOKEN = "${CMD_TOKEN}"
@@ -66,52 +66,52 @@ SERVER_PID=$!
 sleep 2
 
 if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
-    echo "ERROR: Command server failed to start. Log:" >&2
-    cat "${SERVER_LOG}" >&2
-    exit 1
+	echo "ERROR: Command server failed to start. Log:" >&2
+	cat "${SERVER_LOG}" >&2
+	exit 1
 fi
 echo "    Server PID: ${SERVER_PID} — OK"
 
 # ── Open serveo tunnel and capture assigned port ──────────────────────────────
 echo ">>> Opening serveo.net SSH tunnel..."
 ssh -o StrictHostKeyChecking=no \
-    -o ServerAliveInterval=30 \
-    -o ServerAliveCountMax=3 \
-    -NR "0:localhost:${SERVER_PORT}" \
-    serveo.net >"${SERVEO_LOG}" 2>&1 &
+	-o ServerAliveInterval=30 \
+	-o ServerAliveCountMax=3 \
+	-NR "0:localhost:${SERVER_PORT}" \
+	serveo.net >"${SERVEO_LOG}" 2>&1 &
 TUNNEL_PID=$!
 
 # Wait for serveo to print the assigned port (up to 15s)
 for _ in $(seq 1 30); do
-    if grep -q "Forwarding" "${SERVEO_LOG}" 2>/dev/null; then
-        break
-    fi
-    sleep 0.5
+	if grep -q "Forwarding" "${SERVEO_LOG}" 2>/dev/null; then
+		break
+	fi
+	sleep 0.5
 done
 
 if ! kill -0 "${TUNNEL_PID}" 2>/dev/null; then
-    echo "ERROR: serveo tunnel failed to start. Log:" >&2
-    cat "${SERVEO_LOG}" >&2
-    exit 1
+	echo "ERROR: serveo tunnel failed to start. Log:" >&2
+	cat "${SERVEO_LOG}" >&2
+	exit 1
 fi
 
 # Serveo prints: "Forwarding TCP connections from tcp://serveo.net:XXXXX"
-SERVEO_PORT=$(grep -oP '(?<=tcp://serveo\.net:)\d+' "${SERVEO_LOG}" 2>/dev/null \
-    || grep -oP '\d{4,5}$' "${SERVEO_LOG}" 2>/dev/null | head -1 \
-    || echo "")
+SERVEO_PORT=$(grep -oP '(?<=tcp://serveo\.net:)\d+' "${SERVEO_LOG}" 2>/dev/null ||
+	grep -oP '\d{4,5}$' "${SERVEO_LOG}" 2>/dev/null | head -1 ||
+	echo "")
 
 echo "    Tunnel PID: ${TUNNEL_PID} — OK"
 echo ""
 echo "=========================================="
 echo "  Remote agent ready (serveo)."
 if [[ -n "${SERVEO_PORT}" ]]; then
-    echo "  Orchestrator endpoint: serveo.net:${SERVEO_PORT}"
-    echo "  Auth token: ${CMD_TOKEN}"
-    echo ""
-    echo "  Test with:"
-    echo "  curl -s -H 'X-Token: ${CMD_TOKEN}' -X POST http://serveo.net:${SERVEO_PORT} -d 'whoami'"
+	echo "  Orchestrator endpoint: serveo.net:${SERVEO_PORT}"
+	echo "  Auth token: ${CMD_TOKEN}"
+	echo ""
+	echo "  Test with:"
+	echo "  curl -s -H 'X-Token: ${CMD_TOKEN}' -X POST http://serveo.net:${SERVEO_PORT} -d 'whoami'"
 else
-    echo "  Could not detect port. Full log:"
-    cat "${SERVEO_LOG}"
+	echo "  Could not detect port. Full log:"
+	cat "${SERVEO_LOG}"
 fi
 echo "=========================================="

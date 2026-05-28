@@ -117,11 +117,12 @@ PYEOF
 
 chmod +x "${HOME}/.local/bin/nc"
 
-# Add ~/.local/bin to PATH in .bashrc if not already present
-if [[ ":${PATH}:" != *":${HOME}/.local/bin:"* ]]; then
+# Ensure ~/.local/bin is first in PATH (prepend, even if already present elsewhere)
+export PATH="${HOME}/.local/bin:${PATH}"
+if ! grep -q 'HOME/.local/bin' "${HOME}/.bashrc" 2>/dev/null; then
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.bashrc"
-    export PATH="${HOME}/.local/bin:${PATH}"
 fi
 
 echo "nc installed to ${HOME}/.local/bin/nc"
+echo "Active nc: $(command -v nc)"
 echo "Test: nc -zv google.com 443"

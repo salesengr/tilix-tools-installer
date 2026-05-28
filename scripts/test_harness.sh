@@ -26,6 +26,7 @@ export CARGO_HOME="${HOME}/.cargo"
 # Install the category
 echo "=== Installing ${CATEGORY} (${INSTALL_FLAG}) ==="
 cd "${HOME}/tilix-tools-installer" || { echo "ERROR: repo not found at ~/tilix-tools-installer" >&2; exit 1; }
+touch "/tmp/harness_install_start_${CATEGORY}"
 bash install_security_tools.sh "${INSTALL_FLAG}" 2>&1 | tee "${INSTALL_LOG}"
 INSTALL_RC=${PIPESTATUS[0]}
 echo "Install exit code: ${INSTALL_RC}" | tee -a "${INSTALL_LOG}"
@@ -65,9 +66,9 @@ VERIFY[dog]="${HOME}/.local/bin/dog|dog --version 2>&1 | head -2 || true"
 VERIFY[aria2]="${HOME}/.local/bin/aria2c|aria2c --version 2>&1 | head -2"
 VERIFY[seleniumbase]="${HOME}/.local/bin/sbase|python3 -c 'import seleniumbase; print(seleniumbase.__version__)' 2>&1"
 VERIFY[playwright]="${HOME}/.local/bin/playwright|playwright --version 2>&1 | head -2"
-VERIFY[yandex_browser]="${HOME}/.local/bin/yandex-browser|ls -la ${HOME}/.local/bin/yandex-browser 2>&1"
-VERIFY[tor_browser]="${HOME}/.local/bin/tor-browser|ls -la ${HOME}/.local/bin/tor-browser 2>&1"
-VERIFY[qtox]="${HOME}/.local/bin/qtox|ls -la ${HOME}/.local/bin/qtox 2>&1"
+VERIFY[yandex_browser]="${HOME}/.local/bin/yandex-browser|bash -n ${HOME}/.local/bin/yandex-browser 2>&1 && echo 'syntax ok'"
+VERIFY[tor_browser]="${HOME}/.local/bin/tor-browser|bash -n ${HOME}/.local/bin/tor-browser 2>&1 && echo 'syntax ok'"
+VERIFY[qtox]="${HOME}/.local/bin/qtox|bash -n ${HOME}/.local/bin/qtox 2>&1 && echo 'syntax ok'"
 
 # Test each tool
 PASS=0
@@ -81,6 +82,8 @@ WARN=0
     echo ""
 } > "${SUMMARY}"
 
+REGRESSION_LOG="${HOME}/test-results/regression-history.tsv"
+
 for tool in "${TOOLS[@]}"; do
     RESULT_FILE="${RESULTS_DIR}/${tool}.result"
     entry="${VERIFY[$tool]:-}"
@@ -89,6 +92,8 @@ for tool in "${TOOLS[@]}"; do
         echo "SKIP ${tool} — no verify entry" | tee -a "${SUMMARY}"
         continue
     fi
+
+    t_start=$SECONDS
 
     IFS='|' read -r binary launch_cmd <<< "${entry}"
 
@@ -105,10 +110,17 @@ for tool in "${TOOLS[@]}"; do
         fi
 
         echo "--- Launch output ---"
-        eval "${launch_cmd}" 2>&1
+        bash -c "${launch_cmd}" 2>&1
         LAUNCH_RC=$?
         echo "--- Launch exit code: ${LAUNCH_RC} ---"
     } > "${RESULT_FILE}" 2>&1
+
+    tool_log=$(find "${HOME}/.local/state/install_tools/logs" -maxdepth 1 -name "${tool}-*.log" 2>/dev/null | sort -r | head -1)
+    if [[ -n "${tool_log}" ]] && [[ "${tool_log}" -nt "/tmp/harness_install_start_${CATEGORY}" ]]; then
+        echo "INSTALLED_THIS_RUN: yes" >> "${RESULT_FILE}"
+    else
+        echo "INSTALLED_THIS_RUN: no (pre-existing or not attempted)" >> "${RESULT_FILE}"
+    fi
 
     if grep -q "BINARY: FOUND" "${RESULT_FILE}"; then
         if grep -q "Launch exit code: 0" "${RESULT_FILE}"; then
@@ -122,6 +134,12 @@ for tool in "${TOOLS[@]}"; do
         STATUS="FAIL"
         FAIL=$((FAIL + 1))
     fi
+
+    t_elapsed=$((SECONDS - t_start))
+    echo "Elapsed: ${t_elapsed}s" >> "${RESULT_FILE}"
+
+    mkdir -p "${HOME}/test-results"
+    echo -e "$(date -u +%Y-%m-%dT%H:%M:%SZ)\t${CATEGORY}\t${tool}\t${STATUS}\t${t_elapsed}s" >> "${REGRESSION_LOG}"
 
     echo "${STATUS} ${tool}" | tee -a "${SUMMARY}"
 done

@@ -967,44 +967,78 @@ install_yandex_browser() {
             return 1
         fi
 
-        apt-get update -qq 2>/dev/null || true
-        apt-get install -y --no-install-recommends gnupg2 curl 2>/dev/null || true
+        local tmp_dir="$HOME/opt/src/yandex-tmp"
+        mkdir -p "$tmp_dir"
 
-        # Add Yandex GPG key using the modern signed-by method (apt-key is deprecated
-        # since Ubuntu 22.04 and removed in Debian bookworm).
-        # /etc/apt/keyrings/ requires root — fail clearly if not writable.
-        local keyring="/etc/apt/keyrings/yandex-browser.gpg"
-        if [ "$(id -u)" != "0" ] && [ ! -w /etc/apt ]; then
-            echo "ERROR: Cannot write to /etc/apt — re-run as root or with sudo"
+        # Strategy 1: Download .deb directly from Yandex repo and extract without root.
+        # Read the latest version from the beta channel package index.
+        echo "Fetching latest yandex-browser-beta version from repo..."
+        local pkg_filename
+        pkg_filename=$(curl -fsSL --max-time 30 \
+            "https://repo.yandex.ru/yandex-browser/deb/dists/beta/main/binary-amd64/Packages.gz" \
+            2>/dev/null | gunzip | grep "^Filename:" | grep "yandex-browser-beta" | head -1 \
+            | awk '{print $2}')
+
+        if [[ -n "${pkg_filename}" ]]; then
+            local deb_url="https://repo.yandex.ru/yandex-browser/deb/${pkg_filename}"
+            echo "Downloading: ${deb_url}"
+            if curl -fsSL --max-time 300 "${deb_url}" -o "${tmp_dir}/yandex.deb" 2>/dev/null; then
+                echo "Extracting deb (no root needed)..."
+                dpkg-deb -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>/dev/null || \
+                    dpkg -x "${tmp_dir}/yandex.deb" "${tmp_dir}/extracted" 2>/dev/null || true
+                # Copy binary to system location requires root — install to user opt instead
+                if [[ -f "${tmp_dir}/extracted/usr/bin/yandex-browser-beta" ]]; then
+                    mkdir -p "$HOME/opt/yandex-browser"
+                    cp -r "${tmp_dir}/extracted/." "$HOME/opt/yandex-browser/"
+                    echo "Yandex Browser extracted to ~/opt/yandex-browser"
+                fi
+            fi
+        fi
+        rm -rf "${tmp_dir}"
+
+        # Strategy 2: apt install (requires root — works in Docker with root)
+        if [[ ! -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta" ]] \
+            && [[ ! -f "/usr/bin/yandex-browser-beta" ]] \
+            && command -v apt-get &>/dev/null \
+            && [[ "$(id -u)" == "0" || -w /etc/apt ]]; then
+            echo "Trying apt install..."
+            local keyring="/etc/apt/keyrings/yandex-browser.gpg"
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL "https://repo.yandex.ru/yandex-browser/YANDEX-BROWSER-KEY.GPG" \
+                | gpg --dearmor -o "${keyring}" 2>/dev/null || true
+            chmod 644 "${keyring}" 2>/dev/null || true
+            echo "deb [arch=amd64 signed-by=${keyring}] https://repo.yandex.ru/yandex-browser/deb beta main" \
+                > /etc/apt/sources.list.d/yandex-browser.list 2>/dev/null || true
+            apt-get update -qq 2>/dev/null || true
+            apt-get install -y --no-install-recommends yandex-browser-beta 2>/dev/null || true
+        fi
+
+        # Determine actual binary path (system or user-extracted)
+        local yandex_bin="/usr/bin/yandex-browser-beta"
+        if [ ! -f "${yandex_bin}" ] && [ -f "$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta" ]; then
+            yandex_bin="$HOME/opt/yandex-browser/usr/bin/yandex-browser-beta"
+        fi
+
+        if [ ! -f "${yandex_bin}" ]; then
+            echo "ERROR: yandex-browser-beta binary not found after install attempts"
             return 1
         fi
-        mkdir -p /etc/apt/keyrings
-        curl -fsSL "https://repo.yandex.ru/yandex-browser/YANDEX-BROWSER-KEY.GPG" \
-            | gpg --dearmor -o "${keyring}" || {
-            echo "ERROR: Failed to import Yandex Browser GPG key"
-            return 1
-        }
-        chmod 644 "${keyring}"
-        echo "deb [arch=amd64 signed-by=${keyring}] https://repo.yandex.ru/yandex-browser/deb beta main" \
-            > /etc/apt/sources.list.d/yandex-browser.list
-
-        apt-get update -qq 2>/dev/null || true
-        apt-get install -y --no-install-recommends yandex-browser-beta 2>/dev/null || return 1
 
         # Create launcher wrapper in ~/.local/bin
         mkdir -p "$HOME/.local/bin"
-        cat > "$HOME/.local/bin/yandex-browser" << 'WRAPPER'
+        cat > "$HOME/.local/bin/yandex-browser" << WRAPPER
 #!/usr/bin/env bash
 # Yandex Browser launcher — runs detached from terminal
-if [ ! -f "/usr/bin/yandex-browser-beta" ]; then
-    echo "yandex-browser: yandex-browser-beta not found — run: bash install_security_tools.sh yandex_browser" >&2
+YANDEX_BIN="${yandex_bin}"
+if [ ! -f "\${YANDEX_BIN}" ]; then
+    echo "yandex-browser: binary not found — run: bash install_security_tools.sh yandex_browser" >&2
     exit 1
 fi
-if [ -z "${DISPLAY:-}" ]; then
+if [ -z "\${DISPLAY:-}" ]; then
     echo "yandex-browser: DISPLAY not set — start a VNC session first" >&2
     exit 1
 fi
-nohup /usr/bin/yandex-browser-beta "$@" &>/dev/null &
+nohup "\${YANDEX_BIN}" "\$@" &>/dev/null &
 disown
 WRAPPER
         chmod +x "$HOME/.local/bin/yandex-browser"

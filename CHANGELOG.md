@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-05-29
+
+### Fixed
+- `_check_disk_space` decimal arithmetic crash — fractional tool sizes (e.g. `1.5MB`) caused bash integer arithmetic to abort. Decimal parts are now truncated before arithmetic.
+- Global `trap RETURN` regression in `install_prebuilt_binary` — the cleanup trap was persisting across all subsequent function calls in the shell session, causing unbound variable errors in unrelated installer functions. Trap is now cleared after each use.
+- shfmt formatting violation in `_check_disk_space` — double space before inline comment.
+
 ## [1.5.0] - 2026-05-29
 
 ### Added

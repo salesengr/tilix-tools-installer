@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-05-29
+
+### Added
+- **`amass` v5.1.1** — OWASP passive subdomain enumeration added to Passive OSINT (tool total: 36 → 37). Install: `bash install_security_tools.sh amass` or via `--osint-tools`. Usage: `amass enum -passive -d example.com`.
+- **`scripts/dev/` directory** — all developer/testing scripts moved here from `scripts/`. Not intended for trial users. See README Developer Tools section.
+- **Inline menu install status** — interactive menu now shows `[✓]` next to installed tools and `[ ]` next to tools not yet installed. Previously required the separate `[T]` status command.
+- **Release workflow** — `.github/workflows/release.yml` automates GitHub release creation on version tags.
+- **CI: Docker smoke test** — automated install tests in Docker containers for `--domain-tools`, `--recon-tools`, and `--cti-tools` on every PR.
+
+### Changed
+- **`dog` replaced by `doggo`** (mr-karan/doggo v1.1.7) in Utilities. `dog` was archived upstream and required GLIBC_2.32, which is absent on Ubuntu 20.04/22.04 containers. `doggo` ships musl-linked static builds compatible with all supported platforms. CLI usage is compatible: `doggo example.com MX`.
+- **Install failure diagnostics** — when a tool installation fails, the last 15 lines of its install log are printed automatically. Previously you had to locate and open the log file manually.
+- **Disk space pre-flight** — bulk category installs warn before starting if available disk space may be insufficient.
+- **Menu range input feedback** — entering `7-9` at the menu prompt now prints a helpful message explaining that comma-separated numbers are required (`7,8,9`). Previously silently ignored.
+- **CI: `shfmt` and `npm audit` now gate** — formatting failures and high/critical npm vulnerabilities now fail CI.
+- **Stale `# Version:` headers removed** from all `lib/` modules. Version tracking is in `CHANGELOG.md` and git tags.
+
+### Fixed
+- **Wrapper script error messages** — error messages in tool launcher scripts now print the correct reinstall command (e.g. `bash install_security_tools.sh photon`) instead of the internal key `python_venv`.
+- **Install artifact cleanup** (`install_prebuilt_binary`) — a download cleanup `trap` was incorrectly persisting across all subsequent function calls. It is now properly cleared after each installer function exits.
+- **`_check_disk_space` decimal crash** — fractional tool sizes (e.g. `1.5MB`) caused bash integer arithmetic to abort. Decimal parts are now truncated before arithmetic.
+
+### Security
+- **Remote agent command servers require per-session token** — all `scripts/dev/remote_agent_setup_*.sh` scripts now generate a 256-bit random token per session. Requests without a matching `X-Token` header receive HTTP 403.
+- **bore binary SHA256 verified** — the bore download is verified against a pinned checksum before execution, consistent with supply-chain controls on all other prebuilt binaries.
+- **Security warning headers** added to all remote agent scripts clarifying they are developer tools for trusted environments only.
+
+### API Key Setup
+These tools require API key configuration before returning results — see `docs/tool_installation_summary.md` for setup commands:
+- **shodan** — `shodan init <key>` (account.shodan.io)
+- **censys** — `censys config` (search.censys.io/account/api)
+- **virustotal** — `vt init` (virustotal.com/gui/my-apikey)
+- **h8mail** — configure `~/.config/h8mail.ini`
+
 ## [1.4.3] - 2026-05-27
 
 ### Added

@@ -19,7 +19,7 @@
 set -uo pipefail
 
 # ===== SCRIPT DIRECTORY =====
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # ===== COLOR CODES =====
 # Base colors for status
@@ -32,22 +32,22 @@ MAGENTA='\033[0;35m'
 
 # Semantic colors for UI (accessibility-enhanced)
 BOLD='\033[1m'
-HEADER='\033[1;36m'   # Bold cyan - header separator
-CATEGORY='\033[1;34m' # Bold blue - category headers (replaces MAGENTA)
-INFO='\033[1;36m'     # Bold cyan - info/reminders (replaces YELLOW)
-SUCCESS='\033[1;32m'  # Bold green - success messages
-WARNING='\033[1;33m'  # Bold yellow - warnings
-ERROR='\033[1;31m'    # Bold red - errors
-NC='\033[0m'          # Reset
+HEADER='\033[1;36m'      # Bold cyan - header separator
+CATEGORY='\033[1;34m'    # Bold blue - category headers (replaces MAGENTA)
+INFO='\033[1;36m'        # Bold cyan - info/reminders (replaces YELLOW)
+SUCCESS='\033[1;32m'     # Bold green - success messages
+WARNING='\033[1;33m'     # Bold yellow - warnings
+ERROR='\033[1;31m'       # Bold red - errors
+NC='\033[0m'             # Reset
 
 # Unicode symbols for redundant encoding (accessibility)
-CHECK='\u2713'   # ✓
-CROSS='\u2717'   # ✗
-WARN='\u26a0'    # ⚠
-INFOSYM='\u2139' # ℹ
+CHECK='\u2713'           # ✓
+CROSS='\u2717'           # ✗
+WARN='\u26a0'            # ⚠
+INFOSYM='\u2139'         # ℹ
 
 # ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.5.0"
+SCRIPT_VERSION="1.4.2"
 DRY_RUN=false
 CHECK_UPDATES=false
 SUCCESSFUL_INSTALLS=()
@@ -62,28 +62,6 @@ declare -A TOOL_INSTALL_LOCATION
 # ===== LOGGING SETUP =====
 LOG_DIR="$HOME/.local/state/install_tools/logs"
 HISTORY_LOG="$HOME/.local/state/install_tools/installation_history.log"
-
-# ===== DISK SPACE PRE-FLIGHT =====
-
-# Function: _check_disk_space
-# Purpose: Warn if estimated disk space needed exceeds available space in ~/.local
-# Parameters: $@ - tool names to sum sizes for
-# Returns: Always succeeds (warning only — does not block install)
-_check_disk_space() {
-	local required_mb=0
-	for tool in "$@"; do
-		local size="${TOOL_SIZES[$tool]:-0}"
-		local size_int="${size%MB}"
-		size_int="${size_int%%.*}" # strip decimal — bash arithmetic is integer-only
-		required_mb=$((required_mb + ${size_int:-0}))
-	done
-	local available_mb
-	available_mb=$(df -m "${HOME}/.local" 2>/dev/null | tail -1 | awk '{print $4}')
-	if [[ -n "$available_mb" ]] && [[ "$available_mb" -lt "$required_mb" ]]; then
-		echo -e "${WARNING}${WARN} Estimated space needed: ${required_mb}MB, available: ${available_mb}MB${NC}"
-		echo -e "  Consider freeing disk space before proceeding."
-	fi
-}
 
 # ===== SOURCE LIBRARY MODULES =====
 
@@ -103,106 +81,103 @@ source "${SCRIPT_DIR}/lib/ui/orchestration.sh"
 # ===== TARGETED FALLBACKS (legacy tool compatibility) =====
 
 safe_extract_archive() {
-	local archive_name="$1"
+    local archive_name="$1"
 
-	case "$archive_name" in
-	*.tar.gz | *.tgz)
-		tar -xzf "$archive_name"
-		;;
-	*.zip)
-		unzip -o "$archive_name"
-		;;
-	*)
-		echo "ERROR: Unsupported archive format: $archive_name"
-		return 1
-		;;
-	esac
+    case "$archive_name" in
+        *.tar.gz|*.tgz)
+            tar -xzf "$archive_name"
+            ;;
+        *.zip)
+            unzip -o "$archive_name"
+            ;;
+        *)
+            echo "ERROR: Unsupported archive format: $archive_name"
+            return 1
+            ;;
+    esac
 }
 
 install_release_binary_with_log() {
-	local tool="$1"
-	local url="$2"
-	local archive_name="$3"
-	local extract_cmd="$4" # retained for backward compatibility
-	local extracted_binary="$5"
-	local output_binary="$6"
-	local expected_sha256="${7:-}" # Optional checksum parameter
+    local tool="$1"
+    local url="$2"
+    local archive_name="$3"
+    local extract_cmd="$4"  # retained for backward compatibility
+    local extracted_binary="$5"
+    local output_binary="$6"
+    local expected_sha256="${7:-}"  # Optional checksum parameter
 
-	local logfile
-	logfile=$(create_tool_log "$tool")
+    local logfile
+    logfile=$(create_tool_log "$tool")
 
-	{
-		echo "=========================================="
-		echo "Installing $tool (release fallback)"
-		echo "Started: $(date)"
-		echo "=========================================="
+    {
+        echo "=========================================="
+        echo "Installing $tool (release fallback)"
+        echo "Started: $(date)"
+        echo "=========================================="
 
-		local tmpdir
-		tmpdir=$(mktemp -d)
-		# shellcheck disable=SC2064  # expand tmpdir now so trap uses the right value
-		trap "rm -rf '${tmpdir}'" RETURN
+        local tmpdir
+        tmpdir=$(mktemp -d)
+        # shellcheck disable=SC2064  # expand tmpdir now so trap uses the right value
+        trap "rm -rf '${tmpdir}'" RETURN
 
-		cd "$tmpdir" || return 1
-		echo "Downloading: $url"
-		download_file "$url" "$archive_name" || return 1
-		verify_file_exists "$archive_name" "$tool archive" || return 1
+        cd "$tmpdir" || return 1
+        echo "Downloading: $url"
+        download_file "$url" "$archive_name" || return 1
+        verify_file_exists "$archive_name" "$tool archive" || return 1
 
-		# Verify checksum if provided (supply-chain security)
-		if [ -n "$expected_sha256" ]; then
-			echo "Verifying SHA256 checksum for supply-chain security..."
-			local actual_sha256
-			actual_sha256=$(sha256sum "$archive_name" | awk '{print $1}')
+        # Verify checksum if provided (supply-chain security)
+        if [ -n "$expected_sha256" ]; then
+            echo "Verifying SHA256 checksum for supply-chain security..."
+            local actual_sha256
+            actual_sha256=$(sha256sum "$archive_name" | awk '{print $1}')
 
-			if [ "$actual_sha256" != "$expected_sha256" ]; then
-				echo "ERROR: Checksum mismatch!"
-				echo "  Expected: $expected_sha256"
-				echo "  Actual:   $actual_sha256"
-				echo "  This may indicate a compromised download."
-				rm -rf "$tmpdir"
-				return 1
-			fi
-			echo "Checksum verified: ${expected_sha256:0:16}..."
-		else
-			echo "WARNING: No checksum provided - supply-chain verification skipped"
-		fi
+            if [ "$actual_sha256" != "$expected_sha256" ]; then
+                echo "ERROR: Checksum mismatch!"
+                echo "  Expected: $expected_sha256"
+                echo "  Actual:   $actual_sha256"
+                echo "  This may indicate a compromised download."
+                rm -rf "$tmpdir"
+                return 1
+            fi
+            echo "Checksum verified: ${expected_sha256:0:16}..."
+        else
+            echo "WARNING: No checksum provided - supply-chain verification skipped"
+        fi
 
-		echo "Extracting..."
-		# Prefer archive-type dispatch to avoid eval execution.
-		# extract_cmd is retained in function signature for call-site compatibility.
-		safe_extract_archive "$archive_name" || return 1
-		verify_file_exists "$extracted_binary" "$tool binary" || return 1
+        echo "Extracting..."
+        # Prefer archive-type dispatch to avoid eval execution.
+        # extract_cmd is retained in function signature for call-site compatibility.
+        safe_extract_archive "$archive_name" || return 1
+        verify_file_exists "$extracted_binary" "$tool binary" || return 1
 
-		mkdir -p "$HOME/.local/bin"
-		install -m 0755 "$extracted_binary" "$HOME/.local/bin/$output_binary" || return 1
+        mkdir -p "$HOME/.local/bin"
+        install -m 0755 "$extracted_binary" "$HOME/.local/bin/$output_binary" || return 1
 
-		echo "=========================================="
-		echo "Completed: $(date)"
-		echo "=========================================="
-	} >"$logfile" 2>&1
+        echo "=========================================="
+        echo "Completed: $(date)"
+        echo "=========================================="
+    } > "$logfile" 2>&1
 
-	if command -v "$output_binary" >/dev/null 2>&1 || [ -x "$HOME/.local/bin/$output_binary" ]; then
-		echo -e "${SUCCESS}${CHECK} $tool installed successfully (fallback)${NC}"
-		SUCCESSFUL_INSTALLS+=("$tool")
-		log_installation "$tool" "success" "$logfile"
-		cleanup_old_logs "$tool"
-		return 0
-	fi
+    if command -v "$output_binary" >/dev/null 2>&1 || [ -x "$HOME/.local/bin/$output_binary" ]; then
+        echo -e "${SUCCESS}${CHECK} $tool installed successfully (fallback)${NC}"
+        SUCCESSFUL_INSTALLS+=("$tool")
+        log_installation "$tool" "success" "$logfile"
+        cleanup_old_logs "$tool"
+        return 0
+    fi
 
-	echo -e "${ERROR}${CROSS} $tool fallback installation failed${NC}"
-	echo "  See log: $logfile"
-	if [[ -f "$logfile" ]]; then
-		echo -e "${YELLOW}  Last install output:${NC}"
-		tail -15 "$logfile" | sed 's/^/    /'
-	fi
-	FAILED_INSTALLS+=("$tool")
-	FAILED_INSTALL_LOGS["$tool"]="$logfile"
-	log_installation "$tool" "failure" "$logfile"
-	return 1
+    echo -e "${ERROR}${CROSS} $tool fallback installation failed${NC}"
+    echo "  See log: $logfile"
+    FAILED_INSTALLS+=("$tool")
+    FAILED_INSTALL_LOGS["$tool"]="$logfile"
+    log_installation "$tool" "failure" "$logfile"
+    return 1
 }
 
 # CHECKSUMS: Verify these SHA256 hashes against official release pages before deployment
 # trufflehog v3.93.3:  https://github.com/trufflesecurity/trufflehog/releases/tag/v3.93.3
 # git-hound v3.2:      https://github.com/tillson/git-hound/releases/tag/v3.2
+# dog v0.1.0:          https://github.com/ogham/dog/releases/tag/v0.1.0
 #
 # To update checksums:
 #   curl -sL <release-url> | sha256sum
@@ -211,118 +186,132 @@ install_release_binary_with_log() {
 # Generated from official GitHub releases - verify before updating versions
 CHECKSUM_TRUFFLEHOG="62af52009a462a50421ca723424e41e0b3a1c8725d74b56de10e49d215ce8545"
 CHECKSUM_GIT_HOUND="8d4ed7284d072af6b54953cbd840752a288d6b115f7be25a03776a62d0345281"
+CHECKSUM_DOG="6093525fccf5de5b7ed66f920c9b6d2d16221adde8a44589dc3e4c47245039a0"
 
 install_trufflehog() {
-	# Preserve existing behavior first.
-	install_node_tool "trufflehog" "@trufflesecurity/trufflehog" && return 0
+    # Preserve existing behavior first.
+    install_node_tool "trufflehog" "@trufflesecurity/trufflehog" && return 0
 
-	echo -e "${WARNING}${WARN} npm install failed for trufflehog; using release fallback${NC}"
-	install_release_binary_with_log \
-		"trufflehog" \
-		"https://github.com/trufflesecurity/trufflehog/releases/download/v3.93.3/trufflehog_3.93.3_linux_amd64.tar.gz" \
-		"trufflehog.tar.gz" \
-		"tar -xzf trufflehog.tar.gz" \
-		"trufflehog" \
-		"trufflehog" \
-		"$CHECKSUM_TRUFFLEHOG"
+    echo -e "${WARNING}${WARN} npm install failed for trufflehog; using release fallback${NC}"
+    install_release_binary_with_log \
+        "trufflehog" \
+        "https://github.com/trufflesecurity/trufflehog/releases/download/v3.93.3/trufflehog_3.93.3_linux_amd64.tar.gz" \
+        "trufflehog.tar.gz" \
+        "tar -xzf trufflehog.tar.gz" \
+        "trufflehog" \
+        "trufflehog" \
+        "$CHECKSUM_TRUFFLEHOG"
 }
 
 install_git-hound() {
-	# Preserve existing behavior first.
-	install_node_tool "git-hound" "git-hound" && return 0
+    # Preserve existing behavior first.
+    install_node_tool "git-hound" "git-hound" && return 0
 
-	echo -e "${WARNING}${WARN} npm install failed for git-hound; using release fallback${NC}"
-	install_release_binary_with_log \
-		"git-hound" \
-		"https://github.com/tillson/git-hound/releases/download/v3.2/git-hound_linux_amd64.zip" \
-		"git-hound.zip" \
-		"unzip -o git-hound.zip" \
-		"git-hound" \
-		"git-hound" \
-		"$CHECKSUM_GIT_HOUND"
+    echo -e "${WARNING}${WARN} npm install failed for git-hound; using release fallback${NC}"
+    install_release_binary_with_log \
+        "git-hound" \
+        "https://github.com/tillson/git-hound/releases/download/v3.2/git-hound_linux_amd64.zip" \
+        "git-hound.zip" \
+        "unzip -o git-hound.zip" \
+        "git-hound" \
+        "git-hound" \
+        "$CHECKSUM_GIT_HOUND"
 }
 
-# install_doggo is defined in lib/installers/tools.sh (musl pre-built binary, no GLIBC dependency)
+install_dog() {
+    # Preserve existing behavior first.
+    install_rust_tool "dog" "dog" && return 0
+
+    echo -e "${WARNING}${WARN} cargo install failed for dog; using release fallback${NC}"
+    install_release_binary_with_log \
+        "dog" \
+        "https://github.com/ogham/dog/releases/download/v0.1.0/dog-v0.1.0-x86_64-unknown-linux-gnu.zip" \
+        "dog.zip" \
+        "unzip -o dog.zip" \
+        "bin/dog" \
+        "dog" \
+        "$CHECKSUM_DOG"
+}
 
 # ===== SIGNAL HANDLERS =====
 
 # Function: handle_interrupt
 # Purpose: Handle Ctrl+C gracefully
 handle_interrupt() {
-	echo ""
-	print_shell_reload_reminder
-	echo -e "${RED}Installation interrupted by user.${NC}"
-	exit 130
+    echo ""
+    print_shell_reload_reminder
+    echo -e "${RED}Installation interrupted by user.${NC}"
+    exit 130
 }
 
 # ===== MAIN ENTRY POINT =====
 
 main() {
-	trap handle_interrupt INT
+    trap handle_interrupt INT
 
-	# Parse flags
-	for arg in "$@"; do
-		case "$arg" in
-		--dry-run)
-			DRY_RUN=true
-			# shift has no effect inside a for loop over "$@"; flag
-			# filtering happens in the argument collection loop below
-			;;
-		--check-updates)
-			CHECK_UPDATES=true
-			;;
-		esac
-	done
+    # Parse flags
+    for arg in "$@"; do
+        case "$arg" in
+            --dry-run)
+                DRY_RUN=true
+                # shift has no effect inside a for loop over "$@"; flag
+                # filtering happens in the argument collection loop below
+                ;;
+            --check-updates)
+                CHECK_UPDATES=true
+                ;;
+        esac
+    done
 
-	# Remove flags from arguments
-	local args=()
-	for arg in "$@"; do
-		if [[ "$arg" != "--dry-run" ]] && [[ "$arg" != "--check-updates" ]]; then
-			args+=("$arg")
-		fi
-	done
+    # Remove flags from arguments
+    local args=()
+    for arg in "$@"; do
+        if [[ "$arg" != "--dry-run" ]] && [[ "$arg" != "--check-updates" ]]; then
+            args+=("$arg")
+        fi
+    done
 
-	# Prerequisites check
-	echo -e "${YELLOW}Checking prerequisites...${NC}"
+    # Prerequisites check
+    echo -e "${YELLOW}Checking prerequisites...${NC}"
 
-	if [ ! -d "$HOME/.local/share" ] || [ ! -d "$HOME/.config" ] || [ ! -d "$HOME/.cache" ]; then
-		echo -e "${RED}[FAIL] XDG directories not found!${NC}"
-		echo ""
-		echo "Please run the XDG setup script first:"
-		echo "  bash xdg_setup.sh"
-		echo "  source ~/.bashrc"
-		echo ""
-		exit 1
-	fi
+    if [ ! -d "$HOME/.local/share" ] || [ ! -d "$HOME/.config" ] || [ ! -d "$HOME/.cache" ]; then
+        echo -e "${RED}[FAIL] XDG directories not found!${NC}"
+        echo ""
+        echo "Please run the XDG setup script first:"
+        echo "  bash xdg_setup.sh"
+        echo "  source ~/.bashrc"
+        echo ""
+        exit 1
+    fi
 
-	if [ -z "${XDG_DATA_HOME:-}" ] || [ -z "${XDG_CONFIG_HOME:-}" ] || [ -z "${XDG_CACHE_HOME:-}" ]; then
-		echo -e "${YELLOW}[WARN] XDG environment variables not set${NC}"
-		echo "Loading from defaults..."
-		echo -e "${YELLOW}Note: Run 'source ~/.bashrc' after xdg_setup.sh${NC}"
-		echo ""
-	fi
+    if [ -z "${XDG_DATA_HOME:-}" ] || [ -z "${XDG_CONFIG_HOME:-}" ] || [ -z "${XDG_CACHE_HOME:-}" ]; then
+        echo -e "${YELLOW}[WARN] XDG environment variables not set${NC}"
+        echo "Loading from defaults..."
+        echo -e "${YELLOW}Note: Run 'source ~/.bashrc' after xdg_setup.sh${NC}"
+        echo ""
+    fi
 
-	# Ensure sane runtime defaults for non-interactive shells too
-	export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-	export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-	export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-	export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+    # Ensure sane runtime defaults for non-interactive shells too
+    export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+    export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+    export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+    export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-	export GOPATH="${GOPATH:-$HOME/opt/gopath}"
-	export CARGO_HOME="${CARGO_HOME:-$XDG_DATA_HOME/cargo}"
-	export RUSTUP_HOME="${RUSTUP_HOME:-$XDG_DATA_HOME/rustup}"
-	export WGETRC="${WGETRC:-$XDG_CONFIG_HOME/wget/wgetrc}"
+    export GOPATH="${GOPATH:-$HOME/opt/gopath}"
+    export CARGO_HOME="${CARGO_HOME:-$XDG_DATA_HOME/cargo}"
+    export RUSTUP_HOME="${RUSTUP_HOME:-$XDG_DATA_HOME/rustup}"
+    export WGETRC="${WGETRC:-$XDG_CONFIG_HOME/wget/wgetrc}"
 
-	export PATH="$HOME/.local/bin:$HOME/opt/node/bin:$GOPATH/bin:$CARGO_HOME/bin:$PATH"
+    export PATH="$HOME/.local/bin:$HOME/opt/node/bin:$GOPATH/bin:$CARGO_HOME/bin:$PATH"
 
-	echo -e "${GREEN}[OK] Prerequisites met${NC}"
-	echo ""
+    echo -e "${GREEN}[OK] Prerequisites met${NC}"
+    echo ""
 
-	# Fix wget config if missing
-	if [ -n "$WGETRC" ] && [ ! -f "$WGETRC" ]; then
-		echo -e "${YELLOW}Creating missing wget config...${NC}"
-		mkdir -p "$(dirname "$WGETRC")"
-		cat >"$WGETRC" <<'WGETRC_EOF'
+    # Fix wget config if missing
+    if [ -n "$WGETRC" ] && [ ! -f "$WGETRC" ]; then
+        echo -e "${YELLOW}Creating missing wget config...${NC}"
+        mkdir -p "$(dirname "$WGETRC")"
+        cat > "$WGETRC" << 'WGETRC_EOF'
 # XDG-compliant wget configuration
 dir_prefix = ~/Downloads
 timestamping = on
@@ -330,93 +319,81 @@ tries = 3
 retry_connrefused = on
 max_redirect = 5
 WGETRC_EOF
-		echo -e "${GREEN}[OK] wget config created${NC}"
-		echo ""
-	fi
+        echo -e "${GREEN}[OK] wget config created${NC}"
+        echo ""
+    fi
 
-	# Create necessary directories
-	mkdir -p "$HOME/opt/src"
-	mkdir -p "$HOME/opt/gopath"
+    # Create necessary directories
+    mkdir -p "$HOME/opt/src"
+    mkdir -p "$HOME/opt/gopath"
 
-	# Initialize
-	init_logging
-	define_tools
-	scan_installed_tools
+    # Initialize
+    init_logging
+    define_tools
+    scan_installed_tools
 
-	# Dry run mode
-	if [[ "$DRY_RUN" == "true" ]]; then
-		echo -e "${CYAN}DRY RUN MODE${NC}"
-		echo ""
-		for tool in "${args[@]}"; do
-			dry_run_install "$tool"
-		done
-		exit 0
-	fi
+    # Dry run mode
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo -e "${CYAN}DRY RUN MODE${NC}"
+        echo ""
+        for tool in "${args[@]}"; do
+            dry_run_install "$tool"
+        done
+        exit 0
+    fi
 
-	# Check updates mode
-	if [[ "$CHECK_UPDATES" == "true" ]]; then
-		echo -e "${CYAN}Checking for updates...${NC}"
-		echo "This feature is coming soon!"
-		exit 0
-	fi
+    # Check updates mode
+    if [[ "$CHECK_UPDATES" == "true" ]]; then
+        echo -e "${CYAN}Checking for updates...${NC}"
+        echo "This feature is coming soon!"
+        exit 0
+    fi
 
-	# Determine mode
-	if [ ${#args[@]} -eq 0 ]; then
-		# Interactive menu mode
-		# Verify stdin is connected to a terminal
-		if [ ! -t 0 ]; then
-			# Stdin is piped — read selections directly (supports comma-separated input)
-			if read -r -t 5 piped_selection 2>/dev/null && [[ -n "${piped_selection}" ]]; then
-				IFS=',' read -ra SELECTIONS <<<"${piped_selection}"
-				for sel in "${SELECTIONS[@]}"; do
-					sel=$(echo "$sel" | xargs) # Trim whitespace
-					process_menu_selection "$sel"
-				done
-				show_installation_summary
-				print_shell_reload_reminder
-				exit 0
-			fi
+    # Determine mode
+    if [ ${#args[@]} -eq 0 ]; then
+        # Interactive menu mode
+        # Verify stdin is connected to a terminal
+        if [ ! -t 0 ]; then
+            # Try to reconnect to /dev/tty
+            if [ -c /dev/tty ]; then
+                echo -e "${YELLOW}Note: Reconnecting stdin to /dev/tty for interactive menu${NC}"
+                exec bash "$0" < /dev/tty
+            fi
 
-			# No piped input — try to reconnect to /dev/tty
-			if [ -c /dev/tty ]; then
-				echo -e "${YELLOW}Note: Reconnecting stdin to /dev/tty for interactive menu${NC}"
-				exec bash "$0" </dev/tty
-			fi
+            echo -e "${RED}Error: stdin is not connected to a terminal${NC}"
+            echo ""
+            echo "This script requires an interactive terminal to run the menu."
+            echo ""
+            echo "Solutions:"
+            echo "  1. Run directly: bash install_security_tools.sh"
+            echo "  2. Use CLI mode: bash install_security_tools.sh <tool-name>"
+            echo "  3. If piping via curl, save and run: curl -O URL && bash install_security_tools.sh"
+            echo ""
+            exit 1
+        fi
 
-			echo -e "${RED}Error: stdin is not connected to a terminal${NC}"
-			echo ""
-			echo "This script requires an interactive terminal to run the menu."
-			echo ""
-			echo "Solutions:"
-			echo "  1. Run directly: bash install_security_tools.sh"
-			echo "  2. Use CLI mode: bash install_security_tools.sh <tool-name>"
-			echo "  3. Pipe selections: echo '38,39,40' | bash install_security_tools.sh"
-			echo ""
-			exit 1
-		fi
+        while true; do
+            show_menu
+            read -r selection
 
-		while true; do
-			show_menu
-			read -r selection
+            # Handle comma-separated selections
+            IFS=',' read -ra SELECTIONS <<< "$selection"
+            for sel in "${SELECTIONS[@]}"; do
+                sel=$(echo "$sel" | xargs)  # Trim whitespace
+                process_menu_selection "$sel"
+            done
 
-			# Handle comma-separated selections
-			IFS=',' read -ra SELECTIONS <<<"$selection"
-			for sel in "${SELECTIONS[@]}"; do
-				sel=$(echo "$sel" | xargs) # Trim whitespace
-				process_menu_selection "$sel"
-			done
+            show_installation_summary
 
-			show_installation_summary
-
-			echo ""
-			read -r -p "Press Enter to continue..."
-		done
-	else
-		# CLI parameter mode
-		process_cli_args "${args[@]}"
-		show_installation_summary
-		print_shell_reload_reminder
-	fi
+            echo ""
+            read -r -p "Press Enter to continue..."
+        done
+    else
+        # CLI parameter mode
+        process_cli_args "${args[@]}"
+        show_installation_summary
+        print_shell_reload_reminder
+    fi
 }
 
 main "$@"

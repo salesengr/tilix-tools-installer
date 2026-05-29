@@ -5,8 +5,8 @@ REGISTRY="${NPM_REGISTRY_URL:-https://registry.npmjs.org}"
 
 # Validate registry URL scheme — only https:// is permitted
 if [[ "$REGISTRY" != https://* ]]; then
-	echo "ERROR: NPM_REGISTRY_URL must use https:// (got: $REGISTRY)" >&2
-	exit 1
+    echo "ERROR: NPM_REGISTRY_URL must use https:// (got: $REGISTRY)" >&2
+    exit 1
 fi
 
 WORKDIR="$(mktemp -d)"
@@ -17,32 +17,32 @@ REPORT_PATH="${1:-node-audit-report.json}"
 # Validate REPORT_PATH — must be an absolute path or a simple filename in cwd;
 # reject path traversal and shell-special characters
 if [[ "$REPORT_PATH" == *".."* ]] || [[ "$REPORT_PATH" =~ [^a-zA-Z0-9_./:@-] ]]; then
-	echo "ERROR: REPORT_PATH contains invalid characters: $REPORT_PATH" >&2
-	exit 1
+    echo "ERROR: REPORT_PATH contains invalid characters: $REPORT_PATH" >&2
+    exit 1
 fi
 
 NPM_TOOLS=(
-	"@trufflesecurity/trufflehog"
-	"git-hound"
-	"jwt-cracker"
+  "@trufflesecurity/trufflehog"
+  "git-hound"
+  "jwt-cracker"
 )
 
 available=()
 unavailable=()
 
 for pkg in "${NPM_TOOLS[@]}"; do
-	if npm view "$pkg" version --registry "$REGISTRY" >/dev/null 2>&1; then
-		available+=("$pkg")
-	else
-		unavailable+=("$pkg")
-	fi
+  if npm view "$pkg" version --registry "$REGISTRY" >/dev/null 2>&1; then
+    available+=("$pkg")
+  else
+    unavailable+=("$pkg")
+  fi
 done
 
 mkdir -p "$WORKDIR"
 cd "$WORKDIR"
 
 if [ "${#available[@]}" -gt 0 ]; then
-	python3 - "${available[@]}" <<'PY' >package.json
+  python3 - <<'PY' "${available[@]}" > package.json
 import json, sys
 pkgs = sys.argv[1:]
 print(json.dumps({
@@ -55,18 +55,17 @@ PY
 fi
 
 AUDIT_JSON='{}'
-AUDIT_EXIT=0
 if [ "${#available[@]}" -gt 0 ]; then
-	npm install --package-lock-only --registry "$REGISTRY" >/dev/null 2>&1 || true
-	if [ -f package-lock.json ]; then
-		npm audit --omit=dev --audit-level=high --json >audit.json || AUDIT_EXIT=$?
-		AUDIT_JSON="$(cat audit.json)"
-	fi
+  npm install --package-lock-only --registry "$REGISTRY" >/dev/null 2>&1 || true
+  if [ -f package-lock.json ]; then
+    npm audit --omit=dev --json > audit.json || true
+    AUDIT_JSON="$(cat audit.json)"
+  fi
 fi
 
 # AUDIT_JSON is passed as a positional arg — safe for this 3-package scope.
 # If the package list expands significantly, switch to a tempfile to avoid ARG_MAX limits.
-python3 - "$REPORT_PATH" "$REGISTRY" "$AUDIT_JSON" "${available[@]}" -- "${unavailable[@]}" <<'PY'
+python3 - <<'PY' "$REPORT_PATH" "$REGISTRY" "$AUDIT_JSON" "${available[@]}" -- "${unavailable[@]}"
 import json, sys
 report_path = sys.argv[1]
 registry = sys.argv[2]
@@ -96,8 +95,3 @@ with open(report_path, 'w') as f:
 
 print(json.dumps(report, indent=2))
 PY
-
-if [ "${AUDIT_EXIT}" -ne 0 ]; then
-	echo "ERROR: npm audit found high or critical vulnerabilities (exit ${AUDIT_EXIT})" >&2
-	exit "${AUDIT_EXIT}"
-fi

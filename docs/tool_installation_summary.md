@@ -44,16 +44,10 @@ All Python tools are installed via `pip install --user` using the system Python 
 | holehe | `holehe` | `~/.local/bin/holehe` | pip --user package `holehe`. |
 | socialscan | `socialscan` | `~/.local/bin/socialscan` | pip --user package `socialscan`. |
 | h8mail | `h8mail` | `~/.local/bin/h8mail` | pip --user package `h8mail`. |
-
-> **Setup required:** Configure API keys in `~/.config/h8mail.ini` — see [github.com/khast3x/h8mail](https://github.com/khast3x/h8mail) for supported breach DB APIs
 | photon | GitHub clone (`s0md3v/Photon`) + `requirements.txt` | `~/.local/bin/photon` | Source cloned under `~/opt/src/Photon`; wrapper points to user-installed package. |
 | sublist3r | `sublist3r` | `~/.local/bin/sublist3r` | pip --user package `sublist3r`. |
 | shodan | `shodan` | `~/.local/bin/shodan` | pip --user package `shodan` (with pkg_resources shim). |
-
-> **Setup required:** `shodan init <YOUR_API_KEY>` — get key from [account.shodan.io](https://account.shodan.io)
 | censys | `censys` | `~/.local/bin/censys` | pip --user package `censys`. |
-
-> **Setup required:** `censys config` — prompts for API ID and secret from [search.censys.io/account/api](https://search.censys.io/account/api)
 | theHarvester | `theHarvester` | `~/.local/bin/theHarvester` | pip --user package `theHarvester`. |
 | spiderfoot | `spiderfoot` | `~/.local/bin/spiderfoot` | Cloned from GitHub; launcher starts web UI detached on `127.0.0.1:5001`. |
 | yara | `yara-python` plus compiled YARA if needed | `~/.local/bin/yara` | If building from source, YARA binaries land in `~/.local/bin`/`~/.local/lib`; Python bindings in `~/.local/lib/python3.13/site-packages/`. |
@@ -71,11 +65,8 @@ Go-based applications are built from source via `go install <module>@latest`. Co
 | waybackurls | `github.com/tomnomnom/waybackurls` | `~/opt/gopath/bin/waybackurls` |
 | assetfinder | `github.com/tomnomnom/assetfinder` | `~/opt/gopath/bin/assetfinder` |
 | subfinder | `github.com/projectdiscovery/subfinder/v2/cmd/subfinder` | `~/opt/gopath/bin/subfinder` |
-| amass | `github.com/owasp-amass/amass/v4/...` (prebuilt musl binary via GitHub releases) | `~/.local/bin/amass` |
 | nuclei | `github.com/projectdiscovery/nuclei/v3/cmd/nuclei` | `~/opt/gopath/bin/nuclei` |
 | virustotal | `github.com/VirusTotal/vt-cli/vt` | `~/opt/gopath/bin/vt` (invoke `vt ...`) |
-
-> **Setup required:** `vt init` — get key from [virustotal.com/gui/my-apikey](https://www.virustotal.com/gui/my-apikey)
 
 ## Node.js Tools
 
@@ -100,7 +91,7 @@ Cargo installs place binaries in `~/.local/share/cargo/bin`. The installer sets 
 | bat | `bat` | `~/.local/share/cargo/bin/bat` |
 | sd | `sd` | `~/.local/share/cargo/bin/sd` |
 | ~~tokei~~ | *Removed in v1.4.0* | — | No pre-built binary available; low security relevance. |
-| doggo | `~/.local/bin/doggo` | Installed as prebuilt musl binary via mr-karan/doggo |
+| dog | `dog` | `~/.local/share/cargo/bin/dog` |
 
 ## Utility Tools
 
@@ -187,11 +178,11 @@ yandex-browser-beta --version       # Check version (direct binary)
 ```
 
 ### Tor Browser
-Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser` that launches the browser detached using `nohup` + `disown`. The launcher also checks that the binary exists and that `DISPLAY` is set, printing a clear error and exiting if either check fails.
+Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser` that uses Tor's built-in `--detach` flag to separate from the terminal.
 
 **Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
 ```bash
-tor-browser                         # Launch detached from terminal via nohup + disown (requires VNC)
+tor-browser                         # Launch detached from terminal via --detach (requires VNC)
 ```
 
 ### SpiderFoot
@@ -213,36 +204,3 @@ Includes a convenience launcher at `~/.local/bin/qtox` that automatically backgr
 ```bash
 qtox                                # Launch qTox (backgrounds automatically)
 ```
-
-## Standalone Scripts
-
-Scripts in the `scripts/` directory run directly from the repo and do not create installed binaries. They rely on packages already installed by an existing installer entry.
-
-| Script | Requires | Description |
-|--------|----------|-------------|
-| `scripts/news_spider_playwright.py` | `playwright` + `playwright install chromium` | Captures screenshots, PDFs, and MHTML snapshots of news sites |
-
-### news_spider_playwright.py
-
-Playwright-based news spider that crawls supported news sites and saves timestamped output to `output/<site>/mm-dd-yyyy-HH-MM/`. Uses Playwright's own Chromium (not system Chrome) — requires `playwright install chromium` after the Playwright installer step.
-
-**Working presets:** `bbc`, `nikkei`, `google-news`
-**Blocked preset:** `reuters` (Cloudflare bot-block from datacenter IPs — use the Silo harvester instead)
-
-```bash
-# Install prerequisites
-bash install_security_tools.sh playwright
-playwright install chromium
-
-# Run
-python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
-python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
-python3 scripts/news_spider_playwright.py --site google-news --dry-run
-
-# Custom site
-python3 scripts/news_spider_playwright.py \
-    --url https://apnews.com \
-    --include-pattern "/article/[a-z0-9-]+"
-```
-
-**Output per run:** `<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`, `summary.txt`, `run.log`

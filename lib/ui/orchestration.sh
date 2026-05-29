@@ -1,5 +1,6 @@
 #!/bin/bash
 # Security Tools Installer - Orchestration Module
+# Version: 1.4.2
 # Purpose: High-level installation coordination and workflow management
 
 # shellcheck disable=SC2034  # Variables used in display/logging
@@ -12,103 +13,102 @@
 # Parameters: $1 - tool name
 # Returns: 0 on success, 1 on failure
 install_tool() {
-	local tool=$1
+    local tool=$1
 
-	# Check if already installed
-	if is_installed "$tool"; then
-		echo -e "${GREEN}[OK] $tool already installed${NC}"
-		return 0
-	fi
+    # Check if already installed
+    if is_installed "$tool"; then
+        echo -e "${GREEN}[OK] $tool already installed${NC}"
+        return 0
+    fi
 
-	# Check dependencies
-	if ! check_dependencies "$tool"; then
-		echo -e "${RED}[FAIL] Failed to install dependencies for $tool${NC}"
-		return 1
-	fi
+    # Check dependencies
+    if ! check_dependencies "$tool"; then
+        echo -e "${RED}[FAIL] Failed to install dependencies for $tool${NC}"
+        return 1
+    fi
 
-	# Install the tool
-	echo ""
-	echo -e "${INFO}${INFOSYM} Installing $tool...${NC}"
-	echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    # Install the tool
+    echo ""
+    echo -e "${INFO}${INFOSYM} Installing $tool...${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-	case "$tool" in
-	cmake) install_cmake ;;
-	github_cli) install_github_cli ;;
-	go_runtime) install_go_runtime ;;
-	nodejs) install_nodejs ;;
-	rust) install_rust ;;
-	python_venv) install_python_venv ;;
-	sherlock) install_sherlock ;;
-	holehe) install_holehe ;;
-	socialscan) install_socialscan ;;
-	h8mail) install_h8mail ;;
-	photon) install_photon ;;
-	sublist3r) install_sublist3r ;;
-	shodan) install_shodan ;;
-	censys) install_censys ;;
-	theHarvester) install_theHarvester ;;
-	spiderfoot) install_spiderfoot ;;
-	yara) install_yara ;;
-	wappalyzer) install_wappalyzer ;;
-	gobuster) install_gobuster ;;
-	ffuf) install_ffuf ;;
-	httprobe) install_httprobe ;;
-	waybackurls) install_waybackurls ;;
-	assetfinder) install_assetfinder ;;
-	subfinder) install_subfinder ;;
-	amass) install_amass ;;
-	nuclei) install_nuclei ;;
-	virustotal) install_virustotal ;;
-	trufflehog) install_trufflehog ;;
-	git-hound) install_git-hound ;;
-	jwt-cracker) install_jwt-cracker ;;
-	feroxbuster) install_feroxbuster ;;
-	rustscan) install_rustscan ;;
-	ripgrep) install_ripgrep ;;
-	fd) install_fd ;;
-	bat) install_bat ;;
-	sd) install_sd ;;
-	doggo) install_doggo ;;
-	aria2) install_aria2 ;;
-	seleniumbase) install_seleniumbase ;;
-	playwright) install_playwright ;;
-	yandex_browser) install_yandex_browser ;;
-	tor_browser) install_tor_browser ;;
-	qtox) install_qtox ;;
-	*)
-		echo -e "${RED}Unknown tool: $tool${NC}"
-		return 1
-		;;
-	esac
+    case "$tool" in
+        cmake) install_cmake ;;
+        github_cli) install_github_cli ;;
+        go_runtime) install_go_runtime ;;
+        nodejs) install_nodejs ;;
+        rust) install_rust ;;
+        python_venv) install_python_venv ;;
+        sherlock) install_sherlock ;;
+        holehe) install_holehe ;;
+        socialscan) install_socialscan ;;
+        h8mail) install_h8mail ;;
+        photon) install_photon ;;
+        sublist3r) install_sublist3r ;;
+        shodan) install_shodan ;;
+        censys) install_censys ;;
+        theHarvester) install_theHarvester ;;
+        spiderfoot) install_spiderfoot ;;
+        yara) install_yara ;;
+        wappalyzer) install_wappalyzer ;;
+        gobuster) install_gobuster ;;
+        ffuf) install_ffuf ;;
+        httprobe) install_httprobe ;;
+        waybackurls) install_waybackurls ;;
+        assetfinder) install_assetfinder ;;
+        subfinder) install_subfinder ;;
+        nuclei) install_nuclei ;;
+        virustotal) install_virustotal ;;
+        trufflehog) install_trufflehog ;;
+        git-hound) install_git-hound ;;
+        jwt-cracker) install_jwt-cracker ;;
+        feroxbuster) install_feroxbuster ;;
+        rustscan) install_rustscan ;;
+        ripgrep) install_ripgrep ;;
+        fd) install_fd ;;
+        bat) install_bat ;;
+        sd) install_sd ;;
+        dog) install_dog ;;
+        aria2) install_aria2 ;;
+        seleniumbase) install_seleniumbase ;;
+        playwright) install_playwright ;;
+        yandex_browser) install_yandex_browser ;;
+        tor_browser) install_tor_browser ;;
+        qtox) install_qtox ;;
+        *)
+            echo -e "${RED}Unknown tool: $tool${NC}"
+            return 1
+            ;;
+    esac
 }
 
 # Function: install_all
 # Purpose: Bulk installer for all tools
 # Returns: 0 on success, 1 on user cancellation
 install_all() {
-	echo -e "${YELLOW}Installing ALL tools...${NC}"
-	echo -e "${YELLOW}This will take 30-60 minutes and use ~2GB disk space${NC}"
-	read -r -p "Continue? (yes/no): " confirm
+    echo -e "${YELLOW}Installing ALL tools...${NC}"
+    echo -e "${YELLOW}This will take 30-60 minutes and use ~2GB disk space${NC}"
+    read -r -p "Continue? (yes/no): " confirm
 
-	if [[ "$confirm" != "yes" ]]; then
-		echo "Installation cancelled"
-		return 1
-	fi
+    if [[ "$confirm" != "yes" ]]; then
+        echo "Installation cancelled"
+        return 1
+    fi
 
-	local all_tools=(
-		"cmake" "github_cli" "go_runtime" "nodejs" "rust" "python_venv"
-		"${PASSIVE_OSINT[@]}"
-		"${DOMAIN_ENUM[@]}"
-		"${ACTIVE_RECON[@]}"
-		"${CTI_TOOLS[@]}"
-		"${SECURITY_TESTING[@]}"
-		"${UTILITY_TOOLS[@]}"
-		"${WEB_TOOLS[@]}"
-	)
+    local all_tools=(
+        "cmake" "github_cli" "go_runtime" "nodejs" "rust" "python_venv"
+        "${PASSIVE_OSINT[@]}"
+        "${DOMAIN_ENUM[@]}"
+        "${ACTIVE_RECON[@]}"
+        "${CTI_TOOLS[@]}"
+        "${SECURITY_TESTING[@]}"
+        "${UTILITY_TOOLS[@]}"
+        "${WEB_TOOLS[@]}"
+    )
 
-	for tool in "${all_tools[@]}"; do
-		install_tool "$tool"
-	done
+    for tool in "${all_tools[@]}"; do
+        install_tool "$tool"
+    done
 }
 
 # Function: dry_run_install
@@ -118,33 +118,33 @@ install_all() {
 #   $2 - indent level (optional, for recursive display)
 # Returns: Always succeeds
 dry_run_install() {
-	local tool=$1
-	local indent="${2:-  }"
+    local tool=$1
+    local indent="${2:-  }"
 
-	echo "${indent}[DRY RUN] Would install: $tool"
+    echo "${indent}[DRY RUN] Would install: $tool"
 
-	# Check dependencies
-	local deps=${TOOL_DEPENDENCIES[$tool]:-}
-	if [[ -n "$deps" ]]; then
-		echo "${indent}  Prerequisites:"
-		for dep in $deps; do
-			if is_installed "$dep"; then
-				echo "${indent}    [OK] $dep (already installed)"
-			else
-				echo "${indent}    -> $dep (would be installed)"
-				dry_run_install "$dep" "${indent}      "
-			fi
-		done
-	fi
+    # Check dependencies
+    local deps=${TOOL_DEPENDENCIES[$tool]:-}
+    if [[ -n "$deps" ]]; then
+        echo "${indent}  Prerequisites:"
+        for dep in $deps; do
+            if is_installed "$dep"; then
+                echo "${indent}    [OK] $dep (already installed)"
+            else
+                echo "${indent}    -> $dep (would be installed)"
+                dry_run_install "$dep" "${indent}      "
+            fi
+        done
+    fi
 
-	# Show details
-	local info=${TOOL_INFO[$tool]:-}
-	local size=${TOOL_SIZES[$tool]:-}
-	local location=${TOOL_INSTALL_LOCATION[$tool]:-}
+    # Show details
+    local info=${TOOL_INFO[$tool]:-}
+    local size=${TOOL_SIZES[$tool]:-}
+    local location=${TOOL_INSTALL_LOCATION[$tool]:-}
 
-	echo "${indent}  Download size: $size"
-	echo "${indent}  Install location: $location"
-	echo ""
+    echo "${indent}  Download size: $size"
+    echo "${indent}  Install location: $location"
+    echo ""
 }
 
 # Function: process_cli_args
@@ -152,87 +152,81 @@ dry_run_install() {
 # Parameters: $@ - tool names or category flags
 # Returns: Based on installation results
 process_cli_args() {
-	local args=("$@")
+    local args=("$@")
 
-	# Handle special keywords
-	if [[ "${args[0]}" == "all" ]]; then
-		install_all
-		return
-	fi
+    # Handle special keywords
+    if [[ "${args[0]}" == "all" ]]; then
+        install_all
+        return
+    fi
 
-	# ===== USE-CASE FLAGS (v1.4.0) =====
-	if [[ "${args[0]}" == "--osint-tools" ]]; then
-		_check_disk_space "${PASSIVE_OSINT[@]}"
-		install_tool "python_venv"
-		for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    # ===== USE-CASE FLAGS (v1.4.0) =====
+    if [[ "${args[0]}" == "--osint-tools" ]]; then
+        install_tool "python_venv"
+        for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--domain-tools" ]]; then
-		_check_disk_space "${DOMAIN_ENUM[@]}"
-		install_tool "python_venv"
-		for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--domain-tools" ]]; then
+        install_tool "python_venv"
+        for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--recon-tools" ]]; then
-		_check_disk_space "${ACTIVE_RECON[@]}"
-		install_tool "rust"
-		for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--recon-tools" ]]; then
+        install_tool "rust"
+        for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--cti-tools" ]]; then
-		_check_disk_space "${CTI_TOOLS[@]}"
-		install_tool "python_venv"
-		install_tool "nodejs"
-		for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--cti-tools" ]]; then
+        install_tool "python_venv"
+        install_tool "nodejs"
+        for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--utility-tools" ]]; then
-		_check_disk_space "${UTILITY_TOOLS[@]}"
-		install_tool "rust"
-		for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--utility-tools" ]]; then
+        install_tool "rust"
+        for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--web-tools" ]]; then
-		_check_disk_space "${WEB_TOOLS[@]}"
-		for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--web-tools" ]]; then
+        for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	# ===== LEGACY RUNTIME FLAGS (deprecated, still functional) =====
-	if [[ "${args[0]}" == "--python-tools" ]]; then
-		echo -e "${WARNING}${WARN} --python-tools is deprecated. Use --osint-tools or --cti-tools instead.${NC}"
-		install_tool "python_venv"
-		for tool in "${ALL_PYTHON_TOOLS[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    # ===== LEGACY RUNTIME FLAGS (deprecated, still functional) =====
+    if [[ "${args[0]}" == "--python-tools" ]]; then
+        echo -e "${WARNING}${WARN} --python-tools is deprecated. Use --osint-tools or --cti-tools instead.${NC}"
+        install_tool "python_venv"
+        for tool in "${ALL_PYTHON_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--go-tools" ]]; then
-		echo -e "${WARNING}${WARN} --go-tools is deprecated. Use --osint-tools, --domain-tools, or --recon-tools instead.${NC}"
-		for tool in "${ALL_GO_TOOLS[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--go-tools" ]]; then
+        echo -e "${WARNING}${WARN} --go-tools is deprecated. Use --osint-tools, --domain-tools, or --recon-tools instead.${NC}"
+        for tool in "${ALL_GO_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--node-tools" ]]; then
-		echo -e "${WARNING}${WARN} --node-tools is deprecated. Use --cti-tools instead.${NC}"
-		install_tool "nodejs"
-		for tool in "${NODE_TOOLS[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--node-tools" ]]; then
+        echo -e "${WARNING}${WARN} --node-tools is deprecated. Use --cti-tools instead.${NC}"
+        install_tool "nodejs"
+        for tool in "${NODE_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	if [[ "${args[0]}" == "--rust-tools" ]]; then
-		echo -e "${WARNING}${WARN} --rust-tools is deprecated. Use --recon-tools or --utility-tools instead.${NC}"
-		install_tool "rust"
-		for tool in "${ALL_RUST_TOOLS[@]}"; do install_tool "$tool"; done
-		return
-	fi
+    if [[ "${args[0]}" == "--rust-tools" ]]; then
+        echo -e "${WARNING}${WARN} --rust-tools is deprecated. Use --recon-tools or --utility-tools instead.${NC}"
+        install_tool "rust"
+        for tool in "${ALL_RUST_TOOLS[@]}"; do install_tool "$tool"; done
+        return
+    fi
 
-	# Handle individual tool names
-	for tool in "${args[@]}"; do
-		install_tool "$tool"
-	done
+    # Handle individual tool names
+    for tool in "${args[@]}"; do
+        install_tool "$tool"
+    done
 }

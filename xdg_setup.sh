@@ -28,7 +28,7 @@ BLUE='\033[0;36m'
 NC='\033[0m'
 
 print_shell_reload_reminder() {
-	echo -e "${YELLOW}Reminder:${NC} Run 'source ~/.bashrc' or open a new shell to load the updated environment."
+    echo -e "${YELLOW}Reminder:${NC} Run 'source ~/.bashrc' or open a new shell to load the updated environment."
 }
 
 # Create complete XDG directory structure
@@ -84,7 +84,7 @@ echo ""
 
 # Add comprehensive environment configuration to .bashrc
 echo -e "${YELLOW}Configuring environment variables...${NC}"
-cat >>~/.bashrc <<'BASHRC_EOF'
+cat >> ~/.bashrc << 'BASHRC_EOF'
 
 # ===== XDG Base Directory Specification =====
 # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -186,7 +186,7 @@ echo ""
 
 # Create pip config for XDG compliance
 echo -e "${YELLOW}Configuring pip for XDG...${NC}"
-cat >"$HOME/.config/pip/pip.conf" <<'PIPCONF_EOF'
+cat > "$HOME/.config/pip/pip.conf" << 'PIPCONF_EOF'
 [global]
 cache-dir = ~/.cache/pip
 
@@ -199,7 +199,7 @@ echo ""
 
 # Create npm config for XDG compliance
 echo -e "${YELLOW}Configuring npm for XDG...${NC}"
-cat >"$HOME/.config/npm/npmrc" <<'NPMRC_EOF'
+cat > "$HOME/.config/npm/npmrc" << 'NPMRC_EOF'
 prefix=${HOME}/.local
 cache=${XDG_CACHE_HOME}/npm
 init-module=${XDG_CONFIG_HOME}/npm/npm-init.js
@@ -210,15 +210,15 @@ echo ""
 # Source the new configuration
 echo -e "${YELLOW}Loading new environment...${NC}"
 if source ~/.bashrc </dev/null 2>/dev/null; then
-	echo -e "${GREEN}[OK] Environment loaded${NC}"
+    echo -e "${GREEN}[OK] Environment loaded${NC}"
 else
-	echo -e "${YELLOW}Could not reload shell automatically.${NC}"
-	print_shell_reload_reminder
+    echo -e "${YELLOW}Could not reload shell automatically.${NC}"
+    print_shell_reload_reminder
 fi
 echo ""
 
 # Create XDG info documentation
-cat >~/.local/share/XDG_STRUCTURE.md <<'XDG_DOC_EOF'
+cat > ~/.local/share/XDG_STRUCTURE.md << 'XDG_DOC_EOF'
 # XDG Directory Structure
 
 This installation follows the XDG Base Directory Specification.

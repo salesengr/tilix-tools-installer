@@ -365,6 +365,9 @@ vulnerability-report.txt
 # Tilix-tools-installer specific additions
 # =============================================================================
 
+# Developer/testing scripts (remote agent, test harness) — not for public users
+scripts/dev/
+
 # News spider output (screenshots, PDFs, MHTMLs, run.log — can be large)
 output/
 

@@ -200,6 +200,7 @@ process_cli_args() {
 	if [[ "${args[0]}" == "--web-tools" ]]; then
 		_check_disk_space "${WEB_TOOLS[@]}"
 		for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
+		_ensure_web_launchers
 		return
 	fi
 

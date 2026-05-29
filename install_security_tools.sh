@@ -85,6 +85,54 @@ _check_disk_space() {
 	fi
 }
 
+# Function: _ensure_web_launchers
+# Purpose: Idempotently create GUI launcher scripts for web tools.
+# Called after --web-tools installs so launchers are created even when
+# the tool was already installed (install_tool skips already-installed tools).
+_ensure_web_launchers() {
+	mkdir -p "$HOME/.local/bin"
+
+	# chrome wrapper (created by install_playwright but skipped on reinstall)
+	if [ -f "/usr/bin/google-chrome" ] && [ ! -f "$HOME/.local/bin/chrome" ]; then
+		cat >"$HOME/.local/bin/chrome" <<'WRAPPER'
+#!/usr/bin/env bash
+nohup /usr/bin/google-chrome "$@" &>/dev/null &
+disown
+WRAPPER
+		chmod +x "$HOME/.local/bin/chrome"
+		echo -e "${SUCCESS}${CHECK} chrome launcher created${NC}"
+	fi
+
+	# yandex-browser wrapper (created by install_yandex_browser but skipped on reinstall)
+	if [ ! -f "$HOME/.local/bin/yandex-browser" ]; then
+		local yandex_bin
+		if [ -f "$HOME/opt/yandex-browser/opt/yandex/browser/yandex-browser" ]; then
+			yandex_bin="$HOME/opt/yandex-browser/opt/yandex/browser/yandex-browser"
+		elif [ -f "/opt/yandex/browser/yandex-browser" ]; then
+			yandex_bin="/opt/yandex/browser/yandex-browser"
+		fi
+		if [ -n "${yandex_bin:-}" ] && [ -f "$yandex_bin" ]; then
+			cat >"$HOME/.local/bin/yandex-browser" <<WRAPPER
+#!/usr/bin/env bash
+# Yandex Browser launcher — runs detached from terminal
+YANDEX_BIN="${yandex_bin}"
+if [ ! -f "\${YANDEX_BIN}" ]; then
+    echo "yandex-browser: binary not found — run: bash install_security_tools.sh yandex_browser" >&2
+    exit 1
+fi
+if [ -z "\${DISPLAY:-}" ]; then
+    echo "yandex-browser: DISPLAY not set — a display session is required" >&2
+    exit 1
+fi
+nohup "\${YANDEX_BIN}" "\$@" &>/dev/null &
+disown
+WRAPPER
+			chmod +x "$HOME/.local/bin/yandex-browser"
+			echo -e "${SUCCESS}${CHECK} yandex-browser launcher created${NC}"
+		fi
+	fi
+}
+
 # ===== SOURCE LIBRARY MODULES =====
 
 # Source in dependency order

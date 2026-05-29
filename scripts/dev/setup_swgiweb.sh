@@ -7,16 +7,11 @@
 #   jump-host    DNS name or IP of the SSH jump host (required)
 #   jump-user    SSH username on jump host (default: ubuntu)
 #   remote-port  Port to open on jump host (default: 19999)
-#
-# What this does:
-#   1. Installs the Python nc fallback if netcat is missing
-#   2. Gets the container's public IP (for NSG rule update on Mac)
-#   3. Generates a throwaway SSH key at /tmp/ck
-#   4. Prints the Mac-side commands needed (NSG + authorized_keys)
-#   5. Waits for you to confirm the Mac steps are done
-#   6. Starts the authenticated reverse SSH tunnel + command server
 
 set -uo pipefail
+
+# Always prepend ~/.local/bin so installed tools are available immediately
+export PATH="$HOME/.local/bin:${PATH}"
 
 JUMP_HOST="${1:?Usage: $0 <jump-host> [jump-user] [remote-port]}"
 JUMP_USER="${2:-ubuntu}"
@@ -31,19 +26,16 @@ echo "  Remote port: ${REMOTE_PORT}"
 echo "=========================================="
 echo ""
 
-# ── Step 1: Install nc fallback if netcat is missing ─────────────────────────
-if ! command -v nc &>/dev/null || ! nc -h 2>&1 | grep -q "\-z"; then
+# ── Step 1: Install nc fallback if needed ─────────────────────────────────────
+if ! command -v nc &>/dev/null; then
     echo ">>> Installing nc fallback..."
     bash "$(dirname "$0")/install_nc_fallback.sh" >/dev/null 2>&1
-    export PATH="$HOME/.local/bin:${PATH}"
 fi
 
 # ── Step 2: Get public IP ─────────────────────────────────────────────────────
 echo ">>> Getting container public IP..."
-PUBLIC_IP=$(bash "$(dirname "$0")/get_public_ip.sh" 2>/dev/null)
-if [[ -z "$PUBLIC_IP" ]]; then
-    PUBLIC_IP=$(curl -fsSL --max-time 10 'https://api.ipify.org?format=json' 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['ip'])" 2>/dev/null || echo "unknown")
-fi
+PUBLIC_IP=$(curl -fsSL --max-time 10 'https://api.ipify.org?format=json' 2>/dev/null \
+    | python3 -c "import sys,json; print(json.load(sys.stdin)['ip'])" 2>/dev/null || echo "unknown")
 echo "    Container IP: ${PUBLIC_IP}"
 
 # ── Step 3: Generate SSH key ──────────────────────────────────────────────────
@@ -71,9 +63,9 @@ echo ""
 read -r -p "Press Enter when the Mac steps above are complete..."
 echo ""
 
-# ── Step 4: Test connectivity ─────────────────────────────────────────────────
+# ── Step 4: Test connectivity via /dev/tcp (no nc needed) ────────────────────
 echo ">>> Testing connectivity to ${JUMP_HOST}:22..."
-if nc -zv -w 5 "${JUMP_HOST}" 22 2>/dev/null; then
+if timeout 5 bash -c "echo >/dev/tcp/${JUMP_HOST}/22" 2>/dev/null; then
     echo "    ✓ Reachable"
 else
     echo "    ✗ Cannot reach ${JUMP_HOST}:22 — check NSG rule and network"

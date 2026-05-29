@@ -48,11 +48,11 @@ fi
 
 echo ""
 echo "=========================================="
-echo "  ACTION REQUIRED ON YOUR MAC"
+echo "  ACTION REQUIRED ON YOUR ORCHESTRATOR"
 echo "=========================================="
 echo ""
 echo "  1. Update NSG rule (if IP changed):"
-echo "     update-tilix-nsg.sh ${PUBLIC_IP}"
+echo "     # Update your jump host NSG/firewall to allow SSH from ${PUBLIC_IP}"
 echo ""
 echo "  2. Add container key to jump host:"
 echo "     ssh ${JUMP_USER}@${JUMP_HOST} \\"
@@ -60,7 +60,7 @@ echo "       \"echo '$(cat "${SSH_KEY}.pub")' >> ~/.ssh/authorized_keys\""
 echo ""
 echo "=========================================="
 echo ""
-read -r -p "Press Enter when the Mac steps above are complete..."
+read -r -p "Press Enter when the steps above are complete on your orchestrator machine..."
 echo ""
 
 # ── Step 3: Test connectivity ─────────────────────────────────────────────────

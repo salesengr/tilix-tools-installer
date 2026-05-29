@@ -366,8 +366,6 @@ vulnerability-report.txt
 # =============================================================================
 
 # Developer/testing scripts (remote agent, test harness) — not for public users
-scripts/dev/remote_agent_setup_*.sh
-scripts/dev/test_harness.sh
 
 # News spider output (screenshots, PDFs, MHTMLs, run.log — can be large)
 output/

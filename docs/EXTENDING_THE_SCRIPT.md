@@ -119,7 +119,7 @@ if [ ! -f "/path/to/mytool-binary" ]; then
     exit 1
 fi
 if [ -z "${DISPLAY:-}" ]; then
-    echo "mytool: DISPLAY not set — start a VNC session first" >&2
+    echo "mytool: DISPLAY not set — a display session is required" >&2
     exit 1
 fi
 nohup /path/to/mytool-binary "$@" &>/dev/null &

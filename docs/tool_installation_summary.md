@@ -173,7 +173,7 @@ Also creates `~/.local/bin/chrome` — a detached launcher for the system Chrome
 playwright install --list           # List installed browsers
 playwright install chromium         # Install/update Chromium
 playwright codegen https://target   # Record browser actions as code
-chrome                              # Launch Chrome detached from terminal (requires VNC/display)
+chrome                              # Launch Chrome detached from terminal (requires a display session)
 google-chrome --version             # Check version (direct binary)
 ```
 
@@ -189,9 +189,11 @@ yandex-browser-beta --version       # Check version (direct binary)
 ### Tor Browser
 Installed to `~/opt/tor-browser/`. All traffic routed through the Tor network. Includes a convenience launcher at `~/.local/bin/tor-browser` that launches the browser detached using `nohup` + `disown`. The launcher also checks that the binary exists and that `DISPLAY` is set, printing a clear error and exiting if either check fails.
 
+**Version:** Pinned to **14.0.7** (Firefox 128.8.0esr) from `archive.torproject.org`. Tor Browser 15.x introduced wasm sandboxing (`wasm_rt_syscall_set_segue_base`) that crashes immediately in rootless containers due to seccomp policy restrictions; 14.0.7 is the last stable release without this issue.
+
 **Note:** The Tor Browser bundles its own Tor daemon. For programmatic use (curl, Python requests), start the bundled Tor daemon separately and connect via SOCKS5 on `localhost:9050`.
 ```bash
-tor-browser                         # Launch detached from terminal via nohup + disown (requires VNC)
+tor-browser                         # Launch detached from terminal via nohup + disown (requires a display session)
 ```
 
 ### SpiderFoot

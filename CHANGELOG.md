@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-05-29
+
+### Fixed
+- **Tor Browser pinned to 14.0.7** from the official Tor archive (`archive.torproject.org`). Tor Browser 15.x introduced wasm sandboxing (`wasm_rt_syscall_set_segue_base`) that crashes immediately in rootless containers due to seccomp policy restrictions. 14.0.7 (Firefox 128.8.0esr) works correctly and is the last stable release without this issue.
+- **`chrome` and `yandex-browser` launchers** now created reliably in all install paths: `--web-tools`, individual tool install (`bash install_security_tools.sh playwright` / `yandex_browser`), and when re-running with the tool already installed. Previously the launcher was only created if the tool was freshly installed.
+- **Menu install status rescans on each redraw** — `[✓]` now updates immediately when a tool is installed without restarting the installer script.
+- **Launcher error messages** no longer reference VNC — updated to "a display session is required".
+
 ## [1.5.1] - 2026-05-29
 
 ### Fixed

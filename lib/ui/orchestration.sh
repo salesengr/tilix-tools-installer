@@ -17,6 +17,10 @@ install_tool() {
 	# Check if already installed
 	if is_installed "$tool"; then
 		echo -e "${GREEN}[OK] $tool already installed${NC}"
+		# Always ensure launchers exist for web tools even on re-install
+		case "$tool" in
+		playwright | yandex_browser) _ensure_web_launchers ;;
+		esac
 		return 0
 	fi
 
@@ -71,8 +75,8 @@ install_tool() {
 	doggo) install_doggo ;;
 	aria2) install_aria2 ;;
 	seleniumbase) install_seleniumbase ;;
-	playwright) install_playwright ;;
-	yandex_browser) install_yandex_browser ;;
+	playwright) install_playwright; _ensure_web_launchers ;;
+	yandex_browser) install_yandex_browser; _ensure_web_launchers ;;
 	tor_browser) install_tor_browser ;;
 	qtox) install_qtox ;;
 	*)

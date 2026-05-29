@@ -444,6 +444,7 @@ WGETRC_EOF
 		fi
 
 		while true; do
+			scan_installed_tools  # refresh [✓]/[ ] status before each menu draw
 			show_menu
 			read -r selection
 

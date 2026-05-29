@@ -1091,7 +1091,7 @@ if [ ! -f "\${YANDEX_BIN}" ]; then
     exit 1
 fi
 if [ -z "\${DISPLAY:-}" ]; then
-    echo "yandex-browser: DISPLAY not set — start a VNC session first" >&2
+    echo "yandex-browser: DISPLAY not set — a display session is required" >&2
     exit 1
 fi
 nohup "\${YANDEX_BIN}" "\$@" &>/dev/null &
@@ -1187,7 +1187,7 @@ if [ ! -f "${HOME}/opt/tor-browser/Browser/start-tor-browser" ]; then
     exit 1
 fi
 if [ -z "\${DISPLAY:-}" ]; then
-    echo "tor-browser: DISPLAY not set — start a VNC session first" >&2
+    echo "tor-browser: DISPLAY not set — a display session is required" >&2
     exit 1
 fi
 nohup "${HOME}/opt/tor-browser/Browser/start-tor-browser" "\$@" &>/dev/null &

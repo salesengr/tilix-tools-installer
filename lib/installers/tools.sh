@@ -1117,20 +1117,17 @@ install_tor_browser() {
 
 		mkdir -p "$HOME/opt"
 
-		# Fetch latest version from Tor Project dist
-		local version
-		version=$(curl -fsSL "https://www.torproject.org/dist/torbrowser/" 2>/dev/null |
-			grep -oE 'href="[0-9]+\.[0-9.]+/"' |
-			grep -oE '[0-9]+\.[0-9.]+' |
-			sort -V | tail -1)
-
-		if [[ -z "$version" ]]; then
-			version="15.0.8" # fallback to known good version
-		fi
+		# Pinned to 14.0.7 from the official Tor archive.
+		# Tor Browser 15.x introduced wasm sandboxing (wasm_rt_syscall_set_segue_base)
+		# that crashes immediately in rootless containers due to seccomp policy restrictions.
+		# 14.0.7 is the last stable release without this issue.
+		# Archive URL: https://archive.torproject.org/tor-package-archive/torbrowser/
+		local version="14.0.7"
+		local base_url="https://archive.torproject.org/tor-package-archive/torbrowser"
 
 		echo "Installing Tor Browser $version..."
 		local filename="tor-browser-linux-x86_64-${version}.tar.xz"
-		local url="https://www.torproject.org/dist/torbrowser/${version}/${filename}"
+		local url="${base_url}/${version}/${filename}"
 
 		# GPG is required for signature verification
 		if ! command -v gpg &>/dev/null; then

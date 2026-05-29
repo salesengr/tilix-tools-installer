@@ -5,8 +5,6 @@
 
 
 
-**Version:** 1.4.3
-
 The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 
 ## What Already Exists
@@ -18,7 +16,7 @@ The installer is intentionally data-driven and modular: every tool is described 
 - **Active Recon (4):** httprobe, rustscan, feroxbuster, nuclei
 - **CTI (5):** shodan, censys, yara, trufflehog, virustotal
 - **Security Testing (1):** jwt-cracker
-- **Utilities (6):** ripgrep, fd, bat, sd, dog, aria2
+- **Utilities (6):** ripgrep, fd, bat, sd, doggo, aria2
 - **Web Tools (5):** seleniumbase, playwright, yandex_browser, tor_browser, qtox
 
 ## Add or Modify a Tool (v1.4.0 Modular Process)

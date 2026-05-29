@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.4.3 | **Release Date:** May 27, 2026
+**Version:** 1.5.0 | **Release Date:** May 29, 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest and web automation tools. No sudo required — everything installs to `~/.local/`.
 
@@ -74,7 +74,7 @@ Tools are organized by use-case. → **[Full tool list with descriptions](https:
 | Active Recon & Scanning | httprobe, rustscan, feroxbuster, nuclei | `--recon-tools` |
 | Cyber Threat Intelligence | shodan, censys, yara, trufflehog, virustotal | `--cti-tools` |
 | Security Testing | jwt-cracker | — |
-| Utilities | ripgrep, fd, bat, sd, dog, aria2 | `--utility-tools` |
+| Utilities | ripgrep, fd, bat, sd, doggo, aria2 | `--utility-tools` |
 | Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox | `--web-tools` |
 
 ---
@@ -238,6 +238,6 @@ Scripts in `scripts/dev/` are for testing and remote orchestration — not inten
 | `remote_agent_setup_ssh_tunnel.sh` | Direct reverse SSH tunnel (most reliable) |
 | `remote_agent_setup_serveo.sh` | serveo.net SSH tunnel fallback |
 | `remote_agent_setup_localrun.sh` | localhost.run tunnel fallback |
-| `test_harness.sh` | Install + verify a tool category |
+| `scripts/dev/test_harness.sh` | Install + verify a tool category |
 | `get_public_ip.sh` | Get container public IP via ipify |
 | `install_nc_fallback.sh` | Python netcat replacement with -z/-v/-w support |

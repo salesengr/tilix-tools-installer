@@ -71,6 +71,7 @@ Go-based applications are built from source via `go install <module>@latest`. Co
 | waybackurls | `github.com/tomnomnom/waybackurls` | `~/opt/gopath/bin/waybackurls` |
 | assetfinder | `github.com/tomnomnom/assetfinder` | `~/opt/gopath/bin/assetfinder` |
 | subfinder | `github.com/projectdiscovery/subfinder/v2/cmd/subfinder` | `~/opt/gopath/bin/subfinder` |
+| amass | `github.com/owasp-amass/amass/v4/...` (prebuilt musl binary via GitHub releases) | `~/.local/bin/amass` |
 | nuclei | `github.com/projectdiscovery/nuclei/v3/cmd/nuclei` | `~/opt/gopath/bin/nuclei` |
 | virustotal | `github.com/VirusTotal/vt-cli/vt` | `~/opt/gopath/bin/vt` (invoke `vt ...`) |
 
@@ -99,7 +100,7 @@ Cargo installs place binaries in `~/.local/share/cargo/bin`. The installer sets 
 | bat | `bat` | `~/.local/share/cargo/bin/bat` |
 | sd | `sd` | `~/.local/share/cargo/bin/sd` |
 | ~~tokei~~ | *Removed in v1.4.0* | — | No pre-built binary available; low security relevance. |
-| dog | `dog` | `~/.local/share/cargo/bin/dog` |
+| doggo | `~/.local/bin/doggo` | Installed as prebuilt musl binary via mr-karan/doggo |
 
 ## Utility Tools
 

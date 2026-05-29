@@ -74,7 +74,7 @@ _check_disk_space() {
 	for tool in "$@"; do
 		local size="${TOOL_SIZES[$tool]:-0}"
 		local size_int="${size%MB}"
-		size_int="${size_int%%.*}"  # strip decimal — bash arithmetic is integer-only
+		size_int="${size_int%%.*}" # strip decimal — bash arithmetic is integer-only
 		required_mb=$((required_mb + ${size_int:-0}))
 	done
 	local available_mb

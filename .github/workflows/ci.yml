@@ -26,9 +26,9 @@ jobs:
         run: |
           find . -name '*.sh' -print0 | xargs -0 shellcheck --exclude=SC1090,SC1091
 
-      - name: shfmt check (advisory)
+      - name: shfmt check
         run: |
-          shfmt -d . || true
+          shfmt -d .
 
       - name: Prepare XDG environment for smoke test
         run: |
@@ -45,12 +45,36 @@ jobs:
         run: |
           sudo apt-get install -y nodejs npm
 
-      - name: Node security audit coverage (advisory)
+      - name: Node security audit coverage
         run: |
-          scripts/node_security_audit.sh node-audit-report.json || true
+          scripts/node_security_audit.sh node-audit-report.json
 
       - name: Upload node audit report
         uses: actions/upload-artifact@v4
         with:
           name: node-audit-report
           path: node-audit-report.json
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - category: domain-tools
+            flag: --domain-tools
+          - category: recon-tools
+            flag: --recon-tools
+          - category: cti-tools
+            flag: --cti-tools
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ${{ matrix.category }} in Docker
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            ubuntu:22.04 \
+            bash -c "
+              cd /repo && bash xdg_setup.sh && source ~/.bashrc || true
+              bash install_security_tools.sh ${{ matrix.flag }}
+            "

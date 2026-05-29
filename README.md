@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.4.2 | **Release Date:** April 7, 2026
+**Version:** 1.5.0 | **Release Date:** May 29, 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest and web automation tools. No sudo required — everything installs to `~/.local/`.
 
@@ -10,7 +10,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 
 ## 🎯 Features
 
-- ✅ **36 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
+- ✅ **37 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
 - ✅ **No sudo required** — complete user-space installation
 - ✅ **Pre-built binaries** — fast installs via GitHub releases; compile-from-source as fallback
 - ✅ **Use-case categories** — install exactly what you need with one command
@@ -19,7 +19,8 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 - ✅ **Interactive menu** — point-and-click installation
 - ✅ **XDG compliant** — follows Linux filesystem standards
 - ✅ **Shellcheck clean** — zero warnings across all scripts
-- ✅ **Detached GUI launchers** — GUI tools (`chrome`, `yandex-browser`, `tor-browser`, `qtox`, `spiderfoot`) background automatically so they don't block the terminal
+- ✅ **Detached GUI launchers** — GUI tools (`chrome`, `yandex-browser`, `tor-browser`, `qtox`, `spiderfoot`) background automatically using `nohup` + `disown`; guard checks verify binary presence and `DISPLAY` before launching
+- ✅ **News spider script** — `scripts/news_spider_playwright.py` captures screenshots, PDFs, and MHTML snapshots of news sites (BBC, Nikkei, Google News); no installer entry needed
 
 ---
 
@@ -34,7 +35,7 @@ bash installer.sh
 Or install by category directly:
 
 ```bash
-bash install_security_tools.sh --osint-tools      # Passive OSINT (12 tools)
+bash install_security_tools.sh --osint-tools      # Passive OSINT (13 tools)
 bash install_security_tools.sh --domain-tools     # Domain & Subdomain Enum (3 tools)
 bash install_security_tools.sh --recon-tools      # Active Recon & Scanning (4 tools)
 bash install_security_tools.sh --cti-tools        # Cyber Threat Intel (5 tools)
@@ -47,18 +48,33 @@ After install, reload your shell: `source ~/.bashrc`
 
 ---
 
+## ⚙️ Tool Configuration
+
+Some tools require API key setup before they return results:
+
+| Tool | Setup Command | Get Key From |
+|------|--------------|--------------|
+| shodan | `shodan init <key>` | [account.shodan.io](https://account.shodan.io) |
+| censys | `censys config` | [search.censys.io/account/api](https://search.censys.io/account/api) |
+| virustotal | `vt init` | [virustotal.com/gui/my-apikey](https://www.virustotal.com/gui/my-apikey) |
+| h8mail | Edit `~/.config/h8mail.ini` | See [h8mail docs](https://github.com/khast3x/h8mail) |
+
+Tools without setup work immediately after install.
+
+---
+
 ## 📦 What Gets Installed
 
 Tools are organized by use-case. → **[Full tool list with descriptions](https://github.com/salesengr/tilix-tools-installer/wiki/Tool-Categories)**
 
 | Category | Tools | Flag |
 |----------|-------|------|
-| Passive OSINT | sherlock, holehe, theHarvester, spiderfoot, subfinder, git-hound + 6 more | `--osint-tools` |
+| Passive OSINT | sherlock, holehe, theHarvester, spiderfoot, subfinder, git-hound, amass + 6 more | `--osint-tools` |
 | Domain & Subdomain Enum | sublist3r, gobuster, ffuf | `--domain-tools` |
 | Active Recon & Scanning | httprobe, rustscan, feroxbuster, nuclei | `--recon-tools` |
 | Cyber Threat Intelligence | shodan, censys, yara, trufflehog, virustotal | `--cti-tools` |
 | Security Testing | jwt-cracker | — |
-| Utilities | ripgrep, fd, bat, sd, dog, aria2 | `--utility-tools` |
+| Utilities | ripgrep, fd, bat, sd, doggo, aria2 | `--utility-tools` |
 | Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox | `--web-tools` |
 
 ---
@@ -149,10 +165,16 @@ nuclei -u https://target.com
 # Web Tools (all GUI launchers background automatically)
 chrome                                        # launch Chrome detached
 yandex-browser                               # launch Yandex Browser detached
-tor-browser                                  # launch Tor Browser detached (--detach)
+tor-browser                                  # launch Tor Browser detached (nohup + disown)
 qtox                                         # launch qTox detached
 sbase get https://example.com --headless      # SeleniumBase headless screenshot
+
+# News Spider (requires: playwright install chromium)
+python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
+python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
 ```
+
+> **Playwright note:** After `bash install_security_tools.sh playwright`, run `playwright install chromium` to download the Chromium binary (~300 MB) required by the news spider and other scripts that launch their own browser.
 
 → **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)**
 
@@ -203,3 +225,19 @@ See [CHANGELOG.md](CHANGELOG.md) for full version history.
 [MIT License](LICENSE) — Copyright (c) 2026 salesengr
 
 Provided as-is for educational and professional security testing. Always obtain proper authorization before testing systems you don't own.
+
+---
+
+## 🛠 Developer Tools
+
+Scripts in `scripts/dev/` are for testing and remote orchestration — not intended for trial users.
+
+| Script | Purpose |
+|--------|---------|
+| `remote_agent_setup_bore.sh` | bore tunnel for remote container access |
+| `remote_agent_setup_ssh_tunnel.sh` | Direct reverse SSH tunnel (most reliable) |
+| `remote_agent_setup_serveo.sh` | serveo.net SSH tunnel fallback |
+| `remote_agent_setup_localrun.sh` | localhost.run tunnel fallback |
+| `scripts/dev/test_harness.sh` | Install + verify a tool category |
+| `get_public_ip.sh` | Get container public IP via ipify |
+| `install_nc_fallback.sh` | Python netcat replacement with -z/-v/-w support |

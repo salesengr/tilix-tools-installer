@@ -59,7 +59,7 @@ The script attempts to reload `.bashrc` for you; if that is not possible (non-in
 â”‚   â”œâ”€â”€ applications/      # Desktop application shortcuts
 â”‚   â”œâ”€â”€ man/               # Manual pages
 â”‚   â”‚   â””â”€â”€ man1/
-â”‚   â””â”€â”€ virtualenvs/       # Python virtual environments
+â”‚   â””â”€â”€ virtualenvs/       # Python virtual environments (legacy — pip --user is used now)
 â””â”€â”€ state/                  # Application state data
 
 ~/.config/                  # Configuration files
@@ -77,11 +77,11 @@ The script attempts to reload `.bashrc` for you; if that is not possible (non-in
 #### Additional Directories
 ```
 ~/opt/
-â”œâ”€â”€ tools/                  # Standalone tools and binaries
-â”œâ”€â”€ go/                     # Go language installation
-â”œâ”€â”€ gopath/                 # Go workspace
-â””â”€â”€ src/                    # Source code repositories
+â”œ tools/                  # Standalone tools and binaries
+â”” gopath/                 # Go workspace (Go itself is system-wide at /usr/local/go)
 ```
+
+> **Go note:** `~/opt/go/` is no longer created. Go is pre-installed system-wide; only the user workspace (`~/opt/gopath/`) is needed.
 
 ### 2. Configures Environment Variables
 
@@ -115,11 +115,13 @@ export PIP_CACHE_DIR="$XDG_CACHE_HOME/pip"
 
 #### Go Configuration
 ```bash
-export GOROOT="$HOME/opt/go"
+export GOROOT="/usr/local/go"
 export GOPATH="$HOME/opt/gopath"
 export GOCACHE="$XDG_CACHE_HOME/go-build"
 export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
 ```
+
+> **Note:** Go is pre-installed system-wide at `/usr/local/go` in the Tilix image. `GOROOT` points there directly; the installer does not download or manage the Go toolchain.
 
 #### npm Configuration (XDG Compliant)
 ```bash

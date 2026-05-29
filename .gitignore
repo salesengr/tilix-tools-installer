@@ -365,6 +365,19 @@ vulnerability-report.txt
 # Tilix-tools-installer specific additions
 # =============================================================================
 
+# Developer/testing scripts (remote agent, test harness) — not for public users
+scripts/dev/
+
+# News spider output (screenshots, PDFs, MHTMLs, run.log — can be large)
+output/
+
+# nohup output (created when backgrounding processes in the repo directory)
+nohup.out
+
+# Remote agent setup artifacts
+/tmp/cmd_server.py
+/tmp/cmd_server.log
+
 # Playwright browser binaries (downloaded via playwright install)
 ~/.cache/ms-playwright/
 

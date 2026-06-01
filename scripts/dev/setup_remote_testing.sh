@@ -86,7 +86,7 @@ sleep 1
 # ── Step 6: Write and start Python command server ─────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
 cat > /tmp/cmd_server.py << PYEOF
-import http.server, subprocess, json, os
+import http.server, subprocess, json, os, socketserver
 
 REQUIRED_TOKEN = "${CMD_TOKEN}"
 
@@ -128,6 +128,7 @@ http.server.HTTPServer(("127.0.0.1", ${SERVER_PORT}), CommandHandler).serve_fore
 PYEOF
 
 python3 /tmp/cmd_server.py >"${SERVER_LOG}" 2>&1 &
+rm -f /tmp/cmd_server.py  # token now only in process memory
 SERVER_PID=$!
 sleep 2
 

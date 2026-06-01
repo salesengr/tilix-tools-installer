@@ -59,7 +59,7 @@ sleep 1
 # ── Write and start Python command server ─────────────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
 cat >/tmp/cmd_server.py <<PYEOF
-import http.server, subprocess, json, os
+import http.server, subprocess, json, os, socketserver
 
 REQUIRED_TOKEN = "${CMD_TOKEN}"
 
@@ -99,10 +99,14 @@ class CommandHandler(http.server.BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass
 
-http.server.HTTPServer(("127.0.0.1", 9000), CommandHandler).serve_forever()
+class _ThreadedServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+
+_ThreadedServer(("127.0.0.1", 9000), CommandHandler).serve_forever()
 PYEOF
 
 python3 /tmp/cmd_server.py >"${SERVER_LOG}" 2>&1 &
+rm -f /tmp/cmd_server.py  # token now only in process memory
 SERVER_PID=$!
 sleep 2
 

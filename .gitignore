@@ -396,3 +396,4 @@ opt/
 
 # Shellcheck and lint reports
 .shellcheck/
+.worktrees/

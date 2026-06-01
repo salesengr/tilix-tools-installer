@@ -23,6 +23,7 @@ Requirements:
 """
 
 import argparse
+import base64
 import logging
 import re
 import sys
@@ -361,7 +362,6 @@ def main() -> None:
                         {"printBackground": True, "preferCSSPageSize": True},
                     )
                     raw = pdf_data.get("data", "")
-                    import base64
                     pdf_bytes = base64.b64decode(raw) if raw else None
 
                 mhtml_bytes: Optional[bytes] = None

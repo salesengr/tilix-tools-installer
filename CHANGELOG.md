@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-06-17
+
+### Added
+- **browser-harness** — new Web Tool ([browser-use/browser-harness](https://github.com/browser-use/browser-harness)). LLM-to-Chrome CDP harness; cloned to `~/opt/browser-harness` and installed as an editable `uv` tool. `uv` is auto-installed (user-space) if not present. Registers `SKILL.md` with Claude Code automatically if `~/.claude/CLAUDE.md` exists. Menu slot [41].
+
+### Changed
+- **Playwright installer** now downloads Chromium browser binaries (`playwright install chromium`) instead of skipping the download with `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`. Size estimate updated from 100MB → 300MB.
+- **Menu renumbered**: bulk install options shifted from [44–50] → [45–51] to accommodate browser-harness at [41].
+
+### Updated
+- **theHarvester** pinned version bumped `4.11.0` → `4.11.1`.
+- **qTox** pinned version bumped `v1.18.4` → `v1.18.5`.
+- **trufflehog** fallback binary bumped `v3.93.3` → `v3.95.5`; SHA256 checksum updated (verified 2026-06-17).
+
 ## [1.5.2] - 2026-05-29
 
 ### Fixed

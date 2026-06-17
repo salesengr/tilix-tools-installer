@@ -20,7 +20,7 @@ Usage:
     python scripts/news_spider_playwright.py --site bbc --dry-run
 
 Requirements:
-    playwright install chromium  (after: bash install_security_tools.sh playwright)
+    bash install_security_tools.sh playwright
 """
 
 import argparse
@@ -354,7 +354,7 @@ async def main() -> None:
     except ImportError:
         print(
             "ERROR: playwright not installed.\n"
-            "  Run: bash install_security_tools.sh playwright && playwright install chromium",
+            "  Run: bash install_security_tools.sh playwright",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -365,7 +365,17 @@ async def main() -> None:
     print(f"  URL: {index_url}")
 
     async with async_playwright() as pw:
-        browser: Browser = await pw.chromium.launch(headless=args.headless)
+        try:
+            browser: Browser = await pw.chromium.launch(headless=args.headless)
+        except Exception as e:
+            if "Executable doesn't exist" in str(e) or "executable" in str(e).lower():
+                print(
+                    "ERROR: Playwright Chromium binary not found.\n"
+                    "  Run: bash install_security_tools.sh playwright",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            raise
         page: Page = await browser.new_page()
 
         try:

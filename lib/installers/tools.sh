@@ -147,7 +147,7 @@ install_theHarvester() {
 		python_bin=$(_get_python_bin)
 
 		# Pinned to a specific tag — update deliberately after review
-		local THEHARVESTER_VERSION="4.11.0"
+		local THEHARVESTER_VERSION="4.11.1"
 		echo "Installing theHarvester ${THEHARVESTER_VERSION} from GitHub..."
 		"$python_bin" -m pip install --user --quiet \
 			"git+https://github.com/laramies/theHarvester.git@${THEHARVESTER_VERSION}" || return 1
@@ -936,10 +936,7 @@ install_seleniumbase() {
 }
 
 # Function: install_playwright
-# Purpose: Install Playwright Python package.
-#          Uses the system Chrome (/usr/bin/google-chrome) already present in
-#          the Tilix image — avoids downloading 620MB+ of Chromium binaries.
-#          Set PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 to prevent any browser download.
+# Purpose: Install Playwright Python package and download Chromium browser binaries.
 install_playwright() {
 	local logfile
 	logfile=$(create_tool_log "playwright")
@@ -950,12 +947,9 @@ install_playwright() {
 		local python_bin
 		python_bin=$(_get_python_bin)
 		mkdir -p "$HOME/.local/bin"
-		# Install playwright Python package only — no browser download needed.
-		# The Tilix image ships Google Chrome at /usr/bin/google-chrome.
-		# Use: playwright.chromium.launch(executable_path="/usr/bin/google-chrome")
-		PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 "$python_bin" -m pip install --user --quiet playwright || return 1
-		echo "NOTE: Using system Chrome at /usr/bin/google-chrome"
-		echo "      Pass executable_path='/usr/bin/google-chrome' to launch()"
+		"$python_bin" -m pip install --user --quiet playwright || return 1
+		echo "Downloading Playwright Chromium browser binaries..."
+		"$python_bin" -m playwright install chromium || return 1
 
 		# Create a detached launcher so `chrome` can be opened from the terminal
 		# without keeping the shell attached. Uses nohup + disown, same pattern
@@ -972,6 +966,71 @@ WRAPPER
 		echo "Completed: $(date)"
 	} >"$logfile" 2>&1
 	_record_install_result "playwright" "$logfile"
+}
+
+# Function: install_browser_harness
+# Purpose: Install browser-harness (browser-use/browser-harness) via git clone + uv tool install.
+#          Connects to Chrome via CDP — requires a running Chromium-based browser.
+#          Cloned to ~/opt/browser-harness; editable install via uv.
+#          uv is installed automatically (user-space) if not already present.
+install_browser_harness() {
+	local logfile
+	logfile=$(create_tool_log "browser_harness")
+	echo -e "${INFO}⚙ Installing browser-harness...${NC}"
+	{
+		echo "Installing browser_harness"
+		echo "Started: $(date)"
+		local python_bin
+		python_bin=$(_get_python_bin)
+
+		# Verify Python >=3.11
+		local py_minor py_major
+		py_major=$("$python_bin" -c "import sys; print(sys.version_info.major)" 2>/dev/null)
+		py_minor=$("$python_bin" -c "import sys; print(sys.version_info.minor)" 2>/dev/null)
+		if [[ "$py_major" -lt 3 ]] || { [[ "$py_major" -eq 3 ]] && [[ "$py_minor" -lt 11 ]]; }; then
+			echo "ERROR: browser-harness requires Python >=3.11 (found $py_major.$py_minor)"
+			return 1
+		fi
+		echo "Python $py_major.$py_minor — OK"
+
+		# Install uv if missing — official installer is user-space, no sudo needed
+		if ! command -v uv &>/dev/null; then
+			echo "uv not found — installing via official installer..."
+			curl -LsSf https://astral.sh/uv/install.sh | sh || return 1
+			# Reload PATH so uv is available immediately
+			export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+			if ! command -v uv &>/dev/null; then
+				echo "ERROR: uv install succeeded but binary not found in PATH"
+				return 1
+			fi
+		fi
+		echo "uv $(uv --version) — OK"
+
+		local clone_dir="$HOME/opt/browser-harness"
+		if [[ -d "$clone_dir/.git" ]]; then
+			echo "Updating existing clone at $clone_dir..."
+			git -C "$clone_dir" pull --ff-only || return 1
+		else
+			echo "Cloning browser-harness..."
+			mkdir -p "$HOME/opt"
+			git clone --depth 1 "https://github.com/browser-use/browser-harness" "$clone_dir" || return 1
+		fi
+
+		echo "Installing via uv tool install -e ..."
+		uv tool install -e "$clone_dir" || return 1
+
+		# Register SKILL.md with Claude Code if ~/.claude/CLAUDE.md exists
+		local claude_md="$HOME/.claude/CLAUDE.md"
+		local skill_line="@$clone_dir/SKILL.md"
+		if [[ -f "$claude_md" ]] && ! grep -qF "$skill_line" "$claude_md"; then
+			echo "" >> "$claude_md"
+			echo "$skill_line" >> "$claude_md"
+			echo "Registered SKILL.md with Claude Code at $claude_md"
+		fi
+
+		echo "Completed: $(date)"
+	} >"$logfile" 2>&1
+	_record_install_result "browser_harness" "$logfile"
 }
 
 # Function: install_yandex_browser
@@ -1276,7 +1335,7 @@ install_qtox() {
 
 		# Fetch latest release asset URL
 		# Pinned to a specific release — update deliberately after review
-		local QTOX_VERSION="v1.18.4"
+		local QTOX_VERSION="v1.18.5"
 		local api_url="https://api.github.com/repos/TokTok/qTox/releases/tags/${QTOX_VERSION}"
 		local asset_url
 		asset_url=$(curl -fsSL "$api_url" 2>/dev/null |

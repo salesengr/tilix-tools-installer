@@ -52,13 +52,13 @@ show_menu() {
 	echo "  [37] $(_tool_status doggo)doggo          [38] $(_tool_status aria2)aria2"
 	echo ""
 	echo -e "${CATEGORY}WEB TOOLS:${NC}"
-	echo "  [39] $(_tool_status seleniumbase)seleniumbase  [40] $(_tool_status playwright)playwright      [41] $(_tool_status yandex_browser)yandex-browser  [42] $(_tool_status tor_browser)tor-browser"
-	echo "  [43] $(_tool_status qtox)qtox"
+	echo "  [39] $(_tool_status seleniumbase)seleniumbase  [40] $(_tool_status playwright)playwright      [41] $(_tool_status browser_harness)browser-harness [42] $(_tool_status yandex_browser)yandex-browser"
+	echo "  [43] $(_tool_status tor_browser)tor-browser   [44] $(_tool_status qtox)qtox"
 	echo ""
 	echo -e "${CATEGORY}BULK INSTALL:${NC}"
-	echo "  [44] All Passive OSINT    [45] All Domain/Subdomain    [46] All Active Recon"
-	echo "  [47] All CTI              [48] All Utilities           [49] All Web Tools"
-	echo "  [50] Install Everything"
+	echo "  [45] All Passive OSINT    [46] All Domain/Subdomain    [47] All Active Recon"
+	echo "  [48] All CTI              [49] All Utilities           [50] All Web Tools"
+	echo "  [51] Install Everything"
 	echo ""
 	echo -e "${CATEGORY}INFO:${NC} [T] Show Installed Tools  [L] Show Logs  [Q] Quit"
 	echo ""
@@ -135,36 +135,37 @@ process_menu_selection() {
 	# WEB TOOLS (39-43)
 	39) install_tool "seleniumbase" ;;
 	40) install_tool "playwright" ;;
-	41) install_tool "yandex_browser" ;;
-	42) install_tool "tor_browser" ;;
-	43) install_tool "qtox" ;;
+	41) install_tool "browser_harness" ;;
+	42) install_tool "yandex_browser" ;;
+	43) install_tool "tor_browser" ;;
+	44) install_tool "qtox" ;;
 
-	# BULK INSTALL (44-50)
-	44)
+	# BULK INSTALL (45-51)
+	45)
 		install_tool "python_venv"
 		for tool in "${PASSIVE_OSINT[@]}"; do install_tool "$tool"; done
 		;;
-	45)
+	46)
 		install_tool "python_venv"
 		for tool in "${DOMAIN_ENUM[@]}"; do install_tool "$tool"; done
 		;;
-	46)
+	47)
 		install_tool "rust"
 		for tool in "${ACTIVE_RECON[@]}"; do install_tool "$tool"; done
 		;;
-	47)
+	48)
 		install_tool "python_venv"
 		install_tool "nodejs"
 		for tool in "${CTI_TOOLS[@]}"; do install_tool "$tool"; done
 		;;
-	48)
+	49)
 		install_tool "rust"
 		for tool in "${UTILITY_TOOLS[@]}"; do install_tool "$tool"; done
 		;;
-	49)
+	50)
 		for tool in "${WEB_TOOLS[@]}"; do install_tool "$tool"; done
 		;;
-	50)
+	51)
 		echo -e "${WARNING}${WARN} Installing ALL tools — this will take 30-60 minutes${NC}"
 		read -r -p "Continue? (yes/no): " confirm
 		if [[ "$confirm" == "yes" ]]; then

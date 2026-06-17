@@ -148,7 +148,7 @@ Web automation tools enable browser-based OSINT, stealth scraping, captcha bypas
 | Tool | Installation Method | Binary / Entry Point |
 |------|--------------------|--------------------|
 | SeleniumBase | `pip install --user seleniumbase` | `~/.local/bin/sbase` |
-| Playwright | `pip install --user playwright` + `playwright install chromium` | `~/.local/bin/playwright` + `~/.local/share/ms-playwright/` |
+| Playwright | `bash install_security_tools.sh playwright` (includes Chromium download) | `~/.local/bin/playwright` + `~/.cache/ms-playwright/` |
 | Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` + `~/.local/bin/yandex-browser` |
 | Tor Browser | tarball from `torproject.org/dist/torbrowser/` | `~/opt/tor-browser/Browser/start-tor-browser` + `~/.local/bin/tor-browser` |
 | qTox | AppImage extract from `github.com/TokTok/qTox` | `~/opt/qtox/squashfs-root/AppRun` + `~/.local/bin/qtox` |
@@ -171,7 +171,7 @@ Cross-browser automation supporting Chromium, Firefox, and WebKit. Browser binar
 Also creates `~/.local/bin/chrome` — a detached launcher for the system Chrome (`/usr/bin/google-chrome`) using `nohup` + `disown`. The `google-chrome` binary is left untouched for programmatic use by Playwright and SeleniumBase.
 ```bash
 playwright install --list           # List installed browsers
-playwright install chromium         # Install/update Chromium
+playwright install chromium         # Re-install/update Chromium (already run by installer)
 playwright codegen https://target   # Record browser actions as code
 chrome                              # Launch Chrome detached from terminal (requires a display session)
 google-chrome --version             # Check version (direct binary)
@@ -222,11 +222,11 @@ Scripts in the `scripts/` directory run directly from the repo and do not create
 
 | Script | Requires | Description |
 |--------|----------|-------------|
-| `scripts/news_spider_playwright.py` | `playwright` + `playwright install chromium` | Captures screenshots, PDFs, and MHTML snapshots of news sites |
+| `scripts/news_spider_playwright.py` | `playwright` (via `bash install_security_tools.sh playwright`) | Captures screenshots, PDFs, and MHTML snapshots of news sites |
 
 ### news_spider_playwright.py
 
-Playwright-based news spider that crawls supported news sites and saves timestamped output to `output/<site>/mm-dd-yyyy-HH-MM/`. Uses Playwright's own Chromium (not system Chrome) — requires `playwright install chromium` after the Playwright installer step.
+Playwright-based news spider that crawls supported news sites and saves timestamped output to `output/<site>/mm-dd-yyyy-HH-MM/`. Uses Playwright's own Chromium (not system Chrome) — Chromium is downloaded automatically by the installer.
 
 **Working presets:** `bbc`, `nikkei`, `google-news`
 **Blocked preset:** `reuters` (Cloudflare bot-block from datacenter IPs — use the Silo harvester instead)
@@ -234,7 +234,6 @@ Playwright-based news spider that crawls supported news sites and saves timestam
 ```bash
 # Install prerequisites
 bash install_security_tools.sh playwright
-playwright install chromium
 
 # Run
 python3 scripts/news_spider_playwright.py --site bbc --max-pages 2

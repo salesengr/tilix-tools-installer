@@ -21,7 +21,7 @@ ACTIVE_RECON=("httprobe" "rustscan" "feroxbuster" "nuclei")
 CTI_TOOLS=("shodan" "censys" "yara" "trufflehog" "virustotal")
 SECURITY_TESTING=("jwt-cracker")
 UTILITY_TOOLS=("ripgrep" "fd" "bat" "sd" "doggo" "aria2")
-WEB_TOOLS=("seleniumbase" "playwright" "yandex_browser" "tor_browser" "qtox")
+WEB_TOOLS=("seleniumbase" "playwright" "browser_harness" "yandex_browser" "tor_browser" "qtox")
 
 # ===== INTERNAL RUNTIME ARRAYS =====
 # Used internally for dependency resolution only (not exposed in menu).
@@ -252,9 +252,14 @@ define_tools() {
 	TOOL_INSTALL_LOCATION[seleniumbase]="$HOME/.local/bin/sbase"
 
 	TOOL_INFO[playwright]="Playwright|Cross-browser automation framework (Chromium/Firefox/WebKit)|Web Tools"
-	TOOL_SIZES[playwright]="100MB"
+	TOOL_SIZES[playwright]="300MB"
 	TOOL_DEPENDENCIES[playwright]=""
 	TOOL_INSTALL_LOCATION[playwright]="$HOME/.local/bin/playwright"
+
+	TOOL_INFO[browser_harness]="browser-harness|LLM-to-Chrome CDP harness (browser-use org, user-space)|Web Tools"
+	TOOL_SIZES[browser_harness]="20MB"
+	TOOL_DEPENDENCIES[browser_harness]=""
+	TOOL_INSTALL_LOCATION[browser_harness]="$HOME/.local/bin/browser-harness"
 
 	TOOL_INFO[yandex_browser]="Yandex Browser|Chromium-based browser for Russian-language OSINT|Web Tools"
 	TOOL_SIZES[yandex_browser]="300MB"

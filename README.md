@@ -1,6 +1,6 @@
 # Security Tools Installer
 
-**Version:** 1.5.2 | **Release Date:** May 29, 2026
+**Version:** 1.6.0 | **Release Date:** June 17, 2026
 
 A comprehensive user-space installation system for OSINT/CTI/PenTest and web automation tools. No sudo required — everything installs to `~/.local/`.
 
@@ -169,12 +169,12 @@ tor-browser                                  # launch Tor Browser detached (nohu
 qtox                                         # launch qTox detached
 sbase get https://example.com --headless      # SeleniumBase headless screenshot
 
-# News Spider (requires: playwright install chromium)
+# News Spider
 python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
 python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
 ```
 
-> **Playwright note:** After `bash install_security_tools.sh playwright`, run `playwright install chromium` to download the Chromium binary (~300 MB) required by the news spider and other scripts that launch their own browser.
+> **Playwright note:** `bash install_security_tools.sh playwright` downloads both the Python package and the Chromium binary (~300 MB) automatically — no separate `playwright install chromium` step required.
 
 → **[Full usage examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)**
 

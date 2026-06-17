@@ -47,7 +47,7 @@ WARN='\u26a0'    # ⚠
 INFOSYM='\u2139' # ℹ
 
 # ===== GLOBAL VARIABLES =====
-SCRIPT_VERSION="1.5.2"
+SCRIPT_VERSION="1.6.0"
 DRY_RUN=false
 CHECK_UPDATES=false
 SUCCESSFUL_INSTALLS=()
@@ -249,15 +249,15 @@ install_release_binary_with_log() {
 }
 
 # CHECKSUMS: Verify these SHA256 hashes against official release pages before deployment
-# trufflehog v3.93.3:  https://github.com/trufflesecurity/trufflehog/releases/tag/v3.93.3
+# trufflehog v3.95.5:  https://github.com/trufflesecurity/trufflehog/releases/tag/v3.95.5
 # git-hound v3.2:      https://github.com/tillson/git-hound/releases/tag/v3.2
 #
 # To update checksums:
 #   curl -sL <release-url> | sha256sum
 #
-# SHA256 checksums for release binary fallbacks (verified 2026-02-19)
+# SHA256 checksums for release binary fallbacks (verified 2026-06-17)
 # Generated from official GitHub releases - verify before updating versions
-CHECKSUM_TRUFFLEHOG="62af52009a462a50421ca723424e41e0b3a1c8725d74b56de10e49d215ce8545"
+CHECKSUM_TRUFFLEHOG="8d151a19465973bec226be5992a2a11b053f4ab92c77861f642089892ae9aa58"
 CHECKSUM_GIT_HOUND="8d4ed7284d072af6b54953cbd840752a288d6b115f7be25a03776a62d0345281"
 
 install_trufflehog() {
@@ -267,7 +267,7 @@ install_trufflehog() {
 	echo -e "${WARNING}${WARN} npm install failed for trufflehog; using release fallback${NC}"
 	install_release_binary_with_log \
 		"trufflehog" \
-		"https://github.com/trufflesecurity/trufflehog/releases/download/v3.93.3/trufflehog_3.93.3_linux_amd64.tar.gz" \
+		"https://github.com/trufflesecurity/trufflehog/releases/download/v3.95.5/trufflehog_3.95.5_linux_amd64.tar.gz" \
 		"trufflehog.tar.gz" \
 		"tar -xzf trufflehog.tar.gz" \
 		"trufflehog" \

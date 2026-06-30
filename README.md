@@ -10,7 +10,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 
 ## 🎯 Features
 
-- ✅ **37 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
+- ✅ **38 security tools** — OSINT, CTI, reconnaissance, pentesting, web automation
 - ✅ **No sudo required** — complete user-space installation
 - ✅ **Pre-built binaries** — fast installs via GitHub releases; compile-from-source as fallback
 - ✅ **Use-case categories** — install exactly what you need with one command
@@ -20,7 +20,7 @@ A comprehensive user-space installation system for OSINT/CTI/PenTest and web aut
 - ✅ **XDG compliant** — follows Linux filesystem standards
 - ✅ **Shellcheck clean** — zero warnings across all scripts
 - ✅ **Detached GUI launchers** — GUI tools (`chrome`, `yandex-browser`, `tor-browser`, `qtox`, `spiderfoot`) background automatically using `nohup` + `disown`; guard checks verify binary presence and `DISPLAY` before launching
-- ✅ **News spider script** — `scripts/news_spider_playwright.py` captures screenshots, PDFs, and MHTML snapshots of news sites (BBC, Nikkei, Google News); no installer entry needed
+- ✅ **News spider scripts** — `scripts/news_spider_playwright.py` (BBC, Nikkei, Google News) and `scripts/news_spider_seleniumbase.py` (Reuters, TASS via UC mode) capture screenshots, PDFs, and MHTML snapshots; no installer entry needed
 
 ---
 
@@ -40,7 +40,7 @@ bash install_security_tools.sh --domain-tools     # Domain & Subdomain Enum (3 t
 bash install_security_tools.sh --recon-tools      # Active Recon & Scanning (4 tools)
 bash install_security_tools.sh --cti-tools        # Cyber Threat Intel (5 tools)
 bash install_security_tools.sh --utility-tools    # Utilities (6 tools)
-bash install_security_tools.sh --web-tools        # Web Tools (5 tools)
+bash install_security_tools.sh --web-tools        # Web Tools (6 tools)
 bash install_security_tools.sh all               # Everything
 ```
 
@@ -75,7 +75,7 @@ Tools are organized by use-case. → **[Full tool list with descriptions](https:
 | Cyber Threat Intelligence | shodan, censys, yara, trufflehog, virustotal | `--cti-tools` |
 | Security Testing | jwt-cracker | — |
 | Utilities | ripgrep, fd, bat, sd, doggo, aria2 | `--utility-tools` |
-| Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox | `--web-tools` |
+| Web Tools | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox, browser-harness | `--web-tools` |
 
 ---
 
@@ -126,7 +126,7 @@ bash install_security_tools.sh --osint-tools --cti-tools
 | **[Wiki: Tool Categories](https://github.com/salesengr/tilix-tools-installer/wiki/Tool-Categories)** | Full tool list with descriptions |
 | **[Wiki: CLI Reference](https://github.com/salesengr/tilix-tools-installer/wiki/CLI-Reference)** | All flags, options, examples |
 | **[Wiki: Usage Examples](https://github.com/salesengr/tilix-tools-installer/wiki/Usage-Examples)** | Practical examples for every tool |
-| **[Wiki: Web Tools](https://github.com/salesengr/tilix-tools-installer/wiki/Web-Tools)** | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox |
+| **[Wiki: Web Tools](https://github.com/salesengr/tilix-tools-installer/wiki/Web-Tools)** | SeleniumBase, Playwright, Yandex Browser, Tor Browser, qTox, browser-harness |
 | **[Wiki: Troubleshooting](https://github.com/salesengr/tilix-tools-installer/wiki/Troubleshooting)** | Common issues and fixes |
 | **[Wiki: Disk Space & Performance](https://github.com/salesengr/tilix-tools-installer/wiki/Disk-Space-and-Performance)** | Sizes and install times |
 | **[docs/EXTENDING_THE_SCRIPT.md](docs/EXTENDING_THE_SCRIPT.md)** | How to add new tools (versioned) |
@@ -169,9 +169,13 @@ tor-browser                                  # launch Tor Browser detached (nohu
 qtox                                         # launch qTox detached
 sbase get https://example.com --headless      # SeleniumBase headless screenshot
 
-# News Spider
+# News Spider — Playwright (BBC, Nikkei, Google News)
 python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
 python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
+
+# News Spider — SeleniumBase UC mode (Reuters, TASS — bypasses bot detection)
+python3 scripts/news_spider_seleniumbase.py --site reuters --max-pages 3
+python3 scripts/news_spider_seleniumbase.py --site tass --output-pdf
 ```
 
 > **Playwright note:** `bash install_security_tools.sh playwright` downloads both the Python package and the Chromium binary (~300 MB) automatically — no separate `playwright install chromium` step required.

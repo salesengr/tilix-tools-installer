@@ -152,6 +152,7 @@ Web automation tools enable browser-based OSINT, stealth scraping, captcha bypas
 | Yandex Browser | `apt` via `repo.yandex.ru` | `/usr/bin/yandex-browser-beta` + `~/.local/bin/yandex-browser` |
 | Tor Browser | tarball from `torproject.org/dist/torbrowser/` | `~/opt/tor-browser/Browser/start-tor-browser` + `~/.local/bin/tor-browser` |
 | qTox | AppImage extract from `github.com/TokTok/qTox` | `~/opt/qtox/squashfs-root/AppRun` + `~/.local/bin/qtox` |
+| browser-harness | `git clone` + `uv tool install -e` to `~/opt/browser-harness`; `uv` auto-installed | `~/.local/bin/browser-harness` |
 
 ### SeleniumBase
 Works with the system Chrome already in the Tilix image. Three modes:
@@ -223,6 +224,7 @@ Scripts in the `scripts/` directory run directly from the repo and do not create
 | Script | Requires | Description |
 |--------|----------|-------------|
 | `scripts/news_spider_playwright.py` | `playwright` (via `bash install_security_tools.sh playwright`) | Captures screenshots, PDFs, and MHTML snapshots of news sites |
+| `scripts/news_spider_seleniumbase.py` | `seleniumbase` (via `bash install_security_tools.sh seleniumbase`) | UC mode spider for bot-protected sites (Reuters, TASS) |
 
 ### news_spider_playwright.py
 
@@ -247,3 +249,26 @@ python3 scripts/news_spider_playwright.py \
 ```
 
 **Output per run:** `<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`, `summary.txt`, `run.log`
+
+### news_spider_seleniumbase.py
+
+SeleniumBase UC mode spider for bot-protected news sites. Uses undetected-chromedriver to bypass Cloudflare and similar bot detection — the complement to the Playwright spider for sites that block plain headless Chromium. Captures are sequential (no concurrency) because UC mode requires browser restarts between sessions.
+
+**Working presets:** `reuters`, `tass`
+
+```bash
+# Install prerequisites
+bash install_security_tools.sh seleniumbase
+
+# Run
+python3 scripts/news_spider_seleniumbase.py --site reuters --max-pages 3
+python3 scripts/news_spider_seleniumbase.py --site tass --output-pdf
+python3 scripts/news_spider_seleniumbase.py --site reuters --dry-run
+
+# Custom site
+python3 scripts/news_spider_seleniumbase.py \
+    --url https://example.com \
+    --include-pattern "/article/[a-z0-9-]+"
+```
+
+**Output per run:** `<slug>.png`, `<slug>.pdf`, `summary.txt`, `run.log`

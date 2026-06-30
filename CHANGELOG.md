@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`scripts/news_spider_seleniumbase.py`** — SeleniumBase UC mode news spider for bot-protected sites. Targets Reuters and TASS (blocked by plain headless Chromium). Sequential captures only (no concurrency); UC mode bypasses Cloudflare/bot detection. Requires: `bash install_security_tools.sh seleniumbase`. Flags: `--site`, `--url`, `--include-pattern`, `--max-pages`, `--output-pdf`, `--dry-run`.
+
 ## [1.6.0] - 2026-06-17
 
 ### Added

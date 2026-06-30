@@ -174,6 +174,7 @@ python3 scripts/news_spider_playwright.py --site bbc --max-pages 2
 python3 scripts/news_spider_playwright.py --site nikkei --output-pdf --output-mhtml
 
 # News Spider — SeleniumBase UC mode (Reuters, TASS — bypasses bot detection)
+python3 scripts/news_spider_seleniumbase.py --site reuters --dry-run
 python3 scripts/news_spider_seleniumbase.py --site reuters --max-pages 3
 python3 scripts/news_spider_seleniumbase.py --site tass --output-pdf
 ```

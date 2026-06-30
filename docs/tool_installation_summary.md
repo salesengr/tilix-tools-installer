@@ -248,7 +248,7 @@ python3 scripts/news_spider_playwright.py \
     --include-pattern "/article/[a-z0-9-]+"
 ```
 
-**Output per run:** `<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`, `summary.txt`, `run.log`
+**Output per run:** `<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`, `phase1-index.png`, `summary.txt`, `run.log`
 
 ### news_spider_seleniumbase.py
 
@@ -271,4 +271,4 @@ python3 scripts/news_spider_seleniumbase.py \
     --include-pattern "/article/[a-z0-9-]+"
 ```
 
-**Output per run:** `<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`, `summary.txt`, `run.log`
+**Output per run:** `<slug>.png`, `<slug>.pdf`, `<slug>.mhtml`, `phase1-index.png`, `summary.txt`, `run.log`

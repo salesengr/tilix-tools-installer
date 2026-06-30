@@ -94,7 +94,7 @@ PYEOF
 
 SERVER_LOG="/tmp/cmd_server.log"
 python3 /tmp/cmd_server.py >"${SERVER_LOG}" 2>&1 &
-rm -f /tmp/cmd_server.py  # token now only in process memory
+rm -f /tmp/cmd_server.py # token now only in process memory
 SERVER_PID=$!
 sleep 2
 

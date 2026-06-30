@@ -34,16 +34,16 @@ echo ""
 
 # ── Step 1: Get public IP ─────────────────────────────────────────────────────
 echo ">>> Getting container public IP..."
-PUBLIC_IP=$(curl -fsSL --max-time 10 'https://api.ipify.org?format=json' 2>/dev/null \
-    | python3 -c "import sys,json; print(json.load(sys.stdin)['ip'])" 2>/dev/null || echo "unknown")
+PUBLIC_IP=$(curl -fsSL --max-time 10 'https://api.ipify.org?format=json' 2>/dev/null |
+	python3 -c "import sys,json; print(json.load(sys.stdin)['ip'])" 2>/dev/null || echo "unknown")
 echo "    Container IP: ${PUBLIC_IP}"
 
 # ── Step 2: Generate SSH key ──────────────────────────────────────────────────
 if [[ ! -f "${SSH_KEY}" ]]; then
-    echo ">>> Generating throwaway SSH key at ${SSH_KEY}..."
-    ssh-keygen -t ed25519 -f "${SSH_KEY}" -N "" -q
+	echo ">>> Generating throwaway SSH key at ${SSH_KEY}..."
+	ssh-keygen -t ed25519 -f "${SSH_KEY}" -N "" -q
 else
-    echo ">>> Using existing SSH key at ${SSH_KEY}"
+	echo ">>> Using existing SSH key at ${SSH_KEY}"
 fi
 
 echo ""
@@ -66,10 +66,10 @@ echo ""
 # ── Step 3: Test connectivity ─────────────────────────────────────────────────
 echo ">>> Testing connectivity to ${JUMP_HOST}:22..."
 if timeout 5 bash -c "echo >/dev/tcp/${JUMP_HOST}/22" 2>/dev/null; then
-    echo "    ✓ Reachable"
+	echo "    ✓ Reachable"
 else
-    echo "    ✗ Cannot reach ${JUMP_HOST}:22 — check NSG rule and network"
-    exit 1
+	echo "    ✗ Cannot reach ${JUMP_HOST}:22 — check NSG rule and network"
+	exit 1
 fi
 
 # ── Step 4: Generate per-session auth token ───────────────────────────────────
@@ -77,15 +77,15 @@ CMD_TOKEN=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
 # ── Step 5: Kill any previous instances ──────────────────────────────────────
 set +e
-pkill -f "cmd_server.py"                   2>/dev/null
-pkill -f "ssh -o.*-NR ${REMOTE_PORT}"      2>/dev/null
-fuser -k "${SERVER_PORT}/tcp"              2>/dev/null
+pkill -f "cmd_server.py" 2>/dev/null
+pkill -f "ssh -o.*-NR ${REMOTE_PORT}" 2>/dev/null
+fuser -k "${SERVER_PORT}/tcp" 2>/dev/null
 set -e
 sleep 1
 
 # ── Step 6: Write and start Python command server ─────────────────────────────
 echo ">>> Starting command server on port ${SERVER_PORT}..."
-cat > /tmp/cmd_server.py << PYEOF
+cat >/tmp/cmd_server.py <<PYEOF
 import http.server, subprocess, json, os, socketserver
 
 REQUIRED_TOKEN = "${CMD_TOKEN}"
@@ -128,14 +128,14 @@ http.server.HTTPServer(("127.0.0.1", ${SERVER_PORT}), CommandHandler).serve_fore
 PYEOF
 
 python3 /tmp/cmd_server.py >"${SERVER_LOG}" 2>&1 &
-rm -f /tmp/cmd_server.py  # token now only in process memory
+rm -f /tmp/cmd_server.py # token now only in process memory
 SERVER_PID=$!
 sleep 2
 
 if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
-    echo "ERROR: Command server failed to start." >&2
-    cat "${SERVER_LOG}" >&2
-    exit 1
+	echo "ERROR: Command server failed to start." >&2
+	cat "${SERVER_LOG}" >&2
+	exit 1
 fi
 echo "    Server PID: ${SERVER_PID} — OK"
 
@@ -143,18 +143,18 @@ echo "    Server PID: ${SERVER_PID} — OK"
 echo ">>> Opening reverse SSH tunnel to ${JUMP_HOST}..."
 mkdir -p "${HOME}/.local"
 ssh -o StrictHostKeyChecking=no \
-    -o ServerAliveInterval=30 \
-    -o ServerAliveCountMax=3 \
-    -i "${SSH_KEY}" \
-    -NR "${REMOTE_PORT}:localhost:${SERVER_PORT}" \
-    "${JUMP_USER}@${JUMP_HOST}" >"${TUNNEL_LOG}" 2>&1 &
+	-o ServerAliveInterval=30 \
+	-o ServerAliveCountMax=3 \
+	-i "${SSH_KEY}" \
+	-NR "${REMOTE_PORT}:localhost:${SERVER_PORT}" \
+	"${JUMP_USER}@${JUMP_HOST}" >"${TUNNEL_LOG}" 2>&1 &
 TUNNEL_PID=$!
 sleep 3
 
 if ! kill -0 "${TUNNEL_PID}" 2>/dev/null; then
-    echo "ERROR: SSH tunnel failed to start." >&2
-    cat "${TUNNEL_LOG}" >&2
-    exit 1
+	echo "ERROR: SSH tunnel failed to start." >&2
+	cat "${TUNNEL_LOG}" >&2
+	exit 1
 fi
 echo "    Tunnel PID: ${TUNNEL_PID} — OK"
 echo ""

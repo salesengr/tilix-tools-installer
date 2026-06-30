@@ -1023,8 +1023,8 @@ install_browser_harness() {
 		local claude_md="$HOME/.claude/CLAUDE.md"
 		local skill_line="@$clone_dir/SKILL.md"
 		if [[ -f "$claude_md" ]] && ! grep -qF "$skill_line" "$claude_md"; then
-			echo "" >> "$claude_md"
-			echo "$skill_line" >> "$claude_md"
+			echo "" >>"$claude_md"
+			echo "$skill_line" >>"$claude_md"
 			echo "Registered SKILL.md with Claude Code at $claude_md"
 		fi
 

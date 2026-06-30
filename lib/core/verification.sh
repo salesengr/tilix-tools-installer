@@ -92,7 +92,7 @@ is_installed() {
 	playwright)
 		# Both the pip entry point AND the Chromium binary must be present —
 		# pip install creates ~/.local/bin/playwright but the browser is a separate download.
-		if [ -f "$HOME/.local/bin/playwright" ] && \
+		if [ -f "$HOME/.local/bin/playwright" ] &&
 			find "$HOME/.cache/ms-playwright" -name "chrome" -type f 2>/dev/null | grep -q .; then
 			return 0
 		fi

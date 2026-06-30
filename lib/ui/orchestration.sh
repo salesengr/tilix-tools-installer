@@ -75,9 +75,15 @@ install_tool() {
 	doggo) install_doggo ;;
 	aria2) install_aria2 ;;
 	seleniumbase) install_seleniumbase ;;
-	playwright) install_playwright; _ensure_web_launchers ;;
+	playwright)
+		install_playwright
+		_ensure_web_launchers
+		;;
 	browser_harness) install_browser_harness ;;
-	yandex_browser) install_yandex_browser; _ensure_web_launchers ;;
+	yandex_browser)
+		install_yandex_browser
+		_ensure_web_launchers
+		;;
 	tor_browser) install_tor_browser ;;
 	qtox) install_qtox ;;
 	*)

@@ -106,7 +106,7 @@ _ThreadedServer(("127.0.0.1", 9000), CommandHandler).serve_forever()
 PYEOF
 
 python3 /tmp/cmd_server.py >"${SERVER_LOG}" 2>&1 &
-rm -f /tmp/cmd_server.py  # token now only in process memory
+rm -f /tmp/cmd_server.py # token now only in process memory
 SERVER_PID=$!
 sleep 2
 

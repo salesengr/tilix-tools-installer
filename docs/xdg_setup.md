@@ -81,7 +81,7 @@ The script attempts to reload `.bashrc` for you; if that is not possible (non-in
 â”” gopath/                 # Go workspace (Go itself is system-wide at /usr/local/go)
 ```
 
-> **Go note:** `xdg_setup.sh` creates only the Go user workspace (`~/opt/gopath/`), not `~/opt/go/`. If no system Go is present, `install_security_tools.sh` creates `~/opt/go/` later when it installs the user-space Go runtime.
+> **Go note:** `~/opt/go/` is no longer created. Go is pre-installed system-wide; only the user workspace (`~/opt/gopath/`) is needed.
 
 ### 2. Configures Environment Variables
 
@@ -115,12 +115,13 @@ export PIP_CACHE_DIR="$XDG_CACHE_HOME/pip"
 
 #### Go Configuration
 ```bash
+export GOROOT="/usr/local/go"
 export GOPATH="$HOME/opt/gopath"
 export GOCACHE="$XDG_CACHE_HOME/go-build"
-export PATH="$GOPATH/bin:$PATH"
+export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
 ```
 
-> **Note:** `GOROOT` is intentionally **not** exported here — it is left to whatever `go` is on `PATH`. If no system Go is present, `install_security_tools.sh` installs a user-space Go runtime to `~/opt/go` and appends its own `GOROOT`/`PATH` lines to `~/.bashrc`.
+> **Note:** Go is pre-installed system-wide at `/usr/local/go` in the Tilix image. `GOROOT` points there directly; the installer does not download or manage the Go toolchain.
 
 #### npm Configuration (XDG Compliant)
 ```bash
@@ -156,14 +157,13 @@ export LDFLAGS="-L$HOME/.local/lib"
 [global]
 cache-dir = ~/.cache/pip
 
-# Note: "user = true" is NOT set here as it conflicts with virtual environments
-# When installing outside venv, use: pip install --user package_name
+[install]
+user = true
 ```
 
 This ensures pip:
-- Uses the XDG cache directory
-
-`user = true` is deliberately omitted so it doesn't conflict with virtual environments; the installer passes `--user` explicitly on each install.
+- Uses XDG cache directory
+- Defaults to user installations (no sudo needed)
 
 #### npm Configuration (`~/.config/npm/npmrc`)
 ```

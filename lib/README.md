@@ -1,8 +1,8 @@
 # Library Modules
 
-**Version:** 1.6.0
+**Version:** 1.3.1
 
-This directory contains 11 focused library modules that implement the core functionality of the Security Tools Installer. The modular architecture (introduced in v1.3.0) separates concerns and makes the codebase more maintainable, testable, and extensible.
+This directory contains 11 focused library modules that implement the core functionality of the Security Tools Installer. The modular architecture (introduced in v1.3.1) separates concerns and makes the codebase more maintainable, testable, and extensible.
 
 ## Directory Structure
 
@@ -15,17 +15,17 @@ lib/
 │   └── dependencies.sh       # Dependency resolution
 │
 ├── data/                      # Data definitions (1 module)
-│   └── tool-definitions.sh   # Tool metadata (278 lines)
+│   └── tool-definitions.sh   # Tool metadata (222 lines)
 │
 ├── installers/                # Installation functions (3 modules)
-│   ├── generic.sh            # Generic installers (394 lines)
-│   ├── runtimes.sh           # Runtime installers (516 lines)
-│   └── tools.sh              # Tool-specific wrappers (1,394 lines)
+│   ├── generic.sh            # Generic installers (219 lines)
+│   ├── runtimes.sh           # Runtime installers (310 lines)
+│   └── tools.sh              # Tool-specific wrappers (123 lines)
 │
 └── ui/                        # User interface (3 modules)
-    ├── menu.sh               # Interactive menu (192 lines)
-    ├── display.sh            # Status displays (145 lines)
-    └── orchestration.sh      # Installation coordination (250 lines)
+    ├── menu.sh               # Interactive menu (156 lines)
+    ├── display.sh            # Status displays (137 lines)
+    └── orchestration.sh      # Installation coordination (190 lines)
 ```
 
 ## Module Overview
@@ -41,7 +41,6 @@ These modules provide fundamental functionality used throughout the system.
 - `init_logging()` - Create log directories and initialize logging system
 - `create_tool_log(tool_name)` - Generate timestamped log filename for a tool
 - `cleanup_old_logs(tool_name)` - Retain only 10 most recent logs per tool
-- `_record_install_result(tool, logfile)` - Shared install epilogue: records success/failure to result arrays and history log
 - `log_installation(tool, status, logfile)` - Record installation to history log
 
 **Dependencies:** None (foundational module)
@@ -62,7 +61,6 @@ cleanup_old_logs "sherlock"
 
 **Functions:**
 - `download_file(url, output, [max_retries])` - Download with retries (default 3)
-- `verify_sha256(file, sha_url)` - Fetch a SHA256 companion file over TLS and verify the download
 - `verify_file_exists(file_path)` - Validate file exists and is non-empty
 
 **Dependencies:** `wget` (system command)
@@ -82,13 +80,15 @@ verify_file_exists "/tmp/file.tar.gz" || return 1
 **Functions:**
 - `is_installed(tool_name)` - Check if tool exists in PATH or expected location
 - `scan_installed_tools()` - Populate INSTALLED_STATUS array for all tools
-- `verify_system_go()` - Locate Go (system PATH or user-space `~/opt/go`), auto-installing the runtime if absent
+- `verify_system_go()` - Check for system Go installation
+- `verify_xdg_environment()` - Validate XDG setup completion
 
 **Dependencies:** Global arrays (`TOOL_INFO`, `INSTALLED_STATUS`)
 
 **Usage:**
 ```bash
 source lib/core/verification.sh
+verify_xdg_environment || { echo "Run xdg_setup.sh first"; exit 1; }
 scan_installed_tools
 if is_installed "sherlock"; then
     echo "Sherlock already installed"
@@ -118,11 +118,11 @@ check_dependencies "gobuster"  # Auto-installs 'go' if needed
 
 ### lib/data/ (Data Definitions)
 
-#### tool-definitions.sh (278 lines)
+#### tool-definitions.sh (222 lines)
 **Purpose:** Centralized tool metadata and category definitions
 
 **Data Structures:**
-- Use-case category arrays: `BUILD_TOOLS`, `LANGUAGES`, `PASSIVE_OSINT`, `DOMAIN_ENUM`, `ACTIVE_RECON`, `CTI_TOOLS`, `SECURITY_TESTING`, `UTILITY_TOOLS`, `WEB_TOOLS` (9 total) plus internal runtime arrays (`_PYTHON_TOOLS`, `_GO_TOOLS`, `_NODE_TOOLS`, `_RUST_TOOLS`) used only for dependency resolution
+- Category arrays: `BUILD_TOOLS`, `LANGUAGES`, `PYTHON_RECON_PASSIVE`, etc. (14 total)
 - `define_tools()` function that initializes:
   - `TOOL_INFO[tool]="Name|Description|Category"`
   - `TOOL_SIZES[tool]="50MB"`
@@ -142,23 +142,21 @@ echo "${TOOL_DEPENDENCIES[sherlock]}"  # "python_venv"
 
 **To Add a New Tool:**
 1. Add metadata in `define_tools()` function
-2. Add to appropriate category array (e.g., `PASSIVE_OSINT+=("newtool")`)
+2. Add to appropriate category array (e.g., `PYTHON_RECON_PASSIVE+=("newtool")`)
 
 ---
 
 ### lib/installers/ (Installation Functions)
 
-#### generic.sh (394 lines)
+#### generic.sh (219 lines)
 **Purpose:** Reusable generic installers for each language ecosystem
 
 **Functions:**
-- `_get_python_bin()` - Resolve the best available Python binary (prefers 3.13)
-- `create_python_wrapper(tool)` - Generate a fallback wrapper for tools that don't place a pip entry point
-- `install_python_tool(tool, package)` - Install Python package via `pip install --user`
-- `install_go_tool(tool, module_path, [binary_name])` - Install Go tool via `go install`
+- `install_python_tool(tool, package)` - Install Python package via pip with wrapper
+- `install_go_tool(tool, module_path)` - Install Go tool via `go install`
 - `install_node_tool(tool, package)` - Install Node.js package via npm globally
-- `install_prebuilt_binary(...)` - Download, SHA256-verify, and install a pre-built release binary
 - `install_rust_tool(tool, crate)` - Install Rust tool via cargo
+- `create_python_wrapper(tool)` - Generate wrapper script for venv activation
 
 **Dependencies:**
 - Logging functions from logging.sh
@@ -183,16 +181,15 @@ install_rust_tool "ripgrep" "ripgrep"
 
 ---
 
-#### runtimes.sh (516 lines)
+#### runtimes.sh (310 lines)
 **Purpose:** Language runtime and build tool installation
 
 **Functions:**
-- `install_cmake()` - CMake 3.28.1 from tarball
+- `install_cmake()` - CMake 3.28.1 from source
 - `install_github_cli()` - GitHub CLI 2.53.0 from tarball
-- `install_nodejs()` - Node.js 20.10.0 from tarball (system Node.js used if present)
-- `install_go_runtime()` - Latest stable Go (SHA256-verified) into user-space `~/opt/go`
+- `install_nodejs()` - Node.js 20.10.0 from tarball
 - `install_rust()` - Rust via rustup
-- `install_python_venv()` - Configure Python user-space install (pip `--user`; no venv created)
+- `install_python_venv()` - Python virtual environment for tools
 
 **Dependencies:**
 - Logging functions from logging.sh
@@ -215,13 +212,12 @@ install_rust         # Prerequisites for Rust tools
 
 ---
 
-#### tools.sh (1,394 lines)
+#### tools.sh (123 lines)
 **Purpose:** Tool-specific installation wrappers
 
 **Functions:**
-- 39 tool-specific `install_<tool>()` functions
-- Most are one-liners calling the generic installers in `generic.sh`
-- Some have custom logic (e.g. `install_yara()`, `install_browser_harness()`, `install_playwright()`, and the GUI-launcher tools `install_yandex_browser()`, `install_tor_browser()`, `install_qtox()`)
+- 25+ tool-specific wrapper functions (one-liners calling generic installers)
+- `install_yara()` - Custom YARA installer with fallback logic (special case)
 
 **Examples:**
 ```bash
@@ -248,12 +244,11 @@ install_yara() {
 
 ### lib/ui/ (User Interface)
 
-#### menu.sh (192 lines)
+#### menu.sh (156 lines)
 **Purpose:** Interactive menu system
 
 **Functions:**
-- `_tool_status(tool)` - Return a colored `[✓]`/`[ ]` prefix for a tool's install state
-- `show_menu()` - Display categorized tool menu (44 individual tools, bulk options 45–51)
+- `show_menu()` - Display categorized tool menu with 42 options
 - `process_menu_selection(choice)` - Handle menu input and route to installers
 - `print_shell_reload_reminder()` - Display post-install guidance
 
@@ -272,17 +267,15 @@ process_menu_selection "$choice"
 ```
 
 **Menu Structure:**
-- Individual tools (1-44)
-- Bulk options (45-51): per-category installs and "Install Everything"
-- Info actions: `[T]` show installed tools, `[L]` show logs, `[Q]` quit
+- Individual tools (1-29)
+- Bulk options (30-42): all, categories, show status, logs, exit
 
 ---
 
-#### display.sh (145 lines)
+#### display.sh (137 lines)
 **Purpose:** Status and information display
 
 **Functions:**
-- `_tool_status_line(tool)` - Format a single color-coded status row for a tool
 - `show_installed()` - Display installation status with color coding
 - `show_logs()` - Show log file locations
 - `show_installation_summary()` - Post-install summary with statistics
@@ -308,14 +301,13 @@ show_installation_summary  # Post-install report
 
 ---
 
-#### orchestration.sh (250 lines)
+#### orchestration.sh (190 lines)
 **Purpose:** High-level installation coordination
 
 **Functions:**
 - `install_tool(tool_name)` - Master dispatcher routing tools to installers
 - `install_all()` - Bulk installer for all tools in correct order
 - `dry_run_install(tool_name)` - Preview installation without executing
-- `process_cli_args(...)` - Parse command-line arguments (individual tools, category flags, `--dry-run`)
 
 **Dependencies:**
 - All installer functions from installers/
@@ -369,8 +361,8 @@ Main Script (install_security_tools.sh)
 2. **Add installation check** in `lib/core/verification.sh`
 3. **Create wrapper** in `lib/installers/tools.sh`
 4. **Register in dispatcher** in `lib/ui/orchestration.sh`
-5. **Update menu** in `lib/ui/menu.sh` (adding a slot renumbers the bulk options — update those too)
-6. **Verify** with `bash install_security_tools.sh --dry-run <tool>`, then exercise it via `scripts/dev/test_harness.sh`
+5. **Update menu** in `lib/ui/menu.sh`
+6. **Add test** in `scripts/test_installation.sh`
 
 See `docs/EXTENDING_THE_SCRIPT.md` for detailed instructions.
 
@@ -400,9 +392,9 @@ echo "Log directory: $LOG_DIR"
 Follow project conventions documented in `CLAUDE.md`:
 - Lowercase function names with underscores: `install_tool()`
 - Local variables lowercase: `local logfile="..."`
-- Global variables uppercase: `SCRIPT_VERSION="1.6.0"`
+- Global variables uppercase: `SCRIPT_VERSION="1.3.1"`
 - Return 0 on success, 1 on failure
-- Use `set -uo pipefail` (deliberately not `-e`) with explicit return-code checks (`|| return 1`)
+- Use `set +e` with explicit return code checks
 - Comprehensive logging for all operations
 
 ---
@@ -411,24 +403,23 @@ Follow project conventions documented in `CLAUDE.md`:
 
 | Module | Lines | Functions | Purpose |
 |--------|-------|-----------|---------|
-| **lib/core/logging.sh** | 82 | 5 | Log management |
-| **lib/core/download.sh** | 125 | 3 | Download with retry |
-| **lib/core/verification.sh** | 175 | 3 | Installation checks |
-| **lib/core/dependencies.sh** | 29 | 1 | Dependency resolution |
-| **lib/data/tool-definitions.sh** | 278 | 1 | Tool metadata |
-| **lib/installers/generic.sh** | 394 | 7 | Generic installers |
-| **lib/installers/runtimes.sh** | 516 | 6 | Runtime installers |
-| **lib/installers/tools.sh** | 1,394 | 39 | Tool wrappers |
-| **lib/ui/menu.sh** | 192 | 4 | Interactive menu |
-| **lib/ui/display.sh** | 145 | 4 | Status displays |
-| **lib/ui/orchestration.sh** | 250 | 4 | Installation coordination |
-| **TOTAL** | **3,580** | **77** | **11 modules** |
+| **lib/core/logging.sh** | ~50 | 4 | Log management |
+| **lib/core/download.sh** | ~45 | 2 | Download with retry |
+| **lib/core/verification.sh** | ~100 | 4 | Installation checks |
+| **lib/core/dependencies.sh** | ~25 | 1 | Dependency resolution |
+| **lib/data/tool-definitions.sh** | 222 | 1 | Tool metadata |
+| **lib/installers/generic.sh** | 219 | 5 | Generic installers |
+| **lib/installers/runtimes.sh** | 310 | 5 | Runtime installers |
+| **lib/installers/tools.sh** | 123 | 26 | Tool wrappers |
+| **lib/ui/menu.sh** | 156 | 3 | Interactive menu |
+| **lib/ui/display.sh** | 137 | 3 | Status displays |
+| **lib/ui/orchestration.sh** | 190 | 3 | Installation coordination |
+| **TOTAL** | **1,357** | **57** | **11 modules** |
 
-**Line distribution (v1.6.0):**
-- Main script (`install_security_tools.sh`): 471 lines
-- Library modules: 3,580 lines across 11 modules
-- Total: 4,051 lines
-- The main script declares global state and sources the modules; nearly all behavior lives in `lib/`, keeping the entry point small and the logic modular.
+**Comparison to v1.2.0:**
+- v1.2.0: 1,581 lines in monolithic script
+- v1.3.1: 196 lines (main) + 1,357 lines (modules) = 1,553 lines total
+- **Result:** 87% reduction in main script size, improved maintainability
 
 ---
 
@@ -465,6 +456,6 @@ Potential improvements to the modular architecture:
 
 ---
 
-**Version:** 1.6.0
-**Last Updated:** 2026-07-10
+**Version:** 1.3.1
+**Last Updated:** February 25, 2026
 **Related Documentation:** See `docs/EXTENDING_THE_SCRIPT.md`, `CLAUDE.md`

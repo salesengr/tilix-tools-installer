@@ -5,21 +5,21 @@
 
 
 
-The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
+The installer is intentionally data-driven and modular: every tool is described once in `lib/data/tool-definitions.sh`, and the rest of the system consumes that metadata. The modular architecture (introduced in v1.3.0, reorganized into use-case categories in v1.4.0) separates concerns across 11 focused library modules, making it easy to extend without touching the main script.
 
 ## What Already Exists
 
 - **Build tools:** `cmake`, `github_cli`
 - **Runtimes:** `go_runtime`, `nodejs`, `rust`, `python_venv`
-- **Passive OSINT (12):** sherlock, holehe, socialscan, h8mail, photon, wappalyzer, theHarvester, spiderfoot, waybackurls, assetfinder, subfinder, git-hound
+- **Passive OSINT (13):** sherlock, holehe, socialscan, h8mail, photon, wappalyzer, theHarvester, spiderfoot, waybackurls, assetfinder, subfinder, git-hound, amass
 - **Domain Enum (3):** sublist3r, gobuster, ffuf
 - **Active Recon (4):** httprobe, rustscan, feroxbuster, nuclei
 - **CTI (5):** shodan, censys, yara, trufflehog, virustotal
 - **Security Testing (1):** jwt-cracker
 - **Utilities (6):** ripgrep, fd, bat, sd, doggo, aria2
-- **Web Tools (5):** seleniumbase, playwright, yandex_browser, tor_browser, qtox
+- **Web Tools (6):** seleniumbase, playwright, browser_harness, yandex_browser, tor_browser, qtox
 
-## Add or Modify a Tool (v1.4.0 Modular Process)
+## Add or Modify a Tool (Modular Process)
 
 ### File Locations
 
@@ -42,7 +42,7 @@ With the modular architecture, you'll work with these specific files:
 
 2. **Place it in a category** (`lib/data/tool-definitions.sh`)
    - Append the tool name to the relevant use-case array (`PASSIVE_OSINT`, `DOMAIN_ENUM`, `ACTIVE_RECON`, `CTI_TOOLS`, `UTILITY_TOOLS`, `WEB_TOOLS`).
-   - Categories power the bulk options (`--osint-tools`, `--domain-tools`, etc. and menu bulk options 42-48).
+   - Categories power the bulk options (`--osint-tools`, `--domain-tools`, etc. and menu bulk options 45-51).
 
 3. **Explain how to detect it** (`lib/core/verification.sh`)
    - Update `is_installed()` with the proper file location or `command -v` check.

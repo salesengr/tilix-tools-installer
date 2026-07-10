@@ -1,6 +1,6 @@
 # Library Modules
 
-**Version:** 1.6.0
+**Version:** 1.6.1
 
 This directory contains 11 focused library modules that implement the core functionality of the Security Tools Installer. The modular architecture (introduced in v1.3.0) separates concerns and makes the codebase more maintainable, testable, and extensible.
 
@@ -465,6 +465,6 @@ Potential improvements to the modular architecture:
 
 ---
 
-**Version:** 1.6.0
+**Version:** 1.6.1
 **Last Updated:** 2026-07-10
 **Related Documentation:** See `docs/EXTENDING_THE_SCRIPT.md`, `CLAUDE.md`

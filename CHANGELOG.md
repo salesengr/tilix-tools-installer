@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-07-10
+
 ### Added
 - **`scripts/news_spider_seleniumbase.py`** — SeleniumBase UC mode news spider for bot-protected sites. Targets Reuters and TASS (blocked by plain headless Chromium). Sequential captures only (no concurrency); UC mode bypasses Cloudflare/bot detection. Requires: `bash install_security_tools.sh seleniumbase`. Flags: `--site`, `--url`, `--include-pattern`, `--max-pages`, `--output-pdf`, `--output-mhtml`, `--dry-run`.
+
+### Documentation
+- Synced `lib/README.md` and `docs/` to the v1.6.0 code reality — recounted module statistics (3,580 lines / 79 functions), corrected tool inventories (Passive OSINT 13, Web Tools 6), menu slots (44 tools, bulk 45–51), the Playwright browser path, and the Go-runtime framing; removed stale references (`verify_xdg_environment()`, `scripts/test_installation.sh`). ([#25](https://github.com/salesengr/tilix-tools-installer/pull/25))
 
 ## [1.6.0] - 2026-06-17
 

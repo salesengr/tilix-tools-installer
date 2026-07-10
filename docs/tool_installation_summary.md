@@ -14,7 +14,7 @@ The installer keeps everything inside your home directory:
 - `~/.local/bin` – user executables and Python/Node wrappers
 - `~/.local/share` – Python virtual environments, shared data, Cargo metadata
 - `~/.local/state/install_tools` – installer logs and history
-- `/usr/local/go` – System Go prerequisite (GOROOT expected by Go tool installs)
+- System `go` on `PATH` or `~/opt/go` – Go toolchain (system Go is used if present; otherwise the `go_runtime` installer downloads it to `~/opt/go`)
 - `~/opt/gopath/bin` – compiled Go tools
 - `~/opt/node` – Node.js runtime
 - `~/opt/src` – temporary build artifacts and downloaded archives
@@ -23,13 +23,13 @@ Logs for every tool live in `~/.local/state/install_tools/logs/<tool>-<timestamp
 
 ## Build Tools and Runtimes
 
-**Note:** As of v1.1.0, Go is expected to be pre-installed system-wide at `/usr/local/go`. The installer no longer installs Go itself, only uses it to build Go-based tools.
+**Note:** The installer uses the system `go` if one is already on `PATH`. If Go is not found, it installs a user-space Go runtime to `~/opt/go` (the `go_runtime` component, menu option [5]) — the latest stable release, SHA256-verified. Either way, `GOPATH` is set to `~/opt/gopath` and compiled Go tools land in `~/opt/gopath/bin`.
 
 | Component | How it is installed | Resulting files |
 |-----------|---------------------|-----------------|
 | CMake 3.28.1 | GitHub tarball is downloaded to `~/opt/src`, extracted, and binaries copied into `~/.local/bin` with supporting files in `~/.local/share`. | `~/.local/bin/cmake`, shared modules in `~/.local/share/cmake-*`, man pages in `~/.local/share/man`. |
 | GitHub CLI 2.53.0 | Release tarball pulled into `~/opt/src` and extracted. Binary plus man pages are copied into `~/.local/bin` and `~/.local/share/man`. | `~/.local/bin/gh`, docs under `~/.local/share/doc/gh`. |
-| Go (system prerequisite) | Expected at `/usr/local/go`; installer uses it to build Go tools and sets `GOPATH` to `~/opt/gopath`. | System toolchain at `/usr/local/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
+| Go runtime | Uses system `go` if on `PATH`; otherwise downloads the latest stable Go tarball (SHA256-verified) and extracts it to `~/opt/go`. Sets `GOPATH` to `~/opt/gopath`. | System toolchain (if present) or `~/opt/go`, user workspace in `~/opt/gopath` (notably `~/opt/gopath/bin`). |
 | Node.js (system) | Uses system Node.js pre-installed in image. Falls back to tarball at `~/opt/node` only if system Node absent. npm prefix set to `~/.local`. | `/usr/bin/node` (system) or `~/opt/node/bin/node` (fallback), `~/.local/bin/*` for npm CLIs. |
 | Rust (rustup) | `rustup` installer runs with `$CARGO_HOME=$HOME/.local/share/cargo`. | Toolchains and registry caches in `~/.local/share/rustup`/`cargo`, binaries in `~/.local/share/cargo/bin`. |
 | Python (pip --user) | `pip install --user <package>` using system Python 3.13. No pip --user created. | Packages in `~/.local/lib/python3.13/site-packages/`, entry points in `~/.local/bin/`. |
@@ -136,7 +136,7 @@ aria2c --enable-rpc --rpc-listen-all=true --daemon=true
 ## Re-running or Cleaning Up
 
 - Reinstall any component with `bash install_security_tools.sh <tool-name>`; it reuses the same log locations above.
-- Remove a single language stack by deleting its directory (`~/.local/share/cargo`, `~/opt/node`, etc.) and rerunning the installer for that runtime. Note: Go is system-installed and should not be removed.
+- Remove a single language stack by deleting its directory (`~/.local/share/cargo`, `~/opt/node`, etc.) and rerunning the installer for that runtime. Note: a user-space Go runtime lives at `~/opt/go` and can be removed; a system-installed Go should not be.
 - Inspect `~/.local/state/install_tools/installation_history.log` to see when a tool was last touched and which log file captured the output.
 
 Use `README.md` and `docs/xdg_setup.md` for usage workflows and environment bootstrap details.
@@ -167,7 +167,7 @@ python3 -m seleniumbase             # Python module usage
 ```
 
 ### Playwright
-Cross-browser automation supporting Chromium, Firefox, and WebKit. Browser binaries stored in `~/.local/share/ms-playwright/`.
+Cross-browser automation supporting Chromium, Firefox, and WebKit. Browser binaries stored in `~/.cache/ms-playwright/` (Playwright's default; no custom `PLAYWRIGHT_BROWSERS_PATH` is set).
 
 Also creates `~/.local/bin/chrome` — a detached launcher for the system Chrome (`/usr/bin/google-chrome`) using `nohup` + `disown`. The `google-chrome` binary is left untouched for programmatic use by Playwright and SeleniumBase.
 ```bash
